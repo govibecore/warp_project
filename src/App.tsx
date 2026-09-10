@@ -19,7 +19,7 @@ import { api } from '../convex/_generated/api';
 const isAdminRoute = window.location.pathname.startsWith('/admin');
 
 function AxiomApplication() {
-  const { session, enterApp, setProfile } = useAxiomSession();
+  const { session, enterApp } = useAxiomSession();
   const { isGuest } = useAuthStore();
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
@@ -33,19 +33,14 @@ function AxiomApplication() {
   // Synchronize Clerk user to Convex and AxiomSession
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
+      if (isGuest) {
+        useAuthStore.setState({ isGuest: false });
+      }
+
       // Store user in Convex database
       storeUser().catch((err) => console.error('Failed to store user in Convex:', err));
-
-      // Auto-set the local profile for backward compatibility if it's not set
-      if (!session.profile) {
-        setProfile({
-          name: user.fullName || 'Learner',
-          classLevel: 8, // Default, can be updated later
-          difficulty: 'Standard',
-        });
-      }
     }
-  }, [isLoaded, isSignedIn, user, storeUser, session.profile, setProfile]);
+  }, [isLoaded, isSignedIn, user, storeUser, isGuest]);
 
   // Determine what body to render
   let body;

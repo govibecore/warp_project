@@ -7,9 +7,9 @@ export function SaveStatus() {
 
   const text =
     status === 'saved'
-      ? 'Saved to cloud'
+      ? 'Saved on this device'
       : status === 'saving'
-        ? 'Syncing…'
+        ? 'Saving…'
         : status === 'offline_sync_pending'
           ? 'Offline (saved locally)'
           : 'Save unavailable';

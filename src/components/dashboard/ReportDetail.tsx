@@ -310,6 +310,7 @@ export function ReportDetail() {
                   localStorage.clear();
                   window.location.href = '/';
                 } else {
+                  window.history.replaceState({}, '', window.location.pathname);
                   startNew();
                 }
               }}

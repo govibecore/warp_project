@@ -248,9 +248,9 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
       '11-12': variant(
         'Mark-recapture estimates N at 400, but camera data suggest some deer avoid traps. How should the estimate be qualified?',
         'Lincoln–Petersen assumes equal catchability; trap-shy individuals violate it.',
-        'Ask which direction the bias runs when part of the population is uncatchable.',
+        'Ask how unequal catchability affects the estimate depending on the capture mechanism.',
         [
-          o('eco-3-a', 'Report N with the Chapman correction and flag downward bias — unequal catchability shrinks R for a hidden segment, inflating uncertainty rather than fixing it.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('eco-3-a', 'Report N with the Chapman correction and flag potential bias — differential catchability can skew the estimate, with its direction depending on the capture mechanism.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('eco-3-b', 'Report 400 exactly; the formula handles behaviour automatically.', 'mathematicalReasoning', 'computationalThinking', 2, 'a formula absorbs its own violated assumptions'),
           o('eco-3-c', 'Double the estimate, since every unseen deer has a partner.', 'mathematicalReasoning', 'computationalThinking', 1, 'guessing a correction factor is rigorous'),
           o('eco-3-d', 'Switch to counting tracks and dividing by four, which avoids traps entirely.', 'mathematicalReasoning', 'computationalThinking', 3, 'every animal leaves a fixed number of countable traces'),

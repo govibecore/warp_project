@@ -39,13 +39,13 @@ export function calculateResult(responses: readonly ItemResponse[], classLevel: 
   for (const region of regions) {
     // To simulate comparison, we recalculate a simulated overall Z-score against that region's norms.
     // For MVP, we'll approximate the region's overall mean by averaging the region's norm means.
-    const regionMeans = COMPETENCIES.map(c => getNorm(classLevel, c, region).mean);
-    const avgRegionMean = regionMeans.reduce((a, b) => a + b, 0) / regionMeans.length;
+    const regionNorms = COMPETENCIES.map(c => getNorm(classLevel, c, region));
+    const avgRegionMean = regionNorms.reduce((a, b) => a + b.mean, 0) / regionNorms.length;
+    const avgRegionStdDev = regionNorms.reduce((a, b) => a + b.standardDeviation, 0) / regionNorms.length;
     
     // We compare the student's raw percent average to the region's raw percent average
     const studentRawAvg = COMPETENCIES.reduce((sum, c) => sum + competencies[c].rawPercent, 0) / COMPETENCIES.length;
-    // Assuming standard deviation ~12 on average
-    const regionZScore = (studentRawAvg - avgRegionMean) / 12;
+    const regionZScore = (studentRawAvg - avgRegionMean) / avgRegionStdDev;
     regionalPercentiles[region] = clamp(Math.round(normalCdf(regionZScore) * 100), 1, 99);
   }
 

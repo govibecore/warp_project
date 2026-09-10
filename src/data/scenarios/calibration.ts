@@ -229,7 +229,7 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
         ],
       ),
       '7-8': variant(
-        'A solar panel generates 200W per hour. A battery holds 1000Wh. How long does it take to fully charge from 0% assuming 80% efficiency?',
+        'A solar panel generates 200 W. A battery holds 1000Wh. How long does it take to fully charge from 0% assuming 80% efficiency?',
         'Efficiency losses occur during energy conversion.',
         'Only part of the generated power reaches the battery.',
         [

@@ -64,7 +64,18 @@ function migrateAndHydrate(value: unknown, fallbackProfile?: LearnerProfile): Ax
   if (!profile) return createSession();
   const responses = isRecord(value.responses) ? Object.values(value.responses).filter(isItemResponse) : [];
   let session = createSession(profile);
+  
+  if (typeof value.assessmentStartedAt === 'string' && !isNaN(Date.parse(value.assessmentStartedAt))) {
+    session.assessmentStartedAt = value.assessmentStartedAt;
+  }
+  
   for (const response of responses) session = sessionReducer(session, { type: 'answerItem', response });
+  
+  if (value.phase === 'results' && isRecord(value.result)) {
+    session.phase = 'results';
+    session.result = value.result as any;
+  }
+  
   return session;
 }
 

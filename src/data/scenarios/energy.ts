@@ -100,7 +100,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Panels are clean and in direct sunlight.',
         'Check what heat does to a semiconductor junction.',
         [
-          o('nrg-1-a', 'Increased temperature increases semiconductor resistance, lowering voltage.', 'systemsThinking', 'scientificInquiry', 10),
+          o('nrg-1-a', 'Temperature-dependent junction and band-gap effects produce a negative voltage temperature coefficient.', 'systemsThinking', 'scientificInquiry', 10),
           o('nrg-1-b', 'The sun is too bright, oversaturating the solar cells.', 'systemsThinking', 'scientificInquiry', 1, 'brighter light always means more power'),
           o('nrg-1-c', 'Summer humidity blocks UV rays.', 'systemsThinking', 'scientificInquiry', 4),
           o('nrg-1-d', 'The batteries are discharging faster due to the heat.', 'systemsThinking', 'scientificInquiry', 6),
