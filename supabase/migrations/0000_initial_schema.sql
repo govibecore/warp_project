@@ -85,17 +85,22 @@ ALTER TABLE public.scenarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.norms ENABLE ROW LEVEL SECURITY;
 
 -- Users policies
-CREATE POLICY "Users can view their own profile" ON public.users FOR SELECT USING (auth.uid() = auth_id);
+CREATE POLICY "Users can view profiles" ON public.users FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = auth_id);
 CREATE POLICY "Users can update their own profile" ON public.users FOR UPDATE USING (auth.uid() = auth_id);
+CREATE POLICY "Users can delete their own profile" ON public.users FOR DELETE USING (auth.uid() = auth_id);
 
 -- Assessments policies
-CREATE POLICY "Users can view their own assessments" ON public.assessments FOR SELECT USING (
-  user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+CREATE POLICY "Users can view assessments" ON public.assessments FOR SELECT USING (
+  user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid()) OR status = 'completed'
 );
 CREATE POLICY "Users can insert their own assessments" ON public.assessments FOR INSERT WITH CHECK (
   user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
 );
 CREATE POLICY "Users can update their own assessments" ON public.assessments FOR UPDATE USING (
+  user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+);
+CREATE POLICY "Users can delete their own assessments" ON public.assessments FOR DELETE USING (
   user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
 );
 
@@ -112,3 +117,4 @@ CREATE POLICY "Scenarios are viewable by everyone" ON public.scenarios FOR SELEC
 
 -- Norms policies (read only for everyone)
 CREATE POLICY "Norms are viewable by everyone" ON public.norms FOR SELECT USING (true);
+

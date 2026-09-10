@@ -12,29 +12,54 @@ type FormMode = 'choose' | 'login' | 'register' | 'guest';
 const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3);
 const DIFFICULTIES = ['Standard', 'Advanced', 'Olympiad'] as const;
 
-function AuthForm({ type }: { type: 'login' | 'register' }) {
+function AuthForm({
+  type,
+  onSwitchMode,
+}: {
+  type: 'login' | 'register';
+  onSwitchMode: (mode: 'login' | 'register') => void;
+}) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } =
-      type === 'register'
-        ? await supabase.auth.signUp({ email, password })
-        : await supabase.auth.signInWithPassword({ email, password });
+    setNotice(null);
 
-    if (error) {
-      setError(error.message);
+    if (type === 'register') {
+      const { data, error } = await supabase.auth.signUp({ email, password });
+      if (error) {
+        setError(error.message);
+      } else if (data.user && !data.session) {
+        setNotice('Registration successful! Please check your email inbox to confirm your account before signing in.');
+      } else if (data.user && data.session) {
+        setNotice('Account created successfully! Signing you in...');
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        if (error.message.toLowerCase().includes('invalid login credentials')) {
+          setError('Invalid login credentials. If you haven\'t created an account yet, please sign up first.');
+        } else {
+          setError(error.message);
+        }
+      }
     }
     setLoading(false);
   };
 
   return (
     <form onSubmit={handleSubmit} className="card flex w-full flex-col gap-4 p-6">
+      {notice && (
+        <div className="rounded-(--radius-control) border border-primary/30 bg-primary-subtle p-3 text-xs text-primary">
+          {notice}
+        </div>
+      )}
       {error && (
         <div className="rounded-(--radius-control) border border-destructive/30 bg-destructive-subtle p-3 text-xs text-destructive">
           {error}
@@ -61,6 +86,40 @@ function AuthForm({ type }: { type: 'login' | 'register' }) {
       <Button type="submit" disabled={loading} block>
         {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
       </Button>
+
+      <div className="text-center text-xs text-foreground-secondary pt-2">
+        {type === 'login' ? (
+          <span>
+            Don't have an account yet?{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setNotice(null);
+                onSwitchMode('register');
+              }}
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign up
+            </button>
+          </span>
+        ) : (
+          <span>
+            Already have an account?{' '}
+            <button
+              type="button"
+              onClick={() => {
+                setError(null);
+                setNotice(null);
+                onSwitchMode('login');
+              }}
+              className="text-primary font-semibold hover:underline"
+            >
+              Sign in
+            </button>
+          </span>
+        )}
+      </div>
     </form>
   );
 }
@@ -171,7 +230,7 @@ export function Onboarding() {
 
           {mode === 'login' && (
             <motion.div key="login" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <AuthForm type="login" />
+              <AuthForm type="login" onSwitchMode={setMode} />
               <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
@@ -181,7 +240,7 @@ export function Onboarding() {
 
           {mode === 'register' && (
             <motion.div key="register" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <AuthForm type="register" />
+              <AuthForm type="register" onSwitchMode={setMode} />
               <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
