@@ -1,0 +1,513 @@
+@import 'tailwindcss';
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NORDIC LAGOM — DESIGN SYSTEM
+   "Lagom": not too much, not too little. The right amount.
+
+   Light is the default. The scene is a student at a desk in daytime, a parent
+   reading a printed report, a classroom projector. Dark is a complete second
+   theme for evening and low-glare use — not an afterthought override.
+
+   Colour strategy: Restrained. Warm paper neutrals carry the surface; one
+   accent (Fjord) marks action. Moss, Terracotta and Amber are semantics with
+   meaning, never decoration.
+
+   Elevation is declared once: a single hairline border. No stacked shadows,
+   no glass, no glow. Depth comes from space and alignment.
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ── Light: warm paper ─────────────────────────────────────────────────── */
+:root {
+  color-scheme: light;
+
+  --background: oklch(0.985 0.003 90);
+  --surface: oklch(0.968 0.004 90);
+  --elevated: oklch(1 0 0);
+
+  --foreground: oklch(0.21 0.008 260);
+  --foreground-secondary: oklch(0.5 0.008 260);
+  --foreground-muted: oklch(0.62 0.008 260);
+
+  --card: var(--elevated);
+  --card-foreground: var(--foreground);
+  --popover: var(--elevated);
+  --popover-foreground: var(--foreground);
+
+  /* Fjord — the single accent. Action, focus, selection. */
+  --primary: oklch(0.52 0.11 230);
+  --primary-foreground: oklch(0.99 0 0);
+  --primary-subtle: oklch(0.96 0.018 230);
+
+  /* Semantics */
+  --success: oklch(0.55 0.1 150);
+  --success-foreground: oklch(0.99 0 0);
+  --success-subtle: oklch(0.96 0.02 150);
+
+  --warning: oklch(0.58 0.12 40);
+  --warning-foreground: oklch(0.99 0 0);
+  --warning-subtle: oklch(0.96 0.02 40);
+
+  --highlight: oklch(0.68 0.13 75);
+  --highlight-foreground: oklch(0.25 0.03 75);
+  --highlight-subtle: oklch(0.96 0.03 75);
+
+  --destructive: oklch(0.55 0.19 25);
+  --destructive-foreground: oklch(0.99 0 0);
+  --destructive-subtle: oklch(0.96 0.02 25);
+
+  /* Structure */
+  --border: oklch(0.9 0.005 90);
+  --border-strong: oklch(0.82 0.007 90);
+  --input: oklch(0.94 0.005 90);
+  --ring: var(--primary);
+
+  --secondary: var(--surface);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface);
+  --muted-foreground: var(--foreground-secondary);
+  --accent: oklch(0.945 0.006 90);
+  --accent-foreground: var(--foreground);
+
+  /* Data visualisation — five distinguishable, contrast-safe hues */
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.55 0.1 150);
+  --chart-3: oklch(0.68 0.13 75);
+  --chart-4: oklch(0.58 0.12 40);
+  --chart-5: oklch(0.55 0.1 300);
+}
+
+/* ── Dark: nordic night ────────────────────────────────────────────────── */
+.dark {
+  color-scheme: dark;
+
+  --background: oklch(0.16 0.008 260);
+  --surface: oklch(0.2 0.009 260);
+  --elevated: oklch(0.24 0.01 260);
+
+  --foreground: oklch(0.95 0.004 90);
+  --foreground-secondary: oklch(0.68 0.008 90);
+  --foreground-muted: oklch(0.56 0.008 90);
+
+  --card: var(--elevated);
+  --card-foreground: var(--foreground);
+  --popover: var(--elevated);
+  --popover-foreground: var(--foreground);
+
+  --primary: oklch(0.74 0.09 230);
+  --primary-foreground: oklch(0.18 0.02 260);
+  --primary-subtle: oklch(0.26 0.03 230);
+
+  --success: oklch(0.72 0.11 150);
+  --success-foreground: oklch(0.18 0.02 150);
+  --success-subtle: oklch(0.26 0.035 150);
+
+  --warning: oklch(0.74 0.11 50);
+  --warning-foreground: oklch(0.2 0.02 50);
+  --warning-subtle: oklch(0.27 0.035 50);
+
+  --highlight: oklch(0.8 0.12 80);
+  --highlight-foreground: oklch(0.22 0.03 80);
+  --highlight-subtle: oklch(0.28 0.04 80);
+
+  --destructive: oklch(0.68 0.17 25);
+  --destructive-foreground: oklch(0.18 0.02 25);
+  --destructive-subtle: oklch(0.27 0.04 25);
+
+  --border: oklch(0.3 0.01 260);
+  --border-strong: oklch(0.38 0.012 260);
+  --input: oklch(0.27 0.01 260);
+  --ring: var(--primary);
+
+  --secondary: var(--surface);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--surface);
+  --muted-foreground: var(--foreground-secondary);
+  --accent: oklch(0.28 0.011 260);
+  --accent-foreground: var(--foreground);
+
+  /* Data visualisation — five hues tuned for dark surfaces */
+  --chart-1: var(--primary);
+  --chart-2: oklch(0.72 0.11 150);
+  --chart-3: oklch(0.8 0.12 80);
+  --chart-4: oklch(0.74 0.11 50);
+  --chart-5: oklch(0.72 0.1 300);
+}
+
+/* ── Theme mapping ─────────────────────────────────────────────────────── */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-foreground: var(--foreground);
+  --color-foreground-secondary: var(--foreground-secondary);
+  --color-foreground-muted: var(--foreground-muted);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-subtle: var(--highlight-subtle);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-subtle: var(--destructive-subtle);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  /* Radius — zero. The system is sharp: the warp grid is angular, so every
+     surface, tag, meter and control meets at a corner, not a curve. The one
+     organic form in the brand language is the logo's sphere. */
+  --radius-control: 0;
+  --radius-card: 0;
+  --radius-pill: 0;
+
+  /* Type — two families, one mono for measurement */
+  --font-display: 'Space Grotesk Variable', 'Space Grotesk', sans-serif;
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace,
+    'SFMono-Regular', 'Menlo', monospace;
+
+  /* Motion — calm, short, single-purpose */
+  --ease-lagom: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Base ──────────────────────────────────────────────────────────────── */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Numbers align in columns wherever they appear in text */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Browser surfaces belong to the design too */
+  ::selection {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border: 3px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--foreground-muted);
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* FAQ accordions use a drawn marker, not the native triangle */
+  summary::-webkit-details-marker {
+    display: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      scroll-behavior: auto !important;
+      transform: none !important;
+    }
+  }
+
+  /* Reports are printed: flatten to paper, drop chrome.
+     The app is dark-only on screen, so printing needs its own palette —
+     overriding the tokens (rather than each component) repaints cards,
+     tables, icons and the recharts SVG in one move. */
+  @media print {
+    @page {
+      margin: 14mm;
+    }
+
+    /* Unclip: the shell is a fixed-height flex column with its own scroller,
+       so a naive print captures only the first viewport. */
+    html,
+    body,
+    #root {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .overflow-y-auto,
+    .overflow-auto,
+    .overflow-hidden,
+    .max-h-screen,
+    .h-screen {
+      overflow: visible !important;
+      max-height: none !important;
+      height: auto !important;
+    }
+
+    .no-print {
+      display: none !important;
+    }
+    .print-only {
+      display: block !important;
+    }
+
+    body {
+      background: #fff;
+      color: #000;
+    }
+    .print-surface {
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+    /* A card split across a page break reads as two broken cards. */
+    .print-keep,
+    .card {
+      break-inside: avoid;
+    }
+    thead {
+      display: table-header-group;
+    }
+  }
+}
+
+/* Paper palette override for the report.
+   Lives outside @layer base so it beats the unlayered .dark token block above:
+   layered rules always lose to unlayered ones, regardless of source order. */
+@media print {
+  .dark {
+    --background: #ffffff;
+    --surface: #ffffff;
+    --elevated: #ffffff;
+    --card: #ffffff;
+
+    --foreground: #111827;
+    --foreground-secondary: #4b5563;
+    --foreground-muted: #6b7280;
+
+    --primary: #0e7490;
+    --primary-foreground: #ffffff;
+    --primary-subtle: #ecfeff;
+
+    --success: #15803d;
+    --warning: #b45309;
+    --destructive: #b91c1c;
+    --destructive-subtle: #fef2f2;
+
+    --border: #d1d5db;
+    --border-strong: #9ca3af;
+    --input: #e5e7eb;
+    --accent: #f3f4f6;
+
+    /* Ink-safe chart hues — readable on white, no glow */
+    --chart-1: #0e7490;
+    --chart-2: #15803d;
+    --chart-3: #b45309;
+    --chart-4: #a16207;
+    --chart-5: #7e22ce;
+  }
+}
+
+/* ── Composed pieces ───────────────────────────────────────────────────── */
+@layer components {
+  /* A card is a surface with one hairline. It does not glow or float. */
+  .card {
+    background-color: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+
+  /* Shown only on paper — e.g. the light-ink wordmark on a printed report. */
+  .print-only {
+    display: none;
+  }
+
+  .card-interactive {
+    transition:
+      border-color 150ms var(--ease-lagom),
+      background-color 150ms var(--ease-lagom);
+  }
+  .card-interactive:hover {
+    border-color: var(--border-strong);
+    background-color: var(--surface);
+  }
+
+  /* Section rhythm: more space above a heading than below it */
+  .section {
+    padding-block: 5rem;
+  }
+  @media (max-width: 640px) {
+    .section {
+      padding-block: 3.5rem;
+    }
+  }
+
+  .stack > * + * {
+    margin-top: 0.5rem;
+  }
+
+  /* Angular spinner: no arcs in this system. A square outline whose bright
+     edge ticks around in 90° steps — a loading state with the same geometry
+     as everything else. */
+  .spinner-square {
+    border: 2px solid var(--foreground-muted);
+    border-top-color: var(--primary);
+    animation: spinner-tick 0.8s steps(4) infinite;
+  }
+  @keyframes spinner-tick {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* ── Warp-grid motifs ──────────────────────────────────────────────────
+     The logo's spacetime grid, translated to UI: blueprint hairlines,
+     registration marks, ruler ticks. Decoration with a job — measurement. */
+
+  /* Blueprint hairline grid for section backdrops. Faint on purpose. */
+  .bg-warp-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
+    background-size: 2rem 2rem;
+  }
+
+  /* Registration marks: two diagonal corner brackets inside a surface. */
+  .corner-marks {
+    position: relative;
+  }
+  .corner-marks::before,
+  .corner-marks::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--border-strong);
+    pointer-events: none;
+  }
+  .corner-marks::before {
+    top: 6px;
+    left: 6px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .corner-marks::after {
+    right: 6px;
+    bottom: 6px;
+    border-top: 0;
+    border-left: 0;
+  }
+
+  /* Ruler ticks — a measuring strip used as a section divider. */
+  .ruler-x {
+    height: 0.5rem;
+    background-image: repeating-linear-gradient(
+      to right,
+      var(--border-strong) 0 1px,
+      transparent 1px 0.5rem
+    );
+    background-size: 100% 4px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    opacity: 0.6;
+  }
+
+  /* Keyboard affordance. Drawn, not emoji. */
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5rem;
+    height: 1.5rem;
+    padding-inline: 0.375rem;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    background-color: var(--surface);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1;
+    color: var(--foreground-secondary);
+  }
+}

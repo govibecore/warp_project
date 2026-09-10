@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+coverage/
+.vite/
+*.tsbuildinfo
+vite.config.ts.timestamp-*.mjs
+
+# Environment — NEVER commit secrets
+.env
+.env.*
+!.env.example
+.env.local
+
+# Local tooling
+.agents/
+.workbuddy-ai/
+.superpowers/
+.worktrees/
+.impeccable/
+.superdesign/
+.DS_Store
+*.log
+npm-debug.log*
+
+# Auto-generated locks/cache
+skills-lock.json
+
+# Editors
+.idea/
+.vscode/
+*.swp
+
+# Test artifacts
+playwright-report/
+test-results/
+
+# Config files
+vite.config.js
+vite.config.d.ts
+playwright.config.js
+playwright.config.d.ts
