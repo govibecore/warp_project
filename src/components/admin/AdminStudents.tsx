@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { usePaginatedQuery } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { useDebounced } from '../../hooks/useDebounced';
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
@@ -16,15 +14,74 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', {
   year: 'numeric',
 });
 
+interface StudentRow {
+  id: string;
+  fullName: string;
+  email: string;
+  currentClass: number | null;
+  assessmentsCount: number;
+  lastScore: number | null;
+  joinedAt: string;
+}
+
 export function AdminStudents() {
   const [search, setSearch] = useState('');
   const term = useDebounced(search.trim(), 300);
 
-  const { results, status, loadMore } = usePaginatedQuery(
-    api.admin.getStudents,
-    { search: term || undefined },
-    { initialNumItems: PAGE_SIZE },
-  );
+  const [results, setResults] = useState<StudentRow[]>([]);
+  const [status, setStatus] = useState<'LoadingFirstPage' | 'CanLoadMore' | 'Exhausted'>('LoadingFirstPage');
+  const [page, setPage] = useState(0);
+
+  useEffect(() => {
+    async function fetchStudents(isInitial: boolean) {
+      if (isInitial) {
+        setStatus('LoadingFirstPage');
+      }
+
+      let query = supabase.from('users').select('*').order('created_at', { ascending: false });
+      
+      if (term) {
+        query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%`);
+      }
+
+      const { data, error } = await query.range(
+        isInitial ? 0 : page * PAGE_SIZE,
+        isInitial ? PAGE_SIZE - 1 : (page + 1) * PAGE_SIZE - 1
+      );
+
+      if (error || !data) {
+        console.error('Failed to load students', error);
+        if (isInitial) setResults([]);
+        setStatus('Exhausted');
+        return;
+      }
+
+      // Normally we'd join with assessments, but doing this naively for mock
+      const mapped: StudentRow[] = data.map(u => ({
+        id: u.id,
+        fullName: u.full_name || 'Learner',
+        email: u.email,
+        currentClass: null,
+        assessmentsCount: 0,
+        lastScore: null,
+        joinedAt: u.created_at,
+      }));
+
+      setResults(prev => isInitial ? mapped : [...prev, ...mapped]);
+      setStatus(data.length === PAGE_SIZE ? 'CanLoadMore' : 'Exhausted');
+    }
+
+    fetchStudents(page === 0);
+  }, [term, page]);
+
+  // Reset page when term changes
+  useEffect(() => {
+    setPage(0);
+  }, [term]);
+
+  const loadMore = () => {
+    setPage(p => p + 1);
+  };
 
   return (
     <div className="mx-auto max-w-6xl p-8">
@@ -103,7 +160,7 @@ export function AdminStudents() {
 
         {status === 'CanLoadMore' && (
           <div className="flex justify-center border-t border-border p-4">
-            <Button variant="secondary" size="sm" onClick={() => loadMore(PAGE_SIZE)}>
+            <Button variant="secondary" size="sm" onClick={() => loadMore()}>
               Load more
             </Button>
           </div>

@@ -1,7 +1,5 @@
-import { useState } from 'react';
-import { usePaginatedQuery, useQuery } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { Select } from '../ui/input';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -23,22 +21,60 @@ export function AdminContent() {
   const [classFilter, setClassFilter] = useState<number | undefined>();
   const [diffFilter, setDiffFilter] = useState('');
 
-  const {
-    results: scenarios,
-    status: scenarioStatus,
-    loadMore,
-  } = usePaginatedQuery(
-    api.admin.getScenarios,
-    activeTab === 'scenarios'
-      ? {
-          classLevel: classFilter,
-          difficulty: diffFilter || undefined,
-        }
-      : 'skip',
-    { initialNumItems: PAGE_SIZE },
-  );
+  const [scenarios, setScenarios] = useState<any[]>([]);
+  const [scenarioStatus, setScenarioStatus] = useState<'LoadingFirstPage' | 'CanLoadMore' | 'Exhausted'>('LoadingFirstPage');
+  const [scenarioPage, setScenarioPage] = useState(0);
 
-  const norms = useQuery(api.admin.getNorms, activeTab === 'norms' ? {} : 'skip');
+  const [norms, setNorms] = useState<{ norms: any[] } | undefined>(undefined);
+
+  useEffect(() => {
+    async function fetchScenarios(isInitial: boolean) {
+      if (activeTab !== 'scenarios') return;
+
+      if (isInitial) setScenarioStatus('LoadingFirstPage');
+
+      let query = supabase.from('scenarios').select('*').order('created_at', { ascending: false });
+      
+      if (classFilter !== undefined) {
+        query = query.eq('class_level', classFilter);
+      }
+      if (diffFilter) {
+        query = query.eq('difficulty', diffFilter);
+      }
+
+      const { data, error } = await query.range(
+        isInitial ? 0 : scenarioPage * PAGE_SIZE,
+        isInitial ? PAGE_SIZE - 1 : (scenarioPage + 1) * PAGE_SIZE - 1
+      );
+
+      if (error || !data) {
+        if (isInitial) setScenarios([]);
+        setScenarioStatus('Exhausted');
+        return;
+      }
+
+      setScenarios(prev => isInitial ? data : [...prev, ...data]);
+      setScenarioStatus(data.length === PAGE_SIZE ? 'CanLoadMore' : 'Exhausted');
+    }
+
+    fetchScenarios(scenarioPage === 0);
+  }, [activeTab, classFilter, diffFilter, scenarioPage]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setScenarioPage(0);
+  }, [classFilter, diffFilter, activeTab]);
+
+  const loadMore = () => setScenarioPage(p => p + 1);
+
+  useEffect(() => {
+    async function fetchNorms() {
+      if (activeTab !== 'norms') return;
+      const { data } = await supabase.from('norms').select('*');
+      setNorms({ norms: data || [] });
+    }
+    fetchNorms();
+  }, [activeTab]);
 
   return (
     <div className="mx-auto max-w-6xl p-8">
@@ -154,7 +190,7 @@ export function AdminContent() {
 
             {scenarioStatus === 'CanLoadMore' && (
               <div className="flex justify-center border-t border-border p-4">
-                <Button variant="secondary" size="sm" onClick={() => loadMore(PAGE_SIZE)}>
+                <Button variant="secondary" size="sm" onClick={() => loadMore()}>
                   Load more
                 </Button>
               </div>

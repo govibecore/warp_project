@@ -1,24 +1,78 @@
-import { useState } from 'react';
-import { useQuery } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 import { Select } from '../ui/input';
 import { Card, EmptyState } from '../ui/card';
 import { SpinnerBlock } from '../ui/spinner';
 
 const DIFFICULTIES = ['Standard', 'Advanced', 'Olympiad'] as const;
 
-/**
- * Names are masked server-side (first name + last initial). The signed-in
- * learner's own row is marked instead of named — no child's full name is ever
- * published to a public endpoint.
- */
+interface LeaderboardRow {
+  id: string;
+  studentName: string;
+  classLevel: number;
+  difficulty: string;
+  overallScore: number;
+  isCurrentUser: boolean;
+}
+
 export function Leaderboard() {
   const [difficulty, setDifficulty] = useState('');
+  const [rows, setRows] = useState<LeaderboardRow[] | undefined>(undefined);
+  const { user } = useSupabaseAuth();
 
-  const rows = useQuery(api.leaderboard.getTopScores, {
-    difficulty: (difficulty || undefined) as (typeof DIFFICULTIES)[number] | undefined,
-  });
+  useEffect(() => {
+    async function fetchLeaderboard() {
+      let query = supabase
+        .from('assessments')
+        .select(`
+          id,
+          class_level,
+          difficulty,
+          result,
+          users!inner (
+            id,
+            auth_id,
+            full_name
+          )
+        `)
+        .eq('status', 'completed');
+      
+      if (difficulty) {
+        query = query.eq('difficulty', difficulty);
+      }
+
+      const { data, error } = await query;
+      
+      if (error || !data) {
+        console.error('Failed to load leaderboard', error);
+        setRows([]);
+        return;
+      }
+
+      // Sort by score locally since result is JSONB
+      const mapped = data
+        .filter(a => a.result && typeof (a.result as any).overallScore === 'number')
+        .map(a => {
+          const u = Array.isArray(a.users) ? a.users[0] : a.users;
+          const parts = u?.full_name?.split(' ') || ['Learner'];
+          const studentName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
+          return {
+            id: a.id,
+            studentName,
+            classLevel: a.class_level,
+            difficulty: a.difficulty,
+            overallScore: (a.result as any).overallScore,
+            isCurrentUser: u?.auth_id === user?.id,
+          };
+        });
+
+      mapped.sort((a, b) => b.overallScore - a.overallScore);
+      setRows(mapped.slice(0, 50));
+    }
+    
+    fetchLeaderboard();
+  }, [difficulty, user]);
 
   return (
     <Card>

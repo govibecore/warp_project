@@ -1,5 +1,6 @@
 import { type ReactNode } from 'react';
-import { useClerk, useUser } from '@clerk/clerk-react';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
+import { supabase } from '../../lib/supabase';
 import { BarChart3, GraduationCap, Library, LogOut } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -18,8 +19,7 @@ const NAV_ITEMS: Array<{ id: AdminTab; label: string; icon: ReactNode }> = [
 ];
 
 export function AdminLayout({ children, activeTab, onTabChange }: AdminLayoutProps) {
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user } = useSupabaseAuth();
 
   return (
     <div className="flex min-h-svh bg-background">
@@ -56,18 +56,19 @@ export function AdminLayout({ children, activeTab, onTabChange }: AdminLayoutPro
         <div className="border-t border-border p-3">
           <div className="mb-3 flex items-center gap-3 px-2">
             <div className="flex size-8 items-center justify-center bg-primary/15 text-sm font-semibold text-primary">
-              {(user?.fullName ?? user?.firstName ?? 'A').charAt(0)}
+              {(user?.email ?? 'A').charAt(0).toUpperCase()}
             </div>
             <div className="min-w-0 text-xs">
-              <p className="truncate font-semibold">{user?.fullName ?? 'Admin'}</p>
+              <p className="truncate font-semibold">{user?.email?.split('@')[0] ?? 'Admin'}</p>
               <p className="truncate text-foreground-secondary">
-                {user?.primaryEmailAddress?.emailAddress}
+                {user?.email}
               </p>
             </div>
           </div>
           <button
-            onClick={() => {
-              void signOut({ redirectUrl: '/' });
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = '/';
             }}
             className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary transition-colors hover:bg-accent hover:text-destructive"
           >

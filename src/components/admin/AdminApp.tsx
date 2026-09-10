@@ -1,24 +1,28 @@
-import { useState } from 'react';
-import { SignIn, useAuth, useUser } from '@clerk/clerk-react';
-import { useQuery } from 'convex/react';
-import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
+import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminOverview } from './AdminOverview';
 import { AdminStudents } from './AdminStudents';
 import { AdminContent } from './AdminContent';
+import { Button } from '../ui/button';
 
 type AdminTab = 'overview' | 'students' | 'content';
 
-/**
- * The admin portal is gated on the Clerk session plus the `role` field stored
- * in Convex. Access is never decided in the browser: the admin queries
- * themselves re-check the role server-side, so this screen is only a UX gate.
- */
 export function AdminApp() {
-  const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const me = useQuery(api.users.current);
+  const { isLoaded, isSignedIn, user } = useSupabaseAuth();
+  const [me, setMe] = useState<any>(undefined);
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
+
+  useEffect(() => {
+    if (isSignedIn && user?.id) {
+      supabase.from('users').select('role').eq('auth_id', user.id).single().then(({ data }) => {
+        setMe(data);
+      });
+    } else if (isLoaded) {
+      setMe(null);
+    }
+  }, [isSignedIn, user, isLoaded]);
 
   if (!isLoaded) return <AdminCentered message="Loading…" />;
 
@@ -28,7 +32,7 @@ export function AdminApp() {
         title="Admin Portal"
         message="Sign in with an authorised administrator account."
       >
-        <SignIn routing="hash" />
+        <Button onClick={() => window.location.search = '?choose'}>Go to Sign In</Button>
       </AdminCentered>
     );
   }
@@ -39,7 +43,7 @@ export function AdminApp() {
     return (
       <AdminCentered
         title="Not authorised"
-        message={`${user?.primaryEmailAddress?.emailAddress ?? 'This account'} does not have administrator access. Ask an existing admin to grant the admin role.`}
+        message={`${user?.email ?? 'This account'} does not have administrator access. Ask an existing admin to grant the admin role.`}
       />
     );
   }

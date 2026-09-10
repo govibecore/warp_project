@@ -1,10 +1,7 @@
-import { useQuery, useAction } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
-import type { Id } from '../../../convex/_generated/dataModel';
 import { ArrowLeft, Printer, RefreshCw, Sparkles, TriangleAlert, Globe } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useAxiomSession } from '../../context/AxiomSessionContext';
+import { supabase } from '../../lib/supabase';
 import { CompetencyChart } from '../CompetencyChart';
 import type { ResultSnapshot } from '../../domain/types';
 import { useState, useEffect } from 'react';
@@ -32,44 +29,78 @@ export function ReportDetail() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generateError, setGenerateError] = useState<string | null>(null);
 
+  const [assessmentData, setAssessmentData] = useState<any>(null);
+  const [reportData, setReportData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const params = new URLSearchParams(window.location.search);
-  const assessmentId = (params.get('assessment') as Id<'assessments'> | null) ?? undefined;
+  const assessmentId = params.get('assessment') || undefined;
   const canFetch = Boolean(assessmentId) && !isGuest;
 
-  const data = useQuery(
-    api.ai.getAssessmentData,
-    canFetch && assessmentId ? { assessmentId } : 'skip',
-  );
-  const report = useQuery(api.ai.getReport, canFetch && assessmentId ? { assessmentId } : 'skip');
-  const generateReport = useAction(api.ai.generateReport);
-
   useEffect(() => {
-    if (!data?.assessment || data.assessment.reportId || isGenerating || generateError) return;
-    setIsGenerating(true);
-    generateReport({ assessmentId: data.assessment._id })
-      .catch((err: Error) =>
-        setGenerateError(err.message || 'Could not generate the written analysis.'),
-      )
-      .finally(() => setIsGenerating(false));
-  }, [data, generateReport, isGenerating, generateError]);
+    if (!canFetch || !assessmentId) {
+      setLoading(false);
+      return;
+    }
+
+    async function fetchData() {
+      const { data: assessment } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('id', assessmentId!)
+        .single();
+      
+      setAssessmentData(assessment);
+
+      if (assessment?.report_id) {
+        const { data: report } = await supabase
+          .from('reports')
+          .select('*')
+          .eq('id', assessment.report_id)
+          .single();
+        setReportData(report);
+      } else if (assessment) {
+        setIsGenerating(true);
+        const { data, error } = await supabase.functions.invoke('generate-report', {
+          body: { assessmentId },
+        });
+        
+        if (error || !data?.success) {
+          setGenerateError(error?.message || data?.error || 'Could not generate the written analysis.');
+        } else if (data.reportId) {
+          const { data: report } = await supabase
+            .from('reports')
+            .select('*')
+            .eq('id', data.reportId)
+            .single();
+          setReportData(report);
+        }
+        setIsGenerating(false);
+      }
+      
+      setLoading(false);
+    }
+    
+    fetchData();
+  }, [assessmentId, canFetch]);
 
   // Server snapshot wins; otherwise fall back to the local session result.
   let snapshot: ResultSnapshot | undefined;
-  if (data?.assessment?.result) {
+  if (assessmentData?.result) {
     snapshot = {
-      ...data.assessment.result,
-      responses: data.assessment.responses,
-      classLevel: data.assessment.classLevel,
-      completedAt: data.assessment.completedAt || new Date().toISOString(),
+      ...assessmentData.result,
+      responses: assessmentData.responses,
+      classLevel: assessmentData.class_level,
+      completedAt: assessmentData.completed_at || new Date().toISOString(),
     } as ResultSnapshot;
   } else if (session.result) {
     snapshot = session.result;
   }
 
-  const aiReport = report?.aiInsights?.overallAssessment;
+  const aiReport = reportData?.ai_insights?.overallAssessment;
 
   if (!snapshot) {
-    if (data === undefined || isGenerating) {
+    if (loading || isGenerating) {
       return (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
           <Spinner size="lg" className="text-foreground-muted" />

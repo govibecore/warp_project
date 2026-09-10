@@ -1,5 +1,4 @@
 import type { PropsWithChildren } from 'react';
-import { SignedIn, SignedOut, UserButton, SignInButton, SignUpButton } from '@clerk/clerk-react';
 import { SaveStatus } from './SaveStatus';
 import { WarpLogo } from './WarpLogo';
 import { Button } from './ui/button';
@@ -8,11 +7,16 @@ import { Button } from './ui/button';
  * The frame every student screen lives in. One header, one hairline, no
  * gradient wash — the page behind it supplies the surface.
  */
+import { useSupabaseAuth } from '../context/SupabaseAuthContext';
+import { supabase } from '../lib/supabase';
+import { User } from 'lucide-react';
+
 export function AppShell({
   children,
   scrollable = false,
   hideHeader = false,
 }: PropsWithChildren<{ scrollable?: boolean; hideHeader?: boolean }>) {
+  const { isSignedIn } = useSupabaseAuth();
   return (
     <div
       className={
@@ -31,21 +35,21 @@ export function AppShell({
 
         <div className="flex items-center gap-4">
           <SaveStatus />
-          <SignedIn>
-            <UserButton />
-          </SignedIn>
-          <SignedOut>
+          {isSignedIn ? (
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="flex size-8 items-center justify-center rounded-full bg-accent text-foreground-secondary hover:text-foreground transition-colors"
+              aria-label="Sign out"
+            >
+              <User className="size-4" />
+            </button>
+          ) : (
             <div className="flex gap-2">
-              <SignInButton mode="modal">
-                <Button variant="ghost" size="sm">
-                  Sign in
-                </Button>
-              </SignInButton>
-              <SignUpButton mode="modal">
-                <Button size="sm">Sign up</Button>
-              </SignUpButton>
+              <Button variant="ghost" size="sm" onClick={() => window.location.search = '?choose'}>
+                Sign in
+              </Button>
             </div>
-          </SignedOut>
+          )}
         </div>
       </header>
       )}
