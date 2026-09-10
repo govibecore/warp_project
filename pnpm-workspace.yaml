@@ -1,0 +1,6 @@
+allowBuilds:
+  '@clerk/shared': true
+  bcrypt: set this to true or false
+  core-js: true
+  esbuild: true
+  msgpackr-extract: set this to true or false
