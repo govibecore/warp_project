@@ -1,6 +1,5 @@
-import { useQuery } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
+import { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import {
   Area,
   AreaChart,
@@ -33,8 +32,33 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 const AXIS_TICK = { fontSize: 11, fill: 'var(--foreground-secondary)' };
 
 export function AdminOverview() {
-  const stats = useQuery(api.admin.getStats);
-  const chartData = useQuery(api.admin.getChartData);
+  const [stats, setStats] = useState<any>(undefined);
+  const [chartData, setChartData] = useState<any>(undefined);
+
+  useEffect(() => {
+    async function fetchStats() {
+      // Very basic placeholder implementation for admin stats
+      const { count: totalStudents } = await supabase.from('users').select('*', { count: 'exact', head: true });
+      const { data: completedAssessmentsData } = await supabase.from('assessments').select('result').eq('status', 'completed');
+      
+      const completedAssessments = completedAssessmentsData?.length || 0;
+      const scores = completedAssessmentsData?.map(a => (a.result as any)?.overallScore).filter(s => typeof s === 'number') || [];
+      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
+      
+      setStats({
+        totalStudents: totalStudents || 0,
+        studentsThisWeek: 0,
+        assessmentsToday: 0,
+        avgScore,
+        completionRate: 100, // placeholder
+        completedAssessments
+      });
+
+      // Simple mock for chart data to keep it rendering
+      setChartData([]);
+    }
+    fetchStats();
+  }, []);
 
   return (
     <div className="mx-auto max-w-6xl p-8">

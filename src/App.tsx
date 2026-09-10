@@ -10,10 +10,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useAuthStore } from './stores/authStore';
 import { useEffect } from 'react';
 
-import { useAuth, useUser } from '@clerk/clerk-react';
-import { useMutation } from 'convex/react';
-// @ts-ignore
-import { api } from '../convex/_generated/api';
+import { useSupabaseAuth } from './context/SupabaseAuthContext';
+import { supabase } from './lib/supabase';
 
 // ── Admin portal: served at /admin or /admin/* ───────────────────────
 const isAdminRoute = window.location.pathname.startsWith('/admin');
@@ -21,26 +19,33 @@ const isAdminRoute = window.location.pathname.startsWith('/admin');
 function AxiomApplication() {
   const { session, enterApp } = useAxiomSession();
   const { isGuest } = useAuthStore();
-  const { isLoaded, isSignedIn } = useAuth();
-  const { user } = useUser();
-  const storeUser = useMutation(api.users.storeUser);
+  const { isLoaded, isSignedIn, user } = useSupabaseAuth();
 
   // URL routing for dashboard/reports
   const params = new URLSearchParams(window.location.search);
   const isDashboard = params.has('dashboard');
   const hasAssessmentId = params.has('assessment');
 
-  // Synchronize Clerk user to Convex and AxiomSession
+  // Synchronize user to Supabase public.users and AxiomSession
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       if (isGuest) {
         useAuthStore.setState({ isGuest: false });
       }
 
-      // Store user in Convex database
-      storeUser().catch((err) => console.error('Failed to store user in Convex:', err));
+      // Store user in Supabase database
+      const syncUser = async () => {
+        if (!user.email) return;
+        const { error } = await supabase.from('users').upsert({
+          auth_id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+        }, { onConflict: 'email' });
+        if (error) console.error('Failed to store user in Supabase:', error);
+      };
+      syncUser();
     }
-  }, [isLoaded, isSignedIn, user, storeUser, isGuest]);
+  }, [isLoaded, isSignedIn, user, isGuest]);
 
   // Determine what body to render
   let body;

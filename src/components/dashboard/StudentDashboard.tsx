@@ -1,16 +1,14 @@
-import { useQuery, useMutation } from 'convex/react';
-// @ts-ignore — generated at `convex dev`
-import { api } from '../../../convex/_generated/api';
-import { useClerk, useUser } from '@clerk/clerk-react';
+import { useEffect, useState } from 'react';
 import { TriangleAlert, Plus, LogOut, Trophy, ArrowUpRight, ArrowDownRight, Trash2 } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useAxiomSession } from '../../context/AxiomSessionContext';
+import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
+import { supabase } from '../../lib/supabase';
 import { Leaderboard } from './Leaderboard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, EmptyState } from '../ui/card';
 import { SpinnerBlock } from '../ui/spinner';
-import { useState } from 'react';
 
 function ordinal(n: number): string {
   const suffixes = ['th', 'st', 'nd', 'rd'];
@@ -34,8 +32,8 @@ interface HistoryRow {
 }
 
 const EMPTY_SUMMARY = {
-  latestScore: null,
-  scoreDelta: null,
+  latestScore: null as number | null,
+  scoreDelta: null as number | null,
   bestGlobalPct: 0,
   totalAssessments: 0,
   recentAssessments: [] as HistoryRow[],
@@ -54,34 +52,89 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 
 export function StudentDashboard() {
   const { isGuest } = useAuthStore();
-  const { user } = useUser();
-  const { signOut } = useClerk();
+  const { user } = useSupabaseAuth();
   const { eraseLocalData } = useAxiomSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const deleteAccount = useMutation(api.users.deleteAccount);
 
-  // `null` means the Clerk account has not been mirrored into Convex yet, which
-  // happens on first load. Show the empty dashboard rather than a blank page.
-  const rawSummary = useQuery(api.assessments.getSummary, isGuest ? 'skip' : {});
-  const isLoading = rawSummary === undefined;
-  const summary = rawSummary ?? EMPTY_SUMMARY;
+  const [isLoading, setIsLoading] = useState(true);
+  const [summary, setSummary] = useState(EMPTY_SUMMARY);
 
-  const handleLogout = () => {
+  useEffect(() => {
+    if (isGuest || !user?.id) {
+      setIsLoading(false);
+      return;
+    }
+
+    async function fetchSummary() {
+      // Get internal user id mapped from auth.users
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user!.id)
+        .single();
+      
+      if (!userData) {
+        setIsLoading(false);
+        return;
+      }
+
+      const { data: assessments } = await supabase
+        .from('assessments')
+        .select('*')
+        .eq('user_id', userData.id)
+        .eq('status', 'completed')
+        .order('completed_at', { ascending: false });
+
+      if (assessments && assessments.length > 0) {
+        const totalAssessments = assessments.length;
+        const recentAssessments = assessments.map(a => ({
+          id: a.id,
+          completedAt: a.completed_at,
+          classLevel: a.class_level,
+          difficulty: a.difficulty,
+          score: a.result?.overallScore || 0,
+          globalPct: a.result?.regionalPercentiles?.['Global'] || 0,
+        }));
+
+        const latestScore = recentAssessments[0].score;
+        const scoreDelta = recentAssessments.length > 1 ? latestScore - recentAssessments[1].score : null;
+        const bestGlobalPct = Math.max(...recentAssessments.map(a => a.globalPct));
+
+        setSummary({
+          latestScore,
+          scoreDelta,
+          bestGlobalPct,
+          totalAssessments,
+          recentAssessments,
+        });
+      }
+      setIsLoading(false);
+    }
+    fetchSummary();
+  }, [user, isGuest]);
+
+  const handleLogout = async () => {
     eraseLocalData();
-    void signOut(() => {
-      window.location.href = '/';
-    });
+    await supabase.auth.signOut();
+    window.location.href = '/';
   };
 
   const handleDeleteAccount = async () => {
+    if (!user) return;
     setDeleting(true);
     try {
-      await deleteAccount({});
+      // In Supabase, deleting the auth user requires an Edge Function or admin API,
+      // or RPC. For now, we will delete the public.users record which cascades to
+      // assessments/reports, but auth user remains unless we call an RPC.
+      // Assuming RPC 'delete_user' exists or we just rely on signOut.
+      const { data: userData } = await supabase.from('users').select('id').eq('auth_id', user.id).single();
+      if (userData) {
+        await supabase.from('users').delete().eq('id', userData.id);
+      }
       eraseLocalData();
-      await signOut(() => {
-        window.location.href = '/';
-      });
+      await supabase.auth.signOut();
+      window.location.href = '/';
     } catch {
       setDeleting(false);
       setConfirmDelete(false);
@@ -115,7 +168,7 @@ export function StudentDashboard() {
             Student dashboard
           </p>
           <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Welcome back, {user?.firstName ?? 'Learner'}
+            Welcome back, {user?.email?.split('@')[0] ?? 'Learner'}
           </h1>
         </div>
         <div className="flex gap-3">

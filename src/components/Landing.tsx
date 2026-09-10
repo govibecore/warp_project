@@ -1,7 +1,8 @@
 import { lazy, Suspense, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Cloud, Sparkles, Globe, ShieldCheck, Menu, X } from 'lucide-react';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react';
+import { ArrowRight, Cloud, Sparkles, Globe, ShieldCheck, Menu, X, User } from 'lucide-react';
+import { useSupabaseAuth } from '../context/SupabaseAuthContext';
+import { supabase } from '../lib/supabase';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { BentoGrid, BentoGridItem } from './ui/bento';
@@ -153,6 +154,7 @@ const fade = {
 
 export function Landing({ onEnter }: LandingProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { isSignedIn } = useSupabaseAuth();
 
   return (
     <main className="flex w-full flex-col" data-testid="landing-shell">
@@ -217,18 +219,24 @@ export function Landing({ onEnter }: LandingProps) {
             </div>
 
             <div className="flex h-full items-stretch">
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <button className="flex h-full items-center border-l border-border px-4 sm:px-6 text-[13px] sm:text-[14px] font-semibold text-foreground-secondary transition-colors duration-200 hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring">
-                    Sign in
-                  </button>
-                </SignInButton>
-              </SignedOut>
-              <SignedIn>
+              {!isSignedIn ? (
+                <button
+                  onClick={onEnter}
+                  className="flex h-full items-center border-l border-border px-4 sm:px-6 text-[13px] sm:text-[14px] font-semibold text-foreground-secondary transition-colors duration-200 hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                >
+                  Sign in
+                </button>
+              ) : (
                 <div className="flex h-full items-center border-l border-border px-3 sm:px-4">
-                  <UserButton />
+                  <button
+                    onClick={() => supabase.auth.signOut()}
+                    className="flex size-8 items-center justify-center rounded-full bg-accent text-foreground-secondary hover:text-foreground transition-colors"
+                    aria-label="Sign out"
+                  >
+                    <User className="size-4" />
+                  </button>
                 </div>
-              </SignedIn>
+              )}
 
               {/* Mobile menu toggle button */}
               <button

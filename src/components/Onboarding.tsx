@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { SignIn, SignUp } from '@clerk/clerk-react';
+import { supabase } from '../lib/supabase';
 import { ArrowRight, ArrowLeft, Sparkles, LogIn, TriangleAlert } from 'lucide-react';
 import { useAxiomSession } from '../context/AxiomSessionContext';
 import { useAuthStore } from '../stores/authStore';
@@ -11,6 +11,59 @@ type FormMode = 'choose' | 'login' | 'register' | 'guest';
 
 const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3);
 const DIFFICULTIES = ['Standard', 'Advanced', 'Olympiad'] as const;
+
+function AuthForm({ type }: { type: 'login' | 'register' }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const { error } =
+      type === 'register'
+        ? await supabase.auth.signUp({ email, password })
+        : await supabase.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      setError(error.message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="card flex w-full flex-col gap-4 p-6">
+      {error && (
+        <div className="rounded-(--radius-control) border border-destructive/30 bg-destructive-subtle p-3 text-xs text-destructive">
+          {error}
+        </div>
+      )}
+      <Field label="Email" htmlFor="email">
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </Field>
+      <Field label="Password" htmlFor="password">
+        <Input
+          id="password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </Field>
+      <Button type="submit" disabled={loading} block>
+        {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
+      </Button>
+    </form>
+  );
+}
 
 const FADE_SLIDE = {
   initial: { opacity: 0, y: 16 },
@@ -72,6 +125,7 @@ export function Onboarding() {
           {mode === 'choose' && (
             <motion.div key="choose" {...FADE_SLIDE} className="flex w-full flex-col gap-3">
               <button
+                type="button"
                 onClick={() => setMode('register')}
                 className="card card-interactive flex w-full items-center justify-between gap-3 p-5 text-left"
               >
@@ -88,6 +142,7 @@ export function Onboarding() {
               </button>
 
               <button
+                type="button"
                 onClick={() => setMode('login')}
                 className="card card-interactive flex w-full items-center justify-between gap-3 p-5 text-left"
               >
@@ -116,7 +171,7 @@ export function Onboarding() {
 
           {mode === 'login' && (
             <motion.div key="login" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <SignIn routing="hash" />
+              <AuthForm type="login" />
               <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
@@ -126,7 +181,7 @@ export function Onboarding() {
 
           {mode === 'register' && (
             <motion.div key="register" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <SignUp routing="hash" />
+              <AuthForm type="register" />
               <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
@@ -141,7 +196,7 @@ export function Onboarding() {
               onSubmit={handleGuest}
               className="card flex w-full flex-col gap-4 p-6"
             >
-              <div className="flex items-start gap-3 rounded-[var(--radius-control)] border border-warning/30 bg-warning-subtle p-3">
+              <div className="flex items-start gap-3 rounded-(--radius-control) border border-warning/30 bg-warning-subtle p-3">
                 <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
                 <p className="text-xs leading-relaxed text-foreground-secondary">
                   Guest mode saves results to this device only. You won't get a written report,
