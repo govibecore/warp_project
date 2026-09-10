@@ -1,5 +1,4 @@
 // deno-lint-ignore-file
-import "@supabase/functions-js/edge-runtime.d.ts";
 import { withSupabase } from "https://esm.sh/@supabase/server@1.6.0";
 import { OpenAI } from "https://esm.sh/openai@4.40.0";
 import { z } from "https://esm.sh/zod@3.23.0";
@@ -43,10 +42,9 @@ Rules:
   or socioeconomic status.
 - Respond with valid JSON matching the requested schema exactly.`;
 
-import type { SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2.43.0";
 
 export default {
-  fetch: withSupabase({ auth: ["publishable"] }, async (req: Request, ctx: { supabase: SupabaseClient; supabaseAdmin: SupabaseClient; [key: string]: unknown }) => {
+  fetch: withSupabase({ auth: ["publishable"] }, async (req: Request, ctx: any) => {
     try {
       const { assessmentId } = await req.json();
       if (!assessmentId) throw new Error('Missing assessmentId');
