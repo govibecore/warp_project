@@ -47,11 +47,15 @@ export async function askNemotronSocraticTutor(
     const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://uanqjksfodudwkakyglt.supabase.co';
     const { data: { session } } = await supabase.auth.getSession();
 
+    if (!session?.access_token) {
+      return generateStaticSocraticResponse(scenarioContext, classLevel);
+    }
+
     const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || import.meta.env?.VITE_SUPABASE_ANON_KEY || ''}`,
+        'Authorization': `Bearer ${session.access_token}`,
         'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
       },
       body: JSON.stringify({
@@ -86,11 +90,15 @@ export async function getNemotronSocraticHint(
     const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://uanqjksfodudwkakyglt.supabase.co';
     const { data: { session } } = await supabase.auth.getSession();
 
+    if (!session?.access_token) {
+      return getStaticHint(competency);
+    }
+
     const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token || import.meta.env?.VITE_SUPABASE_ANON_KEY || ''}`,
+        'Authorization': `Bearer ${session.access_token}`,
         'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
       },
       body: JSON.stringify({

@@ -255,7 +255,7 @@ export function Onboarding() {
                 Continue without an account
               </Button>
 
-              <Button variant="ghost" size="sm" onClick={goHome}>
+              <Button variant="ghost" size="sm" onClick={goHome} data-testid="back-to-home-btn">
                 <ArrowLeft className="size-4" />
                 Back to home
               </Button>

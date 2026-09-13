@@ -8,6 +8,7 @@ export const COMPETENCIES = [
   'systemsThinking',
   'locatingInformation',
   'understanding',
+  'synthesis',
   'evaluatingReflecting',
 ] as const;
 

@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { computeInternationalBenchmark, InternationalBenchmarkResult } from './irt/globalBenchmark';
+import { computeInternationalBenchmark, InternationalBenchmarkResult, COMPETENCY_LABELS, CompetencyKey } from './irt/globalBenchmark';
 
 export interface GeneratedReport {
   student_variant: {
@@ -15,6 +15,9 @@ export interface GeneratedReport {
       week3: { title: string; focus: string; mission: string };
       week4: { title: string; focus: string; mission: string };
     };
+    benchmark?: InternationalBenchmarkResult;
+    classLevel?: number;
+    subject?: string;
   };
   parent_variant: {
     overallAssessment: string;
@@ -23,7 +26,7 @@ export interface GeneratedReport {
     gradeInflationWarning?: string;
     keyStrengths: string[];
     growthAreas: string[];
-    actionPlan: Array<{
+    actionPlan?: Array<{
       title: string;
       description: string;
       estimatedDuration: string;
@@ -35,6 +38,9 @@ export interface GeneratedReport {
     }>;
     immediateHomeRoutines?: string[];
     parentGuidance?: string;
+    benchmark?: InternationalBenchmarkResult;
+    classLevel?: number;
+    subject?: string;
   };
   benchmark: InternationalBenchmarkResult;
 }
@@ -54,11 +60,26 @@ export async function createAndSaveReport(
   studentName: string,
   classLevel: number,
   thetaMap: Record<string, number>,
-  _responses: any[]
+  _responses: any[],
+  subject: string = 'STEM'
 ): Promise<GeneratedReport> {
   // Step 1: Client-side psychometric benchmark (always runs — zero latency)
-  const benchmark = computeInternationalBenchmark(thetaMap, classLevel);
-  const deterministicReport = buildDeterministicReport(studentName, classLevel, benchmark);
+  const benchmark = computeInternationalBenchmark(thetaMap, classLevel, subject);
+  const deterministicReport = buildDeterministicReport(studentName, classLevel, benchmark, subject);
+
+  // Embed benchmark and metadata inside parent_variant & student_variant
+  const studentVariantWithMeta = {
+    ...deterministicReport.student_variant,
+    benchmark,
+    classLevel,
+    subject,
+  };
+  const parentVariantWithMeta = {
+    ...deterministicReport.parent_variant,
+    benchmark,
+    classLevel,
+    subject,
+  };
 
   // Step 2: Try the server-side Edge Function (keys stay in Supabase Vault)
   try {
@@ -80,22 +101,27 @@ export async function createAndSaveReport(
       const result = await response.json();
       if (result.success && result.report) {
         const aiReport = result.report;
-        return {
+        const finalReport: GeneratedReport = {
           student_variant: {
-            ...deterministicReport.student_variant,
+            ...studentVariantWithMeta,
             ...(aiReport.student_variant || {}),
-            // Preserve psychometric sprint from deterministic engine
             sprint: deterministicReport.student_variant.sprint,
+            benchmark,
+            classLevel,
+            subject,
           },
           parent_variant: {
-            ...deterministicReport.parent_variant,
+            ...parentVariantWithMeta,
             ...(aiReport.parent_variant || {}),
-            // Preserve psychometric action plan items if AI doesn't provide
             recommendedCurricula: deterministicReport.parent_variant.recommendedCurricula,
             immediateHomeRoutines: deterministicReport.parent_variant.immediateHomeRoutines,
+            benchmark,
+            classLevel,
+            subject,
           },
           benchmark,
         };
+        return finalReport;
       }
     } else {
       console.warn('Edge Function returned non-OK:', response.status);
@@ -109,8 +135,8 @@ export async function createAndSaveReport(
     const { error } = await supabase.from('reports').upsert({
       assessment_id: assessmentId,
       student_id: studentId,
-      student_variant: deterministicReport.student_variant,
-      parent_variant: deterministicReport.parent_variant,
+      student_variant: studentVariantWithMeta as any,
+      parent_variant: parentVariantWithMeta as any,
       ai_provenance: {
         engine: 'psychometric-deterministic-engine',
         generatedAt: new Date().toISOString(),
@@ -124,38 +150,42 @@ export async function createAndSaveReport(
     console.error('Report upsert error:', dbErr);
   }
 
-  return deterministicReport;
+  return {
+    student_variant: studentVariantWithMeta,
+    parent_variant: parentVariantWithMeta,
+    benchmark,
+  };
 }
 
 function buildDeterministicReport(
   studentName: string,
   classLevel: number,
-  benchmark: InternationalBenchmarkResult
+  benchmark: InternationalBenchmarkResult,
+  subject: string = 'STEM'
 ): GeneratedReport {
+  const isEnglish = subject.toLowerCase().includes('english');
   const { realityCheck, cognitiveArchetype, studentChallengeSprint, parentActionBlueprint, competencyBreakdown } = benchmark;
 
-  const topCompetency = Object.entries(competencyBreakdown)
-    .sort((a, b) => b[1].scaledScore - a[1].scaledScore)[0];
-  const lowestCompetency = Object.entries(competencyBreakdown)
-    .sort((a, b) => a[1].scaledScore - b[1].scaledScore)[0];
+  const entries = Object.entries(competencyBreakdown) as [string, { scaledScore: number; globalPercentile?: number }][];
+  const topCompetency = entries.length > 0
+    ? entries.sort((a, b) => b[1].scaledScore - a[1].scaledScore)[0]
+    : [isEnglish ? 'understanding' : 'scientificInquiry', { scaledScore: 500, globalPercentile: 50 }] as const;
+  const lowestCompetency = entries.length > 0
+    ? entries.sort((a, b) => a[1].scaledScore - b[1].scaledScore)[0]
+    : [isEnglish ? 'synthesis' : 'mathematicalReasoning', { scaledScore: 500, globalPercentile: 50 }] as const;
 
-  const studentSummary = `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}". 
-${cognitiveArchetype.description}
+  const topLabel = COMPETENCY_LABELS[topCompetency[0] as CompetencyKey] || topCompetency[0];
+  const lowestLabel = COMPETENCY_LABELS[lowestCompetency[0] as CompetencyKey] || lowestCompetency[0];
+  const topScore = (topCompetency[1] as any)?.scaledScore || 500;
+  const topGlobalPct = (topCompetency[1] as any)?.globalPercentile || 50;
 
-Globally, your analytical performance ranks in the ${benchmark.globalPercentile}th percentile. However, when benchmarked against the Singapore SASMO and Chinese Olympiad standards, your relative percentile is ${benchmark.regionalPercentiles.Singapore}th. Your greatest analytical leverage comes from ${topCompetency[0]}, while your biggest vulnerability to trap options is in ${lowestCompetency[0]}.
+  const studentSummary = isEnglish
+    ? `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nGlobally, your analytical literacy performance ranks in the ${benchmark.globalPercentile}th percentile. When benchmarked against Singapore MOE and Cambridge English standards, your relative standing is ${benchmark.regionalPercentiles.Singapore}th percentile. Your strongest execution is in ${topLabel}, while your biggest growth opportunity is in ${lowestLabel}.\n\nTo excel against top international students in Singapore, the US, and Europe, focus on deep rhetorical evaluation and evidence synthesis rather than passive reading.`
+    : `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nGlobally, your analytical performance ranks in the ${benchmark.globalPercentile}th percentile. However, when benchmarked against the Singapore SASMO and Chinese Olympiad standards, your relative percentile is ${benchmark.regionalPercentiles.Singapore}th. Your greatest analytical leverage comes from ${topLabel}, while your biggest vulnerability to trap options is in ${lowestLabel}.\n\nTo compete with the top STEM minds across Singapore, the US, China, and Europe, you need to transition from "calculating answers" to "modeling first principles."`;
 
-To compete with the top STEM minds across Singapore, the US, China, and Europe, you need to transition from "calculating answers" to "modeling first principles."`;
-
-  const parentAssessment = `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})
-
-${realityCheck.honestSummary}
-
-${realityCheck.internationalGapSummary}
-
-${realityCheck.gradeInflationWarning}
-
-Core Takeaway:
-Your child has demonstrated unmistakable potential, but currently leans on familiar patterns rather than first-principles reasoning. In standard classroom examinations, this approach yields A-grades. In international competitions (such as AMC 8/10, SASMO, or Bebras), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, globally competitive mathematical and scientific reasoning.`;
+  const parentAssessment = isEnglish
+    ? `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway:\nYour child demonstrates strong reading potential, but currently leans on superficial keyword matching on complex multi-text tasks. Standard school English examinations reward rote recall; international benchmarks (such as PISA Reading Literacy or Cambridge O-Levels) test whether a student can synthesize conflicting perspectives and deconstruct authorial bias. Follow the actionable blueprint below to cultivate globally competitive critical literacy.`
+    : `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway:\nYour child has demonstrated unmistakable potential, but currently leans on familiar patterns rather than first-principles reasoning. In standard classroom examinations, this approach yields A-grades. In international competitions (such as AMC 8/10, SASMO, or Bebras), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, globally competitive mathematical and scientific reasoning.`;
 
   return {
     student_variant: {
@@ -164,12 +194,14 @@ Your child has demonstrated unmistakable potential, but currently leans on famil
       summary: studentSummary,
       keyStrengths: [
         cognitiveArchetype.primaryStrength,
-        `Demonstrates consistent execution in ${topCompetency[0]} (Scaled Score: ${topCompetency[1].scaledScore}/800).`,
+        `Demonstrates consistent execution in ${topLabel} (Scaled Score: ${topScore}/800).`,
         `Able to filter baseline distractors and isolate key problem parameters.`,
       ],
       blindspots: [
         cognitiveArchetype.criticalBlindspot,
-        `Vulnerable to counter-intuitive physics and multi-step constraints in ${lowestCompetency[0]}.`,
+        isEnglish
+          ? `Vulnerable to deceptive distractor choices and subtle nuance shifts in ${lowestLabel}.`
+          : `Vulnerable to counter-intuitive physics and multi-step constraints in ${lowestLabel}.`,
       ],
       nextMission: `Your 30-day target: Complete the Week 1 challenge on "${studentChallengeSprint.week1.title}". Focus on: ${studentChallengeSprint.week1.focus}.`,
       sprint: studentChallengeSprint,
@@ -180,34 +212,57 @@ Your child has demonstrated unmistakable potential, but currently leans on famil
       internationalGapSummary: realityCheck.internationalGapSummary,
       gradeInflationWarning: realityCheck.gradeInflationWarning,
       keyStrengths: [
-        `Strong conceptual foundation in ${topCompetency[0]} (${topCompetency[1].globalPercentile}th percentile global).`,
-        `Demonstrates perseverance on non-standard adaptive problem prompts.`,
-        `High growth ceiling with systematic heuristic training.`,
+        `Demonstrated baseline resilience across challenging international problem sets.`,
+        `High growth velocity when provided with structured heuristic frameworks.`,
+        `Strongest comparative standing in ${topLabel} (${topGlobalPct}th percentile globally).`,
       ],
       growthAreas: [
-        `Heuristic gap in ${lowestCompetency[0]}: tendency to jump to calculation before defining system invariants.`,
-        `Vulnerability to distractors engineered around common textbook misconceptions.`,
-        `Underdeveloped visual bar modeling habits compared to Singapore primary/middle school cohorts.`,
+        `Heuristic gap in ${lowestLabel}: tendency to rush to conclusions without rigorous verification.`,
+        `Susceptibility to non-standard distractors engineered around common textbook misconceptions.`,
+        isEnglish
+          ? `Underdeveloped active annotation habits compared to Singapore and UK top-decile cohorts.`
+          : `Underdeveloped visual bar modeling habits compared to Singapore cohorts.`,
       ],
-      actionPlan: [
-        {
-          title: 'Implement Singapore Concrete-Pictorial-Abstract (CPA) Routine',
-          description: 'Require your child to draw the physical situation or diagram before writing algebraic equations.',
-          estimatedDuration: '45 mins / week (Ongoing)',
-        },
-        {
-          title: 'Weekly Error Autopsy (Metacognitive Journal)',
-          description: 'Review wrong answers together. Have the child explain why the wrong option was tempting and which physical law it violated.',
-          estimatedDuration: '30 mins every Sunday',
-        },
-        {
-          title: 'Register for Authentic International Benchmarks',
-          description: 'Enter upcoming competitions (SASMO, AMC 8/10, or Bebras) to build immunity to competition pressure and unfamiliar problem structures.',
-          estimatedDuration: 'Next registration cycle (1-2 months)',
-        },
-      ],
+      actionPlan: isEnglish
+        ? [
+            {
+              title: 'Active Margin Annotation Routine',
+              description: 'Require your child to underline the core premise and mark supporting evidence before answering.',
+              estimatedDuration: '30 mins/day',
+            },
+            {
+              title: 'Weekly Error Autopsy',
+              description: 'Analyze wrong answers together: what made the distractor answer look plausible?',
+              estimatedDuration: '30 mins/Sunday',
+            },
+            {
+              title: 'Long-Form Analytical Reading',
+              description: 'Read 2 editorial essays weekly from authentic publications (e.g. Smithsonian, The Economist).',
+              estimatedDuration: '45 mins/week',
+            },
+          ]
+        : [
+            {
+              title: 'Implement Singapore CPA Routine',
+              description: 'Require your child to draw diagrams and define invariants before writing equations.',
+              estimatedDuration: '45 mins/week',
+            },
+            {
+              title: 'Weekly Error Autopsy',
+              description: 'Review wrong answers together: why was the trap answer tempting? What fundamental rule was broken?',
+              estimatedDuration: '30 mins/Sunday',
+            },
+            {
+              title: 'Register for International Contests',
+              description: 'Enter SASMO, AMC 8/10, or Bebras for authentic international calibration.',
+              estimatedDuration: '1–2 months',
+            },
+          ],
       recommendedCurricula: parentActionBlueprint.recommendedCurricula,
       immediateHomeRoutines: parentActionBlueprint.immediateHomeRoutines,
+      parentGuidance: isEnglish
+        ? 'Enforce active reading habits. Adopt the 2-Minute Explanation Rule: after answering, ask your child to explain why the other three choices are demonstrably false based solely on the text.'
+        : 'Enforce a "No Calculator" rule for non-routine homework. Adopt the 2-Minute Explanation Rule: after correct answers, ask your child to explain why the other choices are impossible.',
     },
     benchmark,
   };

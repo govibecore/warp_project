@@ -178,12 +178,6 @@ function AxiomApplication() {
         if (!userData || !userData.full_name || !userData.current_class || !userData.parent_name || !userData.school_name) {
           setNeedsProfileSetup(true);
         } else {
-          if (userData.consent_status !== 'verified' && user.email_confirmed_at) {
-            await supabase.from('students').update({
-              consent_status: 'verified',
-              consent_verified_at: new Date().toISOString()
-            }).eq('id', user.id);
-          }
           // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
           if (typeof window !== 'undefined' && window.location.search) {
             const p = new URLSearchParams(window.location.search);

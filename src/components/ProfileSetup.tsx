@@ -53,8 +53,6 @@ export function ProfileSetup() {
         school_name: schoolName,
         parent_phone: whatsapp,
         current_class: Number(classLevel),
-        consent_status: 'verified',
-        consent_verified_at: new Date().toISOString()
       }, { onConflict: 'id' })
       .select()
       .single();

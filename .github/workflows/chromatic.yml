@@ -28,7 +28,10 @@ jobs:
       - name: Install Playwright Browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Run Chromatic & Playwright
+      - name: Run Playwright Tests
+        run: pnpm exec playwright test
+
+      - name: Run Chromatic
         run: pnpm exec chromatic --playwright
         env:
           CHROMATIC_PROJECT_TOKEN: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}

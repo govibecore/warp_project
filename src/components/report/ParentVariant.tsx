@@ -22,8 +22,19 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
   const homeRoutines = parentVariant?.immediateHomeRoutines || blueprint.immediateHomeRoutines || [];
   const quarterlyMilestones = blueprint.quarterlyMilestones || [];
 
-  const mathGap = benchmark.competencyBreakdown?.mathematicalReasoning?.singaporeGapSigma ?? -0.6;
-  const compGap = benchmark.competencyBreakdown?.computationalThinking?.singaporeGapSigma ?? -0.4;
+  const isEnglish = (benchmark.subject || parentVariant?.subject || '').toLowerCase().includes('english');
+  const mathGap = isEnglish
+    ? (benchmark.competencyBreakdown?.understanding?.singaporeGapSigma ?? -0.5)
+    : (benchmark.competencyBreakdown?.mathematicalReasoning?.singaporeGapSigma ?? -0.6);
+  const compGap = isEnglish
+    ? (benchmark.competencyBreakdown?.synthesis?.singaporeGapSigma ?? -0.4)
+    : (benchmark.competencyBreakdown?.computationalThinking?.singaporeGapSigma ?? -0.4);
+
+  const gapLabel1 = isEnglish ? 'Reading Comprehension Gap:' : 'Singapore Mathematical Gap:';
+  const gapLabel2 = isEnglish ? 'Synthesis & Integration Gap:' : 'Singapore Computational Gap:';
+  const calibrationSubtitle = isEnglish
+    ? 'Calibrated against PISA Reading Literacy, Cambridge O-Levels, and Singapore MOE Standards'
+    : 'Calibrated against SASMO (Singapore), China Math Olympiad, AMC 8/10 (USA), and Bebras (EU)';
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -60,7 +71,7 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
                 </h3>
               </div>
               <p className="text-[11px] text-foreground-secondary mt-0.5">
-                Calibrated against SASMO (Singapore), China Math Olympiad, AMC 8/10 (USA), and Bebras (EU)
+                {calibrationSubtitle}
               </p>
             </div>
           </div>
@@ -78,13 +89,13 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
 
           <div className="space-y-4 py-4">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-foreground-secondary">Singapore Mathematical Gap:</span>
+              <span className="text-foreground-secondary">{gapLabel1}</span>
               <span className={`font-mono font-bold ${mathGap >= 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
                 {mathGap > 0 ? '+' : ''}{mathGap} σ
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-foreground-secondary">Singapore Computational Gap:</span>
+              <span className="text-foreground-secondary">{gapLabel2}</span>
               <span className={`font-mono font-bold ${compGap >= 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
                 {compGap > 0 ? '+' : ''}{compGap} σ
               </span>

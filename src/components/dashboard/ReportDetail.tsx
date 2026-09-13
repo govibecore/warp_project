@@ -221,9 +221,10 @@ export function ReportDetail() {
   }
 
   // Derive international psychometric benchmark numbers
-  const benchmark = reportData?.benchmark || computeInternationalBenchmark(
+  const benchmark = reportData?.benchmark || reportData?.parent_variant?.benchmark || computeInternationalBenchmark(
     assessmentData.ability_theta || {},
-    assessmentData.class_level || 8
+    assessmentData.class_level || 8,
+    assessmentData.subject || 'STEM'
   );
 
   const snapshot = {

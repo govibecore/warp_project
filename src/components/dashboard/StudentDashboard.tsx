@@ -14,7 +14,7 @@ import { CounterNumber } from '../ui/aliimam/CounterNumber';
 import { BorderGlow } from '../ui/aliimam/BorderGlow';
 import { Gauge } from '../ui/aliimam/Gauge';
 import { OutcomeBadge } from '../ui/OutcomeBadge';
-import { computeInternationalBenchmark, COMPETENCY_LABELS, type CompetencyKey } from '../../lib/irt/globalBenchmark';
+import { computeInternationalBenchmark, COMPETENCY_LABELS, STEM_COMPETENCIES, ENGLISH_COMPETENCIES } from '../../lib/irt/globalBenchmark';
 
 function ordinal(n: number): string {
   const suffixes = ['th', 'st', 'nd', 'rd'];
@@ -35,6 +35,7 @@ interface HistoryRow {
   difficulty: string;
   score: number;
   globalPct: number;
+  subject?: string;
 }
 
 const EMPTY_SUMMARY = {
@@ -45,6 +46,7 @@ const EMPTY_SUMMARY = {
   recentAssessments: [] as HistoryRow[],
   latestAbilityTheta: null as Record<string, number> | null,
   latestClassLevel: 8,
+  latestSubject: 'STEM',
 };
 
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
@@ -112,6 +114,7 @@ export function StudentDashboard() {
             difficulty: a.difficulty,
             score: a.global_score || (a as any).result?.overallScore || 0,
             globalPct: (a.percentiles as any)?.global || (a.percentiles as any)?.Global || (a as any).result?.regionalPercentiles?.['Global'] || 0,
+            subject: (a as any).subject || 'STEM',
           }));
 
           const latestScore = recentAssessments[0].score;
@@ -119,6 +122,7 @@ export function StudentDashboard() {
           const bestGlobalPct = Math.max(...recentAssessments.map(a => a.globalPct));
           const latestAbilityTheta = (assessments[0].ability_theta as Record<string, number> | null) || null;
           const latestClassLevel = assessments[0].class_level || 8;
+          const latestSubject = (assessments[0] as any).subject || 'STEM';
 
           setSummary({
             latestScore,
@@ -128,6 +132,7 @@ export function StudentDashboard() {
             recentAssessments,
             latestAbilityTheta,
             latestClassLevel,
+            latestSubject,
           });
         }
       } catch (err) {
@@ -283,13 +288,21 @@ export function StudentDashboard() {
 
           {/* ── Competency Breakdown ── */}
           {summary.latestAbilityTheta && (() => {
-            const breakdown = computeInternationalBenchmark(summary.latestAbilityTheta, summary.latestClassLevel);
-            const competencyKeys = Object.keys(COMPETENCY_LABELS) as CompetencyKey[];
+            const breakdown = computeInternationalBenchmark(summary.latestAbilityTheta, summary.latestClassLevel, summary.latestSubject);
+            const isEnglish = (summary.latestSubject || '').toLowerCase().includes('english');
+            const competencyKeys = isEnglish ? ENGLISH_COMPETENCIES : STEM_COMPETENCIES;
             return (
               <Card className="p-6">
-                <div className="flex items-center gap-2 border-b border-border pb-4 mb-5">
-                  <Brain className="size-4 text-primary" />
-                  <h3 className="font-display text-base font-bold">Competency Breakdown</h3>
+                <div className="flex items-center justify-between border-b border-border pb-4 mb-5">
+                  <div className="flex items-center gap-2">
+                    <Brain className="size-4 text-primary" />
+                    <h3 className="font-display text-base font-bold">
+                      {isEnglish ? 'English Literacy Competency Breakdown' : 'STEM Competency Breakdown'}
+                    </h3>
+                  </div>
+                  <Badge variant="outline" className="text-xs">
+                    {summary.latestSubject || 'STEM'}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {competencyKeys.map(key => {

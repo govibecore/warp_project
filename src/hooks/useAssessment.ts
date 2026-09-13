@@ -29,6 +29,7 @@ interface AssessmentState {
   loading: boolean;
   errorMessage: string | null;
   startTime: number | null;
+  subject: string | null;
   startAssessment: (studentId: string, classLevel: number, difficulty: string, subject: string) => Promise<void>;
   submitResponse: (correct: boolean, optionSelected: any) => Promise<void>;
   finishAssessment: () => Promise<void>;
@@ -48,6 +49,7 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
   loading: false,
   errorMessage: null,
   startTime: null,
+  subject: null,
 
   resetAssessment: () => set({
     assessmentId: null,
@@ -60,17 +62,17 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
     status: 'idle',
     loading: false,
     errorMessage: null,
+    subject: null,
   }),
 
   startAssessment: async (studentId, classLevel, difficulty, subject) => {
     const now = Date.now();
-    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now });
+    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now, subject });
     try {
       const { data: assessment, error } = await supabase.from('assessments').insert({
         student_id: studentId,
         class_level: classLevel,
         difficulty,
-        // @ts-ignore - subject added in recent migration
         subject,
         status: 'in_progress'
       } as any).select().single();
@@ -87,7 +89,7 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
 
   fetchNextScenario: async () => {
     set({ loading: true, errorMessage: null });
-    const { assessmentId } = get();
+    const { assessmentId, seenScenarios, subject } = get();
     try {
       // Server-authoritative: RPC derives theta & seen items from the assessment record
       const { data, error } = await supabase.rpc('next_scenario', {
@@ -97,7 +99,15 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        // No more scenarios, auto-finish
+        if (seenScenarios.length < 5) {
+          set({
+            status: 'error',
+            loading: false,
+            errorMessage: `Insufficient scenarios available in the question pool for ${subject || 'this track'}. Please select another track or try again later.`
+          });
+          return;
+        }
+        // Pool completed, finish assessment
         await get().finishAssessment();
         return;
       }
@@ -173,7 +183,7 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
 
   finishAssessment: async () => {
     set({ loading: true });
-    const { assessmentId, studentId, theta, responses, startTime } = get();
+    const { assessmentId, studentId, theta, responses, startTime, subject } = get();
     if (!assessmentId) return;
 
     try {
@@ -219,7 +229,8 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
             stu?.full_name || 'Candidate',
             stu?.current_class || 8,
             theta,
-            responses
+            responses,
+            subject || 'STEM'
           ).catch(err => console.error('Auto report generation error:', err));
         });
       }

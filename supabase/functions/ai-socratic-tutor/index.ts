@@ -2,6 +2,7 @@
 // Server-side Socratic hint/tutor — NVIDIA keys in Supabase Vault only.
 
 import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,44 @@ serve(async (req: Request) => {
   }
 
   try {
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+
+    // Enforce authentication — public/anonymous callers cannot consume AI quota
+    const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const token = authHeader.replace(/^[Bb]earer\s+/, '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Authentication required to use Socratic AI' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      });
+    }
+
     const { scenarioContext, studentQuestion, classLevel, mode } = await req.json();
+
+    // Payload constraints to avoid prompt injection or excessive token usage
+    if (studentQuestion && typeof studentQuestion === 'string' && studentQuestion.length > 500) {
+      return new Response(JSON.stringify({ error: 'Question exceeds maximum length of 500 characters' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
+
+    if (scenarioContext?.prompt && typeof scenarioContext.prompt === 'string' && scenarioContext.prompt.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Prompt exceeds maximum length of 2000 characters' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     const isHint = mode === 'hint';
     const systemPrompt = isHint

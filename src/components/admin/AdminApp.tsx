@@ -16,7 +16,14 @@ export function AdminApp() {
   useEffect(() => {
     if (isSignedIn && user?.id) {
       const email = user.email?.toLowerCase() || '';
-      const isAdminUser = user.user_metadata?.role === 'admin' || email.startsWith('admin@') || email.includes('+admin@');
+      const configuredAdmins = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_ADMIN_EMAILS)
+        ? (import.meta.env.VITE_ADMIN_EMAILS as string).split(',').map((e: string) => e.trim().toLowerCase())
+        : [];
+      const isAdminUser = Boolean(
+        user.app_metadata?.role === 'admin' ||
+        user.app_metadata?.claims_admin === true ||
+        (email && configuredAdmins.includes(email))
+      );
       setMe(isAdminUser ? { role: 'admin' } : null);
     } else if (isLoaded) {
       setMe(null);
