@@ -1,5 +1,12 @@
-import { getCalibrationItems, getDevelopmentalBand, getMissionItems, MISSION_IDS } from '../data/scenarios';
-import { getEnglishCalibrationItems, getEnglishMissionItems, ENGLISH_MISSION_IDS } from '../data/englishScenarios';
+import { 
+  getCalibrationItems, 
+  getDevelopmentalBand, 
+  getMissionItems, 
+  MISSION_IDS,
+  getEnglishCalibrationItems,
+  getEnglishMissionItems,
+  ENGLISH_MISSION_IDS 
+} from '../data/scenarios';
 import type { AssessmentItem, AssessmentPlan, Difficulty, Subject } from './types';
 
 export function normalizeDifficulty(diff?: string | null): Difficulty {
