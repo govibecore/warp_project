@@ -54,7 +54,7 @@ export function Badge({
     >
       {dot && (
         <span
-          className="size-1.5 rounded-full bg-current opacity-80"
+          className="size-1.5 rounded-none bg-current opacity-80"
           aria-hidden="true"
         />
       )}

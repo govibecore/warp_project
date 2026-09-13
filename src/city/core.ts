@@ -162,7 +162,7 @@ export const DISTRICTS: readonly RegionSpec[] = [
     z: -38,
     r: 21,
     ops: ['terrace'],
-    color: '#38bdf8',
+    color: '#5ba6d6', // Fjord
     landmark: 'observatory',
   },
   {
@@ -176,7 +176,7 @@ export const DISTRICTS: readonly RegionSpec[] = [
     z: -12,
     r: 20,
     ops: ['plateau'],
-    color: '#4ade80',
+    color: '#4ea658', // Moss
     landmark: 'server',
   },
   {
@@ -190,7 +190,7 @@ export const DISTRICTS: readonly RegionSpec[] = [
     z: 31,
     r: 21,
     ops: ['ridge', 'terrace'],
-    color: '#fbbf24',
+    color: '#d9a043', // Amber/Gold
     landmark: 'windmill',
   },
   {
@@ -204,7 +204,7 @@ export const DISTRICTS: readonly RegionSpec[] = [
     z: 31,
     r: 20,
     ops: ['peak'],
-    color: '#fb923c',
+    color: '#b35836', // Terracotta
     landmark: 'clocktower',
   },
   {
@@ -218,7 +218,7 @@ export const DISTRICTS: readonly RegionSpec[] = [
     z: -12,
     r: 21,
     ops: ['dune'],
-    color: '#a78bfa',
+    color: '#9657b8', // Purple
     landmark: 'lighthouse',
   },
 ] as const;
@@ -300,10 +300,10 @@ export const REGIONS: readonly RegionSpec[] = [...DISTRICTS, ...SUPPORT];
 
 /** Semantic colours shared by the 3D scene and the HTML overlay. */
 export const CITY_COLORS = {
-  ahead: '#4ade80',
-  behind: '#fbbf24',
-  cohort: '#e2e8f0',
-  water: '#2b7fb8',
+  ahead: '#4ea658',
+  behind: '#b35836',
+  cohort: '#d0dfe8',
+  water: '#1a3a5a',
 } as const;
 
 /**

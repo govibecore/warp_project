@@ -47,7 +47,7 @@ export function Accordion({
 
   return (
     <AccordionContext.Provider value={{ openItems, toggleItem }}>
-      <div className={cn('divide-y divide-border border-y border-border', className)} {...props}>
+      <div className={cn('space-y-3', className)} {...props}>
         {children}
       </div>
     </AccordionContext.Provider>
@@ -67,7 +67,7 @@ export function AccordionItem({ value, children, className, ...props }: Accordio
 
   return (
     <AccordionItemContext.Provider value={{ id: value, isOpen }}>
-      <div className={cn('group border-border py-2', className)} {...props}>
+      <div className={cn('group border border-border bg-background px-5 py-2 corner-marks transition-colors hover:border-primary/40', className)} {...props}>
         {children}
       </div>
     </AccordionItemContext.Provider>

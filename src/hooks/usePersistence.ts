@@ -6,15 +6,14 @@ export function usePersistence(storage: StorageLike) {
   const [persistenceStatus, setPersistenceStatus] = useState<PersistenceStatus>({ state: 'saved' });
 
   const persist = useCallback(async (session: AxiomSession) => {
-    setPersistenceStatus({ state: 'saving' });
     const status = await saveSession(session, storage);
-    setPersistenceStatus(status);
+    setPersistenceStatus((prev) => (prev.state === status.state ? prev : status));
     return status;
   }, [storage]);
 
   const erase = useCallback(() => {
     resetSession(storage);
-    setPersistenceStatus({ state: 'saved' });
+    setPersistenceStatus((prev) => (prev.state === 'saved' ? prev : { state: 'saved' }));
   }, [storage]);
 
   return { persistenceStatus, persist, erase };

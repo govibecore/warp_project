@@ -9,6 +9,7 @@ import { spaceBlueprints } from './space';
 import type { ItemBlueprint } from './builder';
 
 export { getDevelopmentalBand } from './builder';
+export * from './english';
 
 export const MISSION_IDS = ['stem-energy', 'stem-ecology', 'stem-space', 'stem-data', 'stem-infra'] as const;
 export type MissionId = (typeof MISSION_IDS)[number];

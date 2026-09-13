@@ -7,7 +7,7 @@ import { cn } from '../../lib/utils';
  */
 
 const FIELD =
-  'w-full rounded-[var(--radius-control)] bg-background text-foreground ' +
+  'w-full rounded-none bg-background text-foreground ' +
   'border border-border placeholder:text-foreground-muted ' +
   'transition-colors duration-150 ' +
   'focus:outline-none focus:border-primary ' +
@@ -71,7 +71,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       ref={ref}
       className={cn(
         FIELD,
-        'cursor-pointer appearance-none bg-[length:1rem] bg-[right_0.6rem_center] bg-no-repeat pr-9',
+        'cursor-pointer appearance-none bg-size-[1rem] bg-position-[right_0.6rem_center] bg-no-repeat pr-9',
         compact ? 'h-8 pl-3 text-sm' : 'h-10 pl-3.5 text-sm',
         className,
       )}

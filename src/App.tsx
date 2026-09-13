@@ -1,30 +1,74 @@
 import { AxiomSessionProvider, useAxiomSession } from './context/AxiomSessionContext';
 import { AppShell } from './components/AppShell';
 import { Assessment } from './components/Assessment';
+import { AssessmentHub } from './components/AssessmentHub';
 import { Landing } from './components/Landing';
 import { Onboarding } from './components/Onboarding';
 import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { ReportDetail } from './components/dashboard/ReportDetail';
+import { ProfileSetup } from './components/ProfileSetup';
 import { AdminApp } from './components/admin/AdminApp';
+import { SharedReport } from './components/SharedReport';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuthStore } from './stores/authStore';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
 
 import { useSupabaseAuth } from './context/SupabaseAuthContext';
 import { supabase } from './lib/supabase';
+import { normalizeDifficulty } from './domain/assessment';
 
 // ── Admin portal: served at /admin or /admin/* ───────────────────────
 const isAdminRoute = window.location.pathname.startsWith('/admin');
 
 function AxiomApplication() {
-  const { session, enterApp } = useAxiomSession();
+  const { session, enterApp, setProfile, selectSubject, goHome } = useAxiomSession();
   const { isGuest } = useAuthStore();
   const { isLoaded, isSignedIn, user } = useSupabaseAuth();
+  const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   // URL routing for dashboard/reports
   const params = new URLSearchParams(window.location.search);
   const isDashboard = params.has('dashboard');
-  const hasAssessmentId = params.has('assessment');
+  const assessmentParam = params.get('assessment');
+  const isNewAssessment = assessmentParam === 'new';
+  const shareParam = params.get('share');
+  const isSharedReport = Boolean(shareParam && shareParam.length > 3);
+  const hasAssessmentId = Boolean(
+    assessmentParam &&
+    assessmentParam !== 'new' &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(assessmentParam)
+  );
+
+  // If user arrives with ?assessment=new, cleanly replace history to root
+  useEffect(() => {
+    if (isNewAssessment) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [isNewAssessment]);
+
+  // Support direct deep links to onboarding/auth (?choose, ?login, ?register, ?guest)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register') || searchParams.has('guest')) {
+      if (session.phase !== 'onboarding') {
+        enterApp();
+      }
+    }
+  }, [session.phase, enterApp]);
+
+  // Support browser Back/Forward popstate navigation
+  useEffect(() => {
+    const handlePopState = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register') || searchParams.has('guest')) {
+        enterApp();
+      } else if (!searchParams.has('dashboard') && !searchParams.has('assessment') && !searchParams.has('share')) {
+        goHome();
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [enterApp, goHome]);
 
   // Synchronize user to Supabase public.users and AxiomSession
   useEffect(() => {
@@ -33,49 +77,137 @@ function AxiomApplication() {
         useAuthStore.setState({ isGuest: false });
       }
 
-      // Store user in Supabase database
+      // Store user in Supabase database without overwriting existing current_class
       const syncUser = async () => {
         if (!user.email) return;
-        const { error } = await supabase.from('users').upsert({
-          auth_id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-        }, { onConflict: 'email' });
-        if (error) console.error('Failed to store user in Supabase:', error);
+        const { data: existing } = await supabase
+          .from('students')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          const { error } = await supabase.from('students').insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+            current_class: 8,
+          });
+          if (error) console.error('Failed to insert user in Supabase:', error);
+        } else if (user.user_metadata?.full_name) {
+          await supabase.from('students').update({
+            full_name: user.user_metadata.full_name,
+          }).eq('id', user.id);
+        }
       };
       syncUser();
     }
   }, [isLoaded, isSignedIn, user, isGuest]);
+
+  // Save assessment to Supabase when completed
+  useEffect(() => {
+    if (session.phase === 'results' && session.result && !hasAssessmentId && !isGuest && user) {
+      const saveAssessment = async () => {
+        const { data: assessment, error } = await supabase.from('assessments').insert({
+          student_id: user.id,
+          class_level: session.profile?.classLevel || 8,
+          difficulty: session.profile?.difficulty?.toLowerCase() || 'standard',
+          status: 'completed',
+          responses: (session.responses ? Object.values(session.responses) : []) as any,
+          started_at: session.assessmentStartedAt || new Date().toISOString(),
+          completed_at: session.result?.completedAt || new Date().toISOString()
+        }).select().single();
+
+        if (assessment && !error) {
+          window.location.search = `?assessment=${assessment.id}`;
+        }
+      };
+      saveAssessment();
+    }
+  }, [session.phase, session.result, hasAssessmentId, isGuest, user, session]);
 
   // Determine what body to render
   let body;
 
   if (isDashboard) {
     body = <StudentDashboard key="dashboard" />;
+  } else if (isSharedReport && shareParam) {
+    body = <SharedReport key="shared" token={shareParam} />;
   } else if (hasAssessmentId) {
     body = <ReportDetail key="report" />;
   } else if (session.phase === 'landing') {
     body = <Landing key="landing" onEnter={enterApp} />;
   } else if (session.phase === 'onboarding') {
-    body = <Onboarding key="onboarding" />;
+    if (needsProfileSetup) {
+      body = <ProfileSetup key="profileSetup" />;
+    } else {
+      body = <Onboarding key="onboarding" />;
+    }
+  } else if (session.phase === 'hub') {
+    body = <AssessmentHub key="hub" onSelectSubject={selectSubject} />;
   } else if (session.phase === 'results' && session.result) {
     body = <ReportDetail key="results" />;
   } else {
     body = <Assessment key="assessment" />;
   }
 
-  // Auto-redirect if auth completes while in onboarding
+  const lastCheckedUserId = useRef<string | null>(null);
+
+  // Auto-redirect or auto-start assessment if auth completes while in onboarding
   useEffect(() => {
-    if (session.phase === 'onboarding' && (isSignedIn || isGuest)) {
-      window.location.search = '?dashboard';
+    if (!isSignedIn) {
+      lastCheckedUserId.current = null;
+      return;
     }
-  }, [session.phase, isSignedIn, isGuest]);
+
+    // Do not auto-start assessment if the candidate is actively on the registration or choose views
+    if (typeof window !== 'undefined' && window.location.search) {
+      const p = new URLSearchParams(window.location.search);
+      if (p.has('register') || p.has('choose')) {
+        return;
+      }
+    }
+
+    if (session.phase === 'onboarding' && isLoaded && isSignedIn && user && user.email) {
+      if (lastCheckedUserId.current === user.id && session.profile?.name) {
+        return;
+      }
+      lastCheckedUserId.current = user.id;
+
+      // Automatically start the assessment with their saved profile
+      supabase.from('students').select('*').eq('id', user.id).maybeSingle().then(async ({ data: userData }) => {
+        if (!userData || !userData.full_name || !userData.current_class || !userData.parent_name || !userData.school_name) {
+          setNeedsProfileSetup(true);
+        } else {
+          // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
+          if (typeof window !== 'undefined' && window.location.search) {
+            const p = new URLSearchParams(window.location.search);
+            if (p.has('login') || p.has('register') || p.has('choose') || p.has('guest')) {
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          }
+          setProfile({
+            name: userData.full_name || 'Learner',
+            classLevel: userData.current_class || 8,
+            difficulty: normalizeDifficulty(userData.difficulty_pref),
+            schoolName: userData.school_name ?? undefined
+          });
+        }
+      });
+    }
+  }, [session.phase, isLoaded, isSignedIn, user, session.profile, setProfile]);
+
+  // If a logged-out user returns, they shouldn't hit the "Sign In Required" wall on the assessment phase
+  useEffect(() => {
+    if (isLoaded && !isSignedIn && !isGuest && (session.phase === 'assessment' || session.phase === 'results')) {
+      goHome();
+    }
+  }, [isLoaded, isSignedIn, isGuest, session.phase, goHome]);
 
   return (
-    <AppShell scrollable={session.phase === 'landing'} hideHeader={session.phase === 'landing'}>
+    <AppShell scrollable={session.phase === 'landing' || session.phase === 'onboarding' || session.phase === 'hub'} hideHeader={session.phase === 'landing'}>
       <AnimatePresence mode="wait">
         <motion.div
-          key={isDashboard ? 'dash' : hasAssessmentId ? 'rep' : session.phase}
+          key={isDashboard ? 'dash' : (hasAssessmentId || isSharedReport) ? 'rep' : session.phase}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}

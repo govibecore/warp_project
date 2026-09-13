@@ -160,7 +160,7 @@ export default function GladeCanvas({ className = '' }: { className?: string }) 
 
       {panelOpen && (
         <div
-          className="pointer-events-auto absolute top-4 right-4 z-20 w-64 rounded-[var(--radius-card)] border border-border bg-background/90 p-4 shadow-lg backdrop-blur"
+          className="pointer-events-auto absolute top-4 right-4 z-20 w-64 rounded-none border border-border bg-background/90 p-4 shadow-lg backdrop-blur"
           data-testid="glade-tuning-panel"
         >
           <div className="mb-3 flex items-center justify-between">
@@ -193,7 +193,7 @@ export default function GladeCanvas({ className = '' }: { className?: string }) 
                   step={s.step}
                   value={values[s.key]}
                   onChange={(e) => setSlider(s, Number(e.target.value))}
-                  className="w-full accent-[var(--color-primary)]"
+                  className="w-full accent-(--color-primary)"
                 />
               </label>
             ))}

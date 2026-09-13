@@ -9,3 +9,21 @@ entrypoint = "./functions/generate-report/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/generate-report/*.html" ]
+
+[functions.ai-report-generate]
+enabled = true
+verify_jwt = true
+import_map = "./functions/ai-report-generate/deno.json"
+entrypoint = "./functions/ai-report-generate/index.ts"
+
+[functions.ai-socratic-tutor]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/ai-socratic-tutor/index.ts"
+
+[functions.consent-webhook]
+enabled = true
+verify_jwt = false
+import_map = "./functions/consent-webhook/deno.json"
+entrypoint = "./functions/consent-webhook/index.ts"
+

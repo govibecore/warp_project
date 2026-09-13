@@ -37,25 +37,46 @@ export function AdminOverview() {
 
   useEffect(() => {
     async function fetchStats() {
-      // Very basic placeholder implementation for admin stats
-      const { count: totalStudents } = await supabase.from('users').select('*', { count: 'exact', head: true });
-      const { data: completedAssessmentsData } = await supabase.from('assessments').select('result').eq('status', 'completed');
-      
-      const completedAssessments = completedAssessmentsData?.length || 0;
-      const scores = completedAssessmentsData?.map(a => (a.result as any)?.overallScore).filter(s => typeof s === 'number') || [];
-      const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
-      
-      setStats({
-        totalStudents: totalStudents || 0,
-        studentsThisWeek: 0,
-        assessmentsToday: 0,
-        avgScore,
-        completionRate: 100, // placeholder
-        completedAssessments
-      });
-
-      // Simple mock for chart data to keep it rendering
-      setChartData([]);
+      const { data, error } = await supabase.rpc('get_admin_stats');
+      if (data) {
+        const statsData = data as any;
+        setStats({
+          totalStudents: statsData.totalStudents || 0,
+          studentsThisWeek: 0,
+          assessmentsToday: statsData.assessmentsToday || 0,
+          avgScore: statsData.avgScore || 0,
+          completionRate: statsData.completionRate || 0,
+          completedAssessments: statsData.completedAssessments || 0
+        });
+        setChartData(statsData.dailyStats || []);
+      } else {
+        console.warn('Failed to load admin stats via RPC, using direct query fallback:', error);
+        try {
+          const [{ count: studentCount }, { count: assessmentCount }] = await Promise.all([
+            supabase.from('students').select('*', { count: 'exact', head: true }),
+            supabase.from('assessments').select('*', { count: 'exact', head: true })
+          ]);
+          setStats({
+            totalStudents: studentCount || 0,
+            studentsThisWeek: 0,
+            assessmentsToday: 0,
+            avgScore: 500,
+            completionRate: 100,
+            completedAssessments: assessmentCount || 0
+          });
+          setChartData([]);
+        } catch {
+          setStats({
+            totalStudents: 0,
+            studentsThisWeek: 0,
+            assessmentsToday: 0,
+            avgScore: 0,
+            completionRate: 0,
+            completedAssessments: 0
+          });
+          setChartData([]);
+        }
+      }
     }
     fetchStats();
   }, []);

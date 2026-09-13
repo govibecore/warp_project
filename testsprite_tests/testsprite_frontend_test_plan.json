@@ -1,0 +1,485 @@
+[
+  {
+    "id": "TC001",
+    "title": "Answer assessment items one at a time until completion",
+    "description": "A student can read each item, select one answer, submit it, advance through the adaptive assessment, and complete it.",
+    "category": "Assessment Execution",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the class field with a valid class"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a valid student name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the school field with a valid school name"
+      },
+      {
+        "type": "action",
+        "description": "Select STEM Benchmark"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to assessment"
+      },
+      {
+        "type": "action",
+        "description": "Select one answer option"
+      },
+      {
+        "type": "action",
+        "description": "Submit the answer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the next assessment item is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify assessment completion is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC002",
+    "title": "Complete onboarding and start a STEM assessment",
+    "description": "A new student can enter the app, set up their profile, choose STEM Benchmark, and reach the assessment flow.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the class field with a valid class"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a valid student name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the school field with a valid school name"
+      },
+      {
+        "type": "action",
+        "description": "Select STEM Benchmark"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to assessment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment flow is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a multiple-choice item is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC003",
+    "title": "Complete onboarding and start an English assessment",
+    "description": "A new student can enter the app, set up their profile, choose English Literacy, and reach the assessment flow.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the class field with a valid class"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a valid student name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the school field with a valid school name"
+      },
+      {
+        "type": "action",
+        "description": "Select English Literacy"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to assessment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment flow is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a multiple-choice item is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC004",
+    "title": "Continue assessment after multiple submissions",
+    "description": "A student can keep answering adaptive questions in sequence and the assessment advances only after each submitted answer.",
+    "category": "Assessment Execution",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the class field with a valid class"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with a valid student name"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the school field with a valid school name"
+      },
+      {
+        "type": "action",
+        "description": "Select English Literacy"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to assessment"
+      },
+      {
+        "type": "action",
+        "description": "Select one answer option"
+      },
+      {
+        "type": "action",
+        "description": "Submit the answer"
+      },
+      {
+        "type": "action",
+        "description": "Select one answer option"
+      },
+      {
+        "type": "action",
+        "description": "Submit the answer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment advances to the next item after each submission"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment can be completed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC005",
+    "title": "Review the latest dashboard report and past history",
+    "description": "An authenticated student can open the dashboard, inspect the latest competency breakdown, and browse prior assessment history.",
+    "category": "Results Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with wisesota61@gmail.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with Test@2026"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /?dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the latest competency breakdown is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify past assessment history is displayed"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC006",
+    "title": "Restore the correct student state after entering from the landing page",
+    "description": "A returning student can open the app from the landing page and resume the appropriate setup or assessment state instead of starting over.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Select Sign in"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the email field with wisesota61@gmail.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with Test@2026"
+      },
+      {
+        "type": "action",
+        "description": "Submit the sign in form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the app resumes the appropriate student state"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment or hub state is displayed without restarting onboarding"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC007",
+    "title": "Return from an older dashboard report to the current report",
+    "description": "An authenticated student can open a past assessment report from the dashboard and return to the most recent report view.",
+    "category": "Results Dashboard",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with wisesota61@gmail.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with Test@2026"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /?dashboard"
+      },
+      {
+        "type": "action",
+        "description": "Open a past assessment report"
+      },
+      {
+        "type": "action",
+        "description": "Return to the latest report view"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the latest report view is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify past report history remains accessible"
+      }
+    ],
+    "priority": "High"
+  },
+  {
+    "id": "TC008",
+    "title": "Prevent starting onboarding with missing profile details",
+    "description": "A student cannot proceed from profile setup until the required class, name, and school information is provided.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Leave the required profile fields empty"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to continue from profile setup"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors are displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment flow is not displayed"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC009",
+    "title": "Switch tracks before starting an assessment",
+    "description": "A student can change the selected track in the hub before launching assessment and the chosen track is reflected in the next step.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Click Continue without an account"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the name field with Test Student"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the school field with Demo School"
+      },
+      {
+        "type": "action",
+        "description": "Submit onboarding details to open the track selection hub"
+      },
+      {
+        "type": "action",
+        "description": "Select STEM Benchmark"
+      },
+      {
+        "type": "action",
+        "description": "Click Switch Track to return to track selection"
+      },
+      {
+        "type": "action",
+        "description": "Select English Literacy"
+      },
+      {
+        "type": "action",
+        "description": "Proceed to assessment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the assessment flow is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the English Literacy track is active"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC010",
+    "title": "Show validation feedback before profile submission",
+    "description": "A student sees validation feedback when attempting profile setup without the required information and can correct it before continuing.",
+    "category": "Student Onboarding Flow",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start onboarding"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to continue with incomplete profile information"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation feedback is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user remains in the onboarding flow"
+      }
+    ],
+    "priority": "Medium"
+  },
+  {
+    "id": "TC011",
+    "title": "Open the admin portal and view overall student metrics",
+    "description": "An authenticated user can access the admin area and see the portal with overall student metrics.",
+    "category": "Admin Portal",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the username field with admin@wisesota.com"
+      },
+      {
+        "type": "action",
+        "description": "Fill in the password field with Test@2026"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /admin"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the admin portal is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify overall student metrics are displayed"
+      }
+    ],
+    "priority": "Medium"
+  }
+]

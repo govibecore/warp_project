@@ -1,9 +1,15 @@
+export type Subject = 'STEM' | 'English';
+
 export const COMPETENCIES = [
   'scientificInquiry',
   'computationalThinking',
   'engineeringDesign',
   'mathematicalReasoning',
   'systemsThinking',
+  'locatingInformation',
+  'understanding',
+  'synthesis',
+  'evaluatingReflecting',
 ] as const;
 
 export type Competency = (typeof COMPETENCIES)[number];
@@ -100,6 +106,7 @@ export interface CalibrationAnswer {
 }
 
 export interface AssessmentPlan {
+  subject: Subject;
   classLevel: number;
   developmentalBand: DevelopmentalBand;
   calibrationItems: readonly AssessmentItem[];
@@ -113,12 +120,13 @@ export interface LearnerProfile {
   name: string;
   classLevel: number;
   difficulty: Difficulty;
+  schoolName?: string;
 }
 
 export interface AxiomSession {
   _id?: string;
   version: 1;
-  phase: 'landing' | 'onboarding' | 'assessment' | 'results';
+  phase: 'landing' | 'onboarding' | 'hub' | 'assessment' | 'results';
   profile?: LearnerProfile;
   plan?: AssessmentPlan;
   responses: Readonly<Record<string, ItemResponse>>;

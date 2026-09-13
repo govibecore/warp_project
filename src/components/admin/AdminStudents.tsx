@@ -38,16 +38,11 @@ export function AdminStudents() {
         setStatus('LoadingFirstPage');
       }
 
-      let query = supabase.from('users').select('*').order('created_at', { ascending: false });
-      
-      if (term) {
-        query = query.or(`full_name.ilike.%${term}%,email.ilike.%${term}%`);
-      }
-
-      const { data, error } = await query.range(
-        isInitial ? 0 : page * PAGE_SIZE,
-        isInitial ? PAGE_SIZE - 1 : (page + 1) * PAGE_SIZE - 1
-      );
+      const { data, error } = await supabase.rpc('get_admin_students', {
+        search_term: term || '',
+        page_num: page,
+        page_size: PAGE_SIZE
+      });
 
       if (error || !data) {
         console.error('Failed to load students', error);
@@ -56,19 +51,10 @@ export function AdminStudents() {
         return;
       }
 
-      // Normally we'd join with assessments, but doing this naively for mock
-      const mapped: StudentRow[] = data.map(u => ({
-        id: u.id,
-        fullName: u.full_name || 'Learner',
-        email: u.email,
-        currentClass: null,
-        assessmentsCount: 0,
-        lastScore: null,
-        joinedAt: u.created_at,
-      }));
+      const mapped: StudentRow[] = (data as any) || [];
 
       setResults(prev => isInitial ? mapped : [...prev, ...mapped]);
-      setStatus(data.length === PAGE_SIZE ? 'CanLoadMore' : 'Exhausted');
+      setStatus(mapped.length === PAGE_SIZE ? 'CanLoadMore' : 'Exhausted');
     }
 
     fetchStudents(page === 0);

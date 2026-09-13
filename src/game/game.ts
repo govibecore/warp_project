@@ -48,8 +48,8 @@ import { clamp, damp, mulberry32 } from './utils';
 
 // ── Constants ───────────────────────────────────────────────────────────
 
-/** Soft sky blue — also the fog colour, so far terrain dissolves into it. */
-export const SKY = '#cfe0ec';
+/** Nordic twilight — also the fog colour, so far terrain dissolves into it. */
+export const SKY = '#1a2a3a';
 
 const FIXED_DT = 1 / 60;
 const MAX_SUBSTEPS = 5;
@@ -58,10 +58,10 @@ const MAX_GEMS = 160;
 const WORLD_BOUNDS = 52;
 const BOSS_EVERY = 120; // seconds
 const ENEMY_PALETTE: Record<EnemyKind, string> = {
-  slime: '#9bd35e',
-  flier: '#7fb6d9',
-  brute: '#c96f4a',
-  boss: '#8a5fa8',
+  slime: '#6ab0c8',
+  flier: '#8ac0d8',
+  brute: '#a07898',
+  boss: '#6a5fa8',
 };
 
 // ── Tuning (live, driven by the panel) ──────────────────────────────────

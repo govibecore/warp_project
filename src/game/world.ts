@@ -16,17 +16,17 @@ const WORLD_SIZE = 220;
 const HALF = WORLD_SIZE / 2;
 const SPAWN_CLEAR = 14;
 
-const GRASS_A = '#7fb069';
-const GRASS_B = '#8fbf6f';
-const GRASS_C = '#74a65e';
-const DIRT = '#c9a06c';
-const SAND = '#e0c48f';
-const TRUNK = '#a08060';
-const ROCK_A = '#b7b3a8';
-const ROCK_B = '#a8a498';
-const POND = '#8ecfc0';
-const FOLIAGE = ['#6aa84f', '#7fbb5e', '#5c9946'];
-const FLOWERS = ['#f2e3c6', '#f2c14e', '#d9825f', '#f6f1e4'];
+const GRASS_A = '#5a8fa0';
+const GRASS_B = '#6a9caa';
+const GRASS_C = '#4d8090';
+const DIRT = '#8a9aa8';
+const SAND = '#b0c0cc';
+const TRUNK = '#6a7a88';
+const ROCK_A = '#8090a0';
+const ROCK_B = '#708090';
+const POND = '#7abcc8';
+const FOLIAGE = ['#4a8a9a', '#5c9caa', '#3d7888'];
+const FLOWERS = ['#d0dfe8', '#a0c4d8', '#7ab0c8', '#e0eaf0'];
 
 /** Ground height — pure function so entities can walk the same field. */
 export function heightAt(x: number, z: number): number {
@@ -238,9 +238,9 @@ export function buildWorld(seed: number): World {
 
   // ── Clouds: squashed-sphere puffs drifting overhead ──────────────────
   const cloudMat = makeToonMaterial({
-    base: '#ffffff',
-    shadow: [0.82, 0.84, 0.82],
-    opacity: 0.85,
+    base: '#4a8aaa',
+    shadow: [0.22, 0.34, 0.42],
+    opacity: 0.35,
     transparent: true,
   });
   for (let i = 0; i < 6; i++) {

@@ -29,17 +29,18 @@ export function Leaderboard() {
           id,
           class_level,
           difficulty,
-          result,
-          users!inner (
+          global_score,
+          students!inner (
             id,
-            auth_id,
             full_name
           )
         `)
-        .eq('status', 'completed');
+        .eq('status', 'completed')
+        .order('global_score', { ascending: false })
+        .limit(50);
       
       if (difficulty) {
-        query = query.eq('difficulty', difficulty);
+        query = query.ilike('difficulty', difficulty);
       }
 
       const { data, error } = await query;
@@ -50,25 +51,23 @@ export function Leaderboard() {
         return;
       }
 
-      // Sort by score locally since result is JSONB
       const mapped = data
-        .filter(a => a.result && typeof (a.result as any).overallScore === 'number')
+        .filter(a => typeof a.global_score === 'number' && a.global_score > 0)
         .map(a => {
-          const u = Array.isArray(a.users) ? a.users[0] : a.users;
-          const parts = u?.full_name?.split(' ') || ['Learner'];
+          const s = Array.isArray(a.students) ? a.students[0] : a.students;
+          const parts = s?.full_name?.split(' ') || ['Learner'];
           const studentName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
           return {
             id: a.id,
             studentName,
             classLevel: a.class_level,
             difficulty: a.difficulty,
-            overallScore: (a.result as any).overallScore,
-            isCurrentUser: u?.auth_id === user?.id,
+            overallScore: a.global_score ?? 0,
+            isCurrentUser: s?.id === user?.id,
           };
         });
 
-      mapped.sort((a, b) => b.overallScore - a.overallScore);
-      setRows(mapped.slice(0, 50));
+      setRows(mapped);
     }
     
     fetchLeaderboard();
