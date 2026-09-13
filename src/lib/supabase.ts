@@ -1,17 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
+import type { Database } from './database.types';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co';
-const supabaseKey =
-  import.meta.env.VITE_SUPABASE_ANON_KEY ||
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
-  'placeholder-key';
+const supabaseUrl = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_URL) || process.env?.VITE_SUPABASE_URL || 'https://uanqjksfodudwkakyglt.supabase.co';
+const supabaseAnonKey = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_SUPABASE_ANON_KEY) || process.env?.VITE_SUPABASE_ANON_KEY || 'sb_publishable_T8BWgvUCR4w5cO_l3iO0HA_VM9ygNjX';
 
-if (
-  !import.meta.env.VITE_SUPABASE_URL ||
-  (!import.meta.env.VITE_SUPABASE_ANON_KEY && !import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY)
-) {
-  console.warn('Supabase URL or Anon/Publishable Key is missing. Check your .env.local file.');
-}
-
-export const supabase = createClient(supabaseUrl, supabaseKey);
-
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

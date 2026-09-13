@@ -1,20 +1,39 @@
-import { ArrowLeft, Printer, RefreshCw, Sparkles, TriangleAlert, Globe } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, GraduationCap, Users, Clock, Globe, TrendingUp } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
-import { useAxiomSession } from '../../context/AxiomSessionContext';
 import { supabase } from '../../lib/supabase';
-import { CompetencyChart } from '../CompetencyChart';
-import type { ResultSnapshot } from '../../domain/types';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { WarpLogo } from '../WarpLogo';
 import { Spinner } from '../ui/spinner';
-import { Progress } from '../ui/progress';
+import { useReportStream } from '../../hooks/useReportStream';
+import { computeInternationalBenchmark } from '../../lib/irt/globalBenchmark';
+import { createAndSaveReport } from '../../lib/aiService';
+import { NemotronSocraticTutor } from './NemotronSocraticTutor';
+import { PDFExportButton } from '../report/PDFExportButton';
+import { ShareButton } from '../report/ShareButton';
+import { StudentVariant } from '../report/StudentVariant';
+import { ParentVariant } from '../report/ParentVariant';
+import { TrajectoryArc } from '../report/TrajectoryArc';
+import { BrainLoading } from '../animations/BrainLoading';
+import { GsapCounter } from '../animations/GsapCounter';
+import { OutcomeBadge } from '../ui/OutcomeBadge';
+
 
 function ordinal(n: number): string {
+  if (!n) return '0th';
   const suffixes = ['th', 'st', 'nd', 'rd'];
   const v = n % 100;
   return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+}
+
+function formatDuration(ms?: number): string {
+  if (!ms || ms <= 0) return '—';
+  const totalSeconds = Math.round(ms / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  if (minutes === 0) return `${seconds}s`;
+  return `${minutes}m ${seconds}s`;
 }
 
 const dateFmt = new Intl.DateTimeFormat('en-GB', {
@@ -24,333 +43,451 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', {
 });
 
 export function ReportDetail() {
-  const { student, isGuest } = useAuthStore();
-  const { session, startNew } = useAxiomSession();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generateError, setGenerateError] = useState<string | null>(null);
-
+  const { student } = useAuthStore();
   const [assessmentData, setAssessmentData] = useState<any>(null);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'student' | 'parent' | 'trajectory'>('student');
+  const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [studentName, setStudentName] = useState<string>('Candidate');
 
   const params = new URLSearchParams(window.location.search);
-  const assessmentId = params.get('assessment') || undefined;
-  const canFetch = Boolean(assessmentId) && !isGuest;
+  const shareToken = params.get('share');
+  const rawId = params.get('assessment');
+  const isValidUuid = Boolean(rawId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId));
+  const assessmentId = isValidUuid ? rawId : undefined;
+
+  const stream = useReportStream(assessmentId || null);
 
   useEffect(() => {
-    if (!canFetch || !assessmentId) {
-      setLoading(false);
+    if (rawId === 'new') {
+      window.location.href = '/';
       return;
     }
 
     async function fetchData() {
-      const { data: assessment } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('id', assessmentId!)
-        .single();
-      
-      setAssessmentData(assessment);
+      try {
+        setLoading(true);
 
-      if (assessment?.report_id) {
-        const { data: report } = await supabase
-          .from('reports')
+        // ── Case 1: Accessed via public share token ──
+        if (shareToken) {
+          const { data: reports, error: reportErr } = await supabase
+            .rpc('get_shared_report', { p_token: shareToken });
+          const report = reports && reports.length > 0 ? reports[0] : null;
+
+          if (reportErr || !report) {
+            console.error('Shared report not found:', reportErr);
+            setLoading(false);
+            return;
+          }
+
+          setReportData(report);
+
+          // Fetch associated assessment
+          if (report.assessment_id) {
+            const { data: assessment } = await supabase
+              .from('assessments')
+              .select('*')
+              .eq('id', report.assessment_id)
+              .maybeSingle();
+            
+            setAssessmentData(assessment);
+
+            if (assessment?.student_id) {
+              const { data: stu } = await supabase
+                .from('students')
+                .select('full_name')
+                .eq('id', assessment.student_id)
+                .maybeSingle();
+              if (stu?.full_name) setStudentName(stu.full_name);
+            }
+          }
+          setLoading(false);
+          return;
+        }
+
+        // ── Case 2: Standard assessment report access ──
+        if (!assessmentId) {
+          setLoading(false);
+          return;
+        }
+
+        const { data: assessment } = await supabase
+          .from('assessments')
           .select('*')
-          .eq('id', assessment.report_id)
+          .eq('id', assessmentId)
           .single();
-        setReportData(report);
-      } else if (assessment) {
-        setIsGenerating(true);
-        const { data, error } = await supabase.functions.invoke('generate-report', {
-          body: { assessmentId },
-        });
-        
-        if (error || !data?.success) {
-          setGenerateError(error?.message || data?.error || 'Could not generate the written analysis.');
-        } else if (data.reportId) {
+
+        if (assessment) {
+          // Enrich responses with scenario details if prompts are missing
+          const responses = (assessment.responses as any[]) || [];
+          if (responses.length > 0 && !responses[0]?.prompt) {
+            const scenarioIds = responses.map((r: any) => r.scenario_id).filter(Boolean);
+            if (scenarioIds.length > 0) {
+              const { data: scenariosList } = await supabase
+                .from('scenarios')
+                .select('id, prompt, competency, international_benchmark')
+                .in('id', scenarioIds);
+
+              if (scenariosList && scenariosList.length > 0) {
+                const scenarioMap = new Map(scenariosList.map((s: any) => [s.id, s]));
+                assessment.responses = responses.map((r: any) => {
+                  const match = scenarioMap.get(r.scenario_id);
+                  return {
+                    ...r,
+                    prompt: match?.prompt || r.option?.text || 'STEM Benchmark Scenario',
+                    competency: match?.competency || 'General Competency',
+                    benchmarkStandard: match?.international_benchmark || 'International Benchmark',
+                    userSelectedOption: r.userSelectedOption || r.option?.text,
+                  };
+                });
+              }
+            }
+          }
+          setAssessmentData(assessment as any);
+
+          // Fetch student name
+          const { data: studentRecord } = await supabase
+            .from('students')
+            .select('full_name, current_class')
+            .eq('id', assessment.student_id)
+            .maybeSingle();
+
+          const name = studentRecord?.full_name || student?.fullName || 'Candidate';
+          setStudentName(name);
+
+          // Check if report already exists in reports table
           const { data: report } = await supabase
             .from('reports')
             .select('*')
-            .eq('id', data.reportId)
-            .single();
-          setReportData(report);
+            .eq('assessment_id', assessmentId)
+            .maybeSingle();
+
+          if (report) {
+            setReportData(report);
+          } else {
+            // Synthesize and store report
+            const currentClass = assessment.class_level || studentRecord?.current_class || 8;
+            const generated = await createAndSaveReport(
+              assessmentId,
+              assessment.student_id,
+              name,
+              currentClass,
+              (assessment.ability_theta as any) || {},
+              (assessment.responses as any) || []
+            );
+            setReportData(generated);
+          }
         }
-        setIsGenerating(false);
+      } catch (err) {
+        console.error('Failed to load report data:', err);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     }
-    
+
     fetchData();
-  }, [assessmentId, canFetch]);
+  }, [assessmentId, shareToken, student?.fullName, rawId]);
 
-  // Server snapshot wins; otherwise fall back to the local session result.
-  let snapshot: ResultSnapshot | undefined;
-  if (assessmentData?.result) {
-    snapshot = {
-      ...assessmentData.result,
-      responses: assessmentData.responses,
-      classLevel: assessmentData.class_level,
-      completedAt: assessmentData.completed_at || new Date().toISOString(),
-    } as ResultSnapshot;
-  } else if (session.result) {
-    snapshot = session.result;
-  }
+  useEffect(() => {
+    if (stream.status === 'complete' && stream.report) {
+      setReportData({
+        student_variant: stream.report.student_variant,
+        parent_variant: stream.report.parent_variant,
+      });
+    }
+  }, [stream]);
 
-  const aiReport = reportData?.ai_insights?.overallAssessment;
+  const aiGenerating = stream.status === 'analyzing';
 
-  if (!snapshot) {
-    if (loading || isGenerating) {
+
+
+  if (!assessmentData) {
+    if (loading || aiGenerating) {
       return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-20">
-          <Spinner size="lg" className="text-foreground-muted" />
-          <p className="text-sm text-foreground-secondary">
-            {isGenerating ? 'Writing your analysis…' : 'Loading…'}
-          </p>
+        <div className="flex flex-1 flex-col items-center justify-center py-24">
+          <BrainLoading
+            label={aiGenerating ? stream.text : 'Synthesizing International Psychometric Diagnostic…'}
+            sublabel="Evaluating latent parameters against SASMO, AMC 8/10, and European Bebras benchmarks"
+          />
         </div>
       );
     }
     return (
       <div className="p-8 text-center text-destructive">
-        Report not found. It may have been removed.
+        Report not found or link has expired.
       </div>
     );
   }
 
-  const standings = [
-    { label: 'Global', value: snapshot.regionalPercentiles.Global, primary: true },
-    { label: 'Singapore', value: snapshot.regionalPercentiles.Singapore },
-    { label: 'USA', value: snapshot.regionalPercentiles.USA },
-    { label: 'China', value: snapshot.regionalPercentiles.China },
-    { label: 'Europe', value: snapshot.regionalPercentiles.Europe },
-  ].sort((a, b) => b.value - a.value);
+  // Derive international psychometric benchmark numbers
+  const benchmark = reportData?.benchmark || computeInternationalBenchmark(
+    assessmentData.ability_theta || {},
+    assessmentData.class_level || 8
+  );
+
+  const snapshot = {
+    classLevel: assessmentData.class_level || 8,
+    completedAt: assessmentData.completed_at || assessmentData.created_at,
+    overallScore: assessmentData.global_score || benchmark.aggregateScaledScore,
+    regionalPercentiles: benchmark.regionalPercentiles,
+    scaledScores: assessmentData.scaled_scores || {},
+    totalTimeMs: assessmentData.total_time_ms,
+  };
+
+  const studentVariant = reportData?.student_variant;
+  const parentVariant = reportData?.parent_variant;
 
   return (
     <div className="w-full flex-1 overflow-y-auto pb-12">
-      <div className="mx-auto max-w-5xl">
+      <div className="mx-auto max-w-5xl" id="report-printable-area">
         {/* ── Header ── */}
-        <header className="bg-warp-grid border-b border-border bg-surface p-8 md:p-12">
+        <header className="bg-warp-grid border-b border-border bg-surface p-6 md:p-10">
           <div className="mb-6 flex items-center justify-between gap-4">
-            {/* Screen ink is near-white; paper needs the navy wordmark. */}
-            <WarpLogo variant="lockup" className="h-7 w-auto print:hidden" />
-            <WarpLogo variant="lockup" theme="light" className="print-only h-7 w-auto" />
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted">
-              Confidential · Candidate copy
-            </p>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { window.location.search = '?dashboard'; }}
+                className="gap-2 print:hidden"
+                data-testid="return-to-dashboard"
+              >
+                <ArrowLeft className="size-4" /> Return to Dashboard
+              </Button>
+              <WarpLogo variant="lockup" className="h-7 w-auto print:hidden" />
+              <WarpLogo variant="lockup" theme="light" className="print-only h-7 w-auto" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
+                <Globe className="size-3.5" /> Calibrated against Singapore, China, US & Europe
+              </span>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted">
+                Official Report
+              </p>
+            </div>
           </div>
+
           <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
             <div className="space-y-4">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                WARP benchmark report
+                WARP Global STEM benchmark
               </p>
-              <h1 className="font-display text-4xl font-bold tracking-tight md:text-5xl">
-                Executive summary
+              <h1 className="font-display text-3xl font-bold tracking-tight md:text-5xl">
+                Diagnostic Executive Summary
               </h1>
 
-              <dl className="flex flex-wrap gap-8 pt-2 text-sm">
+              <dl className="flex flex-wrap gap-6 pt-2 text-sm">
                 <div>
                   <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Student
+                    Candidate
                   </dt>
-                  <dd className="font-semibold">
-                    {student?.fullName || session.profile?.name || 'Candidate'}
+                  <dd className="font-semibold text-foreground">
+                    {studentName}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Level
+                    Grade Level
                   </dt>
-                  <dd className="font-semibold">
-                    Class {snapshot.classLevel} ·{' '}
-                    {session.profile?.difficulty || 'Standard'} tier
+                  <dd className="font-semibold text-foreground">
+                    Class {snapshot.classLevel}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Date
+                    Questions Calibrated
                   </dt>
-                  <dd className="font-semibold">{dateFmt.format(new Date(snapshot.completedAt))}</dd>
+                  <dd className="font-semibold text-foreground">
+                    {assessmentData.responses?.length || 30} Scenarios
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
+                    Time Taken
+                  </dt>
+                  <dd className="font-semibold text-foreground flex items-center gap-1">
+                    <Clock className="size-3.5 text-foreground-muted" />
+                    {formatDuration(snapshot.totalTimeMs)}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
+                    Assessed Date
+                  </dt>
+                  <dd className="font-semibold text-foreground">
+                    {dateFmt.format(new Date(snapshot.completedAt))}
+                  </dd>
                 </div>
               </dl>
             </div>
 
-            <div className="card corner-marks print-keep relative shrink-0 p-6 text-center md:min-w-50">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                Aggregate score
+            {/* Scorecard Hero */}
+            <div className="card corner-marks print-keep relative shrink-0 p-6 text-center md:min-w-64 bg-accent/20 border-border flex flex-col items-center">
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
+                Global Scaled Score
               </p>
-              <p className="font-display text-6xl font-bold tabular">{snapshot.overallScore}</p>
-              <div className="my-4 h-px w-full bg-border" />
-              <p className="text-sm font-semibold text-foreground-secondary">
-                {ordinal(snapshot.regionalPercentiles.Global)} percentile, global
-              </p>
+              <div className="flex items-baseline justify-center">
+                <GsapCounter
+                  value={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  className="font-display text-5xl font-bold tabular tracking-tight text-foreground"
+                />
+                <span className="text-sm font-normal text-foreground-muted ml-1"> / 900</span>
+              </div>
+              <OutcomeBadge
+                percentile={benchmark.globalPercentile}
+                size="sm"
+                className="mt-2.5"
+              />
+              <div className="my-3 h-px w-full bg-border" />
+              <div className="space-y-1 w-full text-center">
+                <p className="text-xs font-semibold text-foreground">
+                  {ordinal(benchmark.globalPercentile)} percentile, Global
+                </p>
+                <p className="text-[11px] font-medium text-foreground-muted">
+                  🇸🇬 {ordinal(benchmark.regionalPercentiles.Singapore)} percentile vs Singapore
+                </p>
+              </div>
             </div>
           </div>
         </header>
 
-        <main className="space-y-8 p-4 sm:p-8 md:p-12">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            {/* ── Left column ── */}
-            <div className="flex flex-col gap-8">
-              <Card>
-                <div className="border-b border-border px-6 py-4">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground-secondary">
-                    Regional breakdown
-                  </h2>
-                </div>
-                <div className="p-6">
-                  <div className="h-75">
-                    <CompetencyChart snapshot={snapshot} />
-                  </div>
-                </div>
-              </Card>
-
-              {generateError && (
-                <div className="card border-destructive/30 bg-destructive-subtle p-6">
-                  <p className="flex items-center gap-2 text-sm font-semibold text-destructive">
-                    <TriangleAlert className="size-4" aria-hidden="true" />
-                    Written analysis unavailable
-                  </p>
-                  <p className="mt-1 text-sm text-foreground-secondary">{generateError}</p>
-                </div>
-              )}
-
-              {aiReport && (
-                <Card>
-                  <div className="flex items-center gap-2 border-b border-border px-6 py-4">
-                    <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground-secondary">
-                      Analyst evaluation
-                    </h2>
-                  </div>
-                  <div className="whitespace-pre-wrap px-6 py-6 text-sm leading-relaxed text-foreground-secondary">
-                    {aiReport}
-                  </div>
-                </Card>
-              )}
-
-              {!aiReport && isGuest && (
-                <Card>
-                  <div className="flex items-center gap-2 border-b border-border px-6 py-4">
-                    <TriangleAlert className="size-3.5 text-warning" aria-hidden="true" />
-                    <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground-secondary">
-                      Local result saved
-                    </h2>
-                  </div>
-                  <div className="px-6 py-6">
-                    <p className="text-sm leading-relaxed text-foreground-secondary">
-                      A written analysis and parent guidance are generated for registered
-                      accounts only. Your score is preserved on this device.
-                    </p>
-                    <Button
-                      className="mt-4"
-                      onClick={() => {
-                        localStorage.clear();
-                        window.location.href = '/';
-                      }}
-                    >
-                      Create an account
-                    </Button>
-                  </div>
-                </Card>
-              )}
-            </div>
-
-            {/* ── Right column ── */}
-            <div className="space-y-8">
-              <Card>
-                <div className="flex items-center gap-2 border-b border-border px-6 py-4">
-                  <Globe className="size-3.5 text-foreground-secondary" aria-hidden="true" />
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground-secondary">
-                    International standings
-                  </h2>
-                </div>
-                <div className="space-y-5 px-6 py-6">
-                  {standings.map((stat) => (
-                    <div key={stat.label} className="space-y-2">
-                      <div className="flex justify-between text-xs font-semibold">
-                        <span className={stat.primary ? '' : 'text-foreground-secondary'}>
-                          {stat.label}
-                        </span>
-                        <span className="tabular">{ordinal(stat.value)}</span>
-                      </div>
-                      <Progress
-                        value={stat.value}
-                        label={`${stat.label} percentile`}
-                        fillClassName={stat.primary ? 'bg-primary' : 'bg-border-strong'}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </Card>
-
-              <Card>
-                <div className="border-b border-border px-6 py-4">
-                  <h2 className="text-[11px] font-bold uppercase tracking-[0.2em] text-foreground-secondary">
-                    Response transcript
-                  </h2>
-                </div>
-                <div className="divide-y divide-border">
-                  {snapshot.responses.map((response: { itemId: string; missionId: string; optionLabel: string; misconception?: string }) => (
-                    <div key={response.itemId} className="px-6 py-4">
-                      <div className="flex items-start gap-4">
-                        <span className="pt-1 w-20 shrink-0 text-[10px] font-bold uppercase leading-tight text-foreground-secondary">
-                          {response.missionId.replace(/-/g, ' ')}
-                        </span>
-                        <div className="flex-1 space-y-1.5">
-                          <p className="text-sm text-foreground-secondary">
-                            "{response.optionLabel}"
-                          </p>
-                          {response.misconception && (
-                            <p className="flex items-start gap-1.5 text-xs text-warning">
-                              <TriangleAlert className="size-3 shrink-0 translate-y-px" aria-hidden="true" />
-                              {response.misconception}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-            </div>
+        {/* ── Audience Tabs, Share & PDF Actions ── */}
+        <div className="flex flex-wrap items-center justify-between border-b border-border bg-surface px-6 md:px-10 pt-4 gap-4">
+          <div className="flex space-x-6 overflow-x-auto pb-0">
+            <button
+              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'student'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-foreground-secondary hover:text-foreground'
+              }`}
+              onClick={() => setActiveTab('student')}
+            >
+              <GraduationCap className="size-4" />
+              Student View
+            </button>
+            <button
+              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'parent'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-foreground-secondary hover:text-foreground'
+              }`}
+              onClick={() => setActiveTab('parent')}
+            >
+              <Users className="size-4" />
+              Parent Blueprint
+            </button>
+            <button
+              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
+                activeTab === 'trajectory'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-foreground-secondary hover:text-foreground'
+              }`}
+              onClick={() => setActiveTab('trajectory')}
+            >
+              <TrendingUp className="size-4" />
+              Longitudinal Arc
+            </button>
           </div>
+
+          <div className="pb-3 flex items-center gap-2.5 flex-wrap">
+            <ShareButton
+              reportId={reportData?.id}
+              assessmentId={assessmentData.id}
+              initialShareToken={reportData?.share_token}
+              studentName={studentName}
+            />
+
+            <PDFExportButton
+              targetId="report-printable-area"
+              studentName={studentName}
+              classLevel={snapshot.classLevel}
+            />
+
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsTutorOpen(true)}
+              className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+            >
+              <Sparkles className="size-3.5" />
+              <span>Ask Nemotron Tutor</span>
+            </Button>
+          </div>
+        </div>
+
+        <main className="space-y-8 p-4 sm:p-8 md:p-10">
+          {aiGenerating && (
+            <Card className="flex flex-col items-center justify-center py-10 gap-4">
+              <Spinner size="lg" className="text-primary" />
+              <p className="text-sm font-medium">{stream.text}</p>
+            </Card>
+          )}
+
+          {/* ══════════════════ STUDENT VIEW ══════════════════ */}
+          {!aiGenerating && activeTab === 'student' && (
+            <StudentVariant
+              studentVariant={studentVariant}
+              benchmark={benchmark}
+              classLevel={snapshot.classLevel}
+            />
+          )}
+
+          {/* ══════════════════ PARENT VIEW ══════════════════ */}
+          {!aiGenerating && activeTab === 'parent' && (
+            <ParentVariant
+              parentVariant={parentVariant}
+              benchmark={benchmark}
+              classLevel={snapshot.classLevel}
+            />
+          )}
+
+          {/* ══════════════════ LONGITUDINAL TRAJECTORY ══════════════════ */}
+          {!aiGenerating && activeTab === 'trajectory' && (
+            <TrajectoryArc
+              studentId={assessmentData.student_id}
+              currentAssessmentId={assessmentData.id}
+              currentScore={snapshot.overallScore}
+              classLevel={snapshot.classLevel}
+            />
+          )}
         </main>
 
         {/* ── Footer controls ── */}
-        <footer className="no-print mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border p-8">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => {
-              if (isGuest) window.location.href = '/';
-              else window.location.search = '?dashboard';
-            }}
-          >
-            <ArrowLeft className="size-4" />
-            Back to dashboard
-          </Button>
+        <footer className="no-print mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border p-6 md:p-8">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => (window.location.search = '?dashboard')}
+            >
+              <ArrowLeft className="size-4" />
+              Back to dashboard
+            </Button>
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+              <Sparkles className="size-3" /> Synthesized with NVIDIA Nemotron-70B Psychometric Intelligence
+            </span>
+          </div>
 
           <div className="flex gap-3">
-            <Button variant="secondary" onClick={() => window.print()}>
-              <Printer className="size-4" />
-              Save as PDF
-            </Button>
-            <Button
-              onClick={() => {
-                if (isGuest) {
-                  localStorage.clear();
-                  window.location.href = '/';
-                } else {
-                  window.history.replaceState({}, '', window.location.pathname);
-                  startNew();
-                }
-              }}
-            >
+            <PDFExportButton
+              targetId="report-printable-area"
+              studentName={studentName}
+              classLevel={snapshot.classLevel}
+            />
+            <Button onClick={() => (window.location.href = '/')}>
               <RefreshCw className="size-4" />
               New assessment
             </Button>
           </div>
         </footer>
+
+        {/* ── Interactive NVIDIA Nemotron Socratic Tutor ── */}
+        <NemotronSocraticTutor
+          isOpen={isTutorOpen}
+          onClose={() => setIsTutorOpen(false)}
+          classLevel={snapshot.classLevel}
+          recentScenarios={assessmentData.responses || []}
+        />
       </div>
     </div>
   );

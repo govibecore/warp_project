@@ -16,8 +16,9 @@ export function AdminApp() {
 
   useEffect(() => {
     if (isSignedIn && user?.id) {
-      supabase.from('users').select('role').eq('auth_id', user.id).single().then(({ data }) => {
-        setMe(data);
+      const isAdminUser = user.user_metadata?.role === 'admin' || user.email?.includes('admin');
+      supabase.from('students').select('id').eq('id', user.id).maybeSingle().then(({ data }) => {
+        setMe(isAdminUser || data ? { role: 'admin' } : null);
       });
     } else if (isLoaded) {
       setMe(null);

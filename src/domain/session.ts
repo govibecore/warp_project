@@ -1,15 +1,17 @@
 import { createAssessment } from './assessment';
-import type { AxiomSession, ItemResponse, LearnerProfile, ResultSnapshot } from './types';
+import type { AxiomSession, ItemResponse, LearnerProfile, ResultSnapshot, Subject } from './types';
 
 export const CURRENT_SESSION_VERSION = 1 as const;
 
 export type SessionAction =
   | { type: 'setProfile'; profile: LearnerProfile }
+  | { type: 'selectSubject'; subject: Subject }
   | { type: 'answerItem'; response: ItemResponse }
   | { type: 'undoLastResponse' }
   | { type: 'complete'; result: ResultSnapshot }
   | { type: 'enterApp' }
   | { type: 'goHome' }
+  | { type: 'openHub' }
   | { type: 'reset' };
 
 export function createSession(profile?: LearnerProfile): AxiomSession {
@@ -18,11 +20,9 @@ export function createSession(profile?: LearnerProfile): AxiomSession {
   }
   return {
     version: CURRENT_SESSION_VERSION,
-    phase: 'assessment',
+    phase: 'hub',
     profile,
-    plan: createAssessment(profile.classLevel, profile.difficulty),
     responses: {},
-    assessmentStartedAt: new Date().toISOString(),
   };
 }
 
@@ -30,8 +30,18 @@ export function sessionReducer(session: AxiomSession, action: SessionAction): Ax
   if (action.type === 'reset') return createSession();
   if (action.type === 'enterApp') return { ...session, phase: 'onboarding' };
   if (action.type === 'goHome') return { ...session, phase: 'landing' };
+  if (action.type === 'openHub') return { ...session, phase: 'hub' };
   if (action.type === 'setProfile') return createSession(action.profile);
   if (action.type === 'complete') return { ...session, phase: 'results', result: action.result };
+  if (action.type === 'selectSubject') {
+    if (!session.profile) throw new Error('A learner profile is required to start an assessment.');
+    return {
+      ...session,
+      phase: 'assessment',
+      plan: createAssessment(session.profile.classLevel, session.profile.difficulty, action.subject),
+      assessmentStartedAt: new Date().toISOString(),
+    };
+  }
   if (!session.profile) throw new Error('A learner profile is required before recording an assessment response.');
 
   let responses = { ...session.responses };

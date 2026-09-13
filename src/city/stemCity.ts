@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { gsap } from 'gsap';
 import {
   DISTRICTS,
   ISLAND,
@@ -63,16 +64,16 @@ interface PaletteKey {
 
 /** Ten keys across 0–24h. Everything between them is a straight lerp. */
 const KEYS: PaletteKey[] = [
-  { t: 0, zen: '#060a1c', mid: '#0d1430', hor: '#182042', sun: '#22305c', amb: 0.16, hemi: 0.2 },
-  { t: 3, zen: '#070c22', mid: '#101838', hor: '#1d2748', sun: '#2a3a6b', amb: 0.17, hemi: 0.22 },
-  { t: 6, zen: '#1b2a52', mid: '#4a4a72', hor: '#c98a63', sun: '#ff9d5c', amb: 0.32, hemi: 0.42 },
-  { t: 8, zen: '#3f7cc4', mid: '#8fc0e8', hor: '#ffd7a8', sun: '#ffd9a0', amb: 0.46, hemi: 0.66 },
-  { t: 10, zen: '#3d86d4', mid: '#a5d3f0', hor: '#eaf4fb', sun: '#fff3d8', amb: 0.56, hemi: 0.82 },
-  { t: 12, zen: '#2f7fd0', mid: '#9ccdf2', hor: '#e8f3fc', sun: '#ffffff', amb: 0.6, hemi: 0.9 },
-  { t: 15, zen: '#3983cd', mid: '#a3cef0', hor: '#f4ead6', sun: '#fff0cf', amb: 0.55, hemi: 0.84 },
-  { t: 18, zen: '#35619f', mid: '#c98f6a', hor: '#ffb26b', sun: '#ff9a4d', amb: 0.38, hemi: 0.5 },
-  { t: 20, zen: '#1a2a55', mid: '#3a3762', hor: '#8a5a72', sun: '#7a5a9c', amb: 0.24, hemi: 0.3 },
-  { t: 22, zen: '#080e24', mid: '#111a38', hor: '#1b2444', sun: '#25345f', amb: 0.17, hemi: 0.22 },
+  { t: 0, zen: '#040714', mid: '#0a1024', hor: '#121832', sun: '#1a2444', amb: 0.1, hemi: 0.15 },
+  { t: 3, zen: '#050818', mid: '#0c142a', hor: '#161e38', sun: '#202a4a', amb: 0.12, hemi: 0.18 },
+  { t: 6, zen: '#121c38', mid: '#2a344a', hor: '#8a6452', sun: '#b8764a', amb: 0.28, hemi: 0.35 },
+  { t: 8, zen: '#24446a', mid: '#5888a8', hor: '#b89678', sun: '#c8a478', amb: 0.40, hemi: 0.55 },
+  { t: 10, zen: '#225088', mid: '#689ac0', hor: '#abc0d0', sun: '#d0c4ac', amb: 0.48, hemi: 0.65 },
+  { t: 12, zen: '#1c4a8a', mid: '#629bc4', hor: '#a8bed0', sun: '#e0e4e8', amb: 0.55, hemi: 0.75 },
+  { t: 15, zen: '#204d85', mid: '#659dc4', hor: '#b8b4a4', sun: '#d0c4ac', amb: 0.50, hemi: 0.70 },
+  { t: 18, zen: '#1e3860', mid: '#8a6854', hor: '#b87854', sun: '#c0784a', amb: 0.32, hemi: 0.42 },
+  { t: 20, zen: '#101a35', mid: '#282a44', hor: '#6a485a', sun: '#5a4670', amb: 0.20, hemi: 0.25 },
+  { t: 22, zen: '#060a1a', mid: '#0d1428', hor: '#141c32', sun: '#1c2644', amb: 0.12, hemi: 0.18 },
 ];
 
 function sampleKeys(hours: number) {
@@ -241,8 +242,17 @@ export function createStemCity(
   const pieces: { tick?(t: number, night: number, dt: number): void }[] = [];
   const anchors: { id: string; label: string; pos: THREE.Vector3 }[] = [];
 
+  const districtGroups: THREE.Group[] = [];
+
   for (const region of DISTRICTS) {
     const built = buildDistrict(region, scores, heightAt);
+    
+    // Hide for intro animation
+    built.group.scale.set(1, 0.001, 1);
+    districtGroups.push(built.group);
+
+    // If you exposed column parts inside built.column, you could grab rings.
+    // For now, scaling the whole group Y gives a satisfying "rising city" effect.
     scene.add(built.group);
     pieces.push(...built.pieces);
     anchors.push({
@@ -309,8 +319,8 @@ export function createStemCity(
   });
 
   /* ── Camera ── */
-  const cam = { theta: 0.7, phi: 1.04, dist: 122, tx: 0, ty: 6, tz: 0 };
-  const goal = { ...cam };
+  const cam = { theta: 0.2, phi: 1.4, dist: 220, tx: 0, ty: 0, tz: 0 };
+  const goal = { theta: 0.7, phi: 1.04, dist: 122, tx: 0, ty: 6, tz: 0 };
 
   function applyView(id: string) {
     if (id === 'overview') {
@@ -384,6 +394,52 @@ export function createStemCity(
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
   resize();
+
+  // Suppress labels during intro
+  let introComplete = false;
+
+  /* ── Intro GSAP Animation ── */
+  if (!opts.reducedMotion) {
+    const tl = gsap.timeline({
+      onComplete: () => {
+        introComplete = true;
+      },
+    });
+
+    // 1. Camera sweeps in
+    tl.to(cam, {
+      theta: goal.theta,
+      phi: goal.phi,
+      dist: goal.dist,
+      tx: goal.tx,
+      ty: goal.ty,
+      tz: goal.tz,
+      duration: 2.5,
+      ease: 'power3.out',
+    });
+
+    // 2. Districts rise out of the ground (staggered)
+    tl.to(
+      districtGroups.map(g => g.scale),
+      {
+        y: 1,
+        duration: 1.8,
+        stagger: 0.15,
+        ease: 'elastic.out(1, 0.6)',
+      },
+      '-=1.5'
+    );
+  } else {
+    // Skip animation
+    cam.theta = goal.theta;
+    cam.phi = goal.phi;
+    cam.dist = goal.dist;
+    cam.tx = goal.tx;
+    cam.ty = goal.ty;
+    cam.tz = goal.tz;
+    for (const g of districtGroups) g.scale.set(1, 1, 1);
+    introComplete = true;
+  }
 
   /* ── Loop ── */
   let raf = 0;
@@ -486,7 +542,7 @@ export function createStemCity(
       const h = canvas.clientHeight;
       for (let i = 0; i < anchors.length; i++) {
         projected.copy(anchors[i].pos).project(camera);
-        const vis = projected.z < 1;
+        const vis = introComplete && projected.z < 1;
         labelBuf[i].x = (projected.x * 0.5 + 0.5) * w;
         labelBuf[i].y = (-projected.y * 0.5 + 0.5) * h;
         labelBuf[i].visible = vis;

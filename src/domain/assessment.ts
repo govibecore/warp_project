@@ -1,5 +1,6 @@
 import { getCalibrationItems, getDevelopmentalBand, getMissionItems, MISSION_IDS } from '../data/scenarios';
-import type { AssessmentItem, AssessmentPlan, Difficulty } from './types';
+import { getEnglishCalibrationItems, getEnglishMissionItems, ENGLISH_MISSION_IDS } from '../data/englishScenarios';
+import type { AssessmentItem, AssessmentPlan, Difficulty, Subject } from './types';
 
 /** Seconds per question per difficulty tier. 30 items → Standard=45 min, Advanced=60 min, Olympiad=75 min. */
 const SECONDS_PER_QUESTION: Record<Difficulty, number> = {
@@ -17,14 +18,20 @@ const SECONDS_PER_QUESTION: Record<Difficulty, number> = {
 export function createAssessment(
   classLevel: number,
   difficulty: Difficulty = 'Standard',
+  subject: Subject = 'STEM'
 ): AssessmentPlan {
-  const calibrationItems = getCalibrationItems(classLevel, difficulty);
-  // Include all missions — guarantees 30-question coverage (5 calibration + 25 mission items).
-  const missionIds = [...MISSION_IDS];
-  const missionItems = missionIds.flatMap((missionId) => getMissionItems(missionId, classLevel, difficulty));
+  const calibrationItems = subject === 'STEM' 
+    ? getCalibrationItems(classLevel, difficulty)
+    : getEnglishCalibrationItems(classLevel, difficulty);
+
+  const missionIds = subject === 'STEM' ? [...MISSION_IDS] : [...ENGLISH_MISSION_IDS];
+  const missionItems = subject === 'STEM'
+    ? MISSION_IDS.flatMap((missionId) => getMissionItems(missionId, classLevel, difficulty))
+    : ENGLISH_MISSION_IDS.flatMap((missionId) => getEnglishMissionItems(missionId, classLevel, difficulty));
+
   const totalItems = calibrationItems.length + missionItems.length;
   const timeLimitMs = totalItems * SECONDS_PER_QUESTION[difficulty] * 1000;
-  return Object.freeze({ classLevel, developmentalBand: getDevelopmentalBand(classLevel), calibrationItems, missionIds, missionItems, timeLimitMs });
+  return Object.freeze({ subject, classLevel, developmentalBand: getDevelopmentalBand(classLevel), calibrationItems, missionIds, missionItems, timeLimitMs });
 }
 
 export function getNextItem(plan: AssessmentPlan, answeredItemIds: readonly string[]): AssessmentItem | null {

@@ -11,6 +11,7 @@ export interface StudentProfile {
   state?: string;
   parentName?: string;
   parentEmail?: string;
+  whatsappNumber?: string;
   difficultyPreference: 'standard' | 'advanced' | 'olympiad';
   createdAt: string;
 }

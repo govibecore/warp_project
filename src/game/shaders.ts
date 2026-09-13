@@ -21,7 +21,7 @@ export const SUN_DIR = new THREE.Vector3(0.45, 0.85, 0.35).normalize();
 export const sharedUniforms = {
   uTime: { value: 0 },
   uSunDir: { value: SUN_DIR.clone() },
-  uFogColor: { value: new THREE.Color('#d8e6d4') },
+  uFogColor: { value: new THREE.Color('#1a2a3a') },
   uFogNear: { value: 55 },
   uFogFar: { value: 125 },
 };
@@ -137,7 +137,7 @@ export function makeToonMaterial(opts: ToonOptions): THREE.ShaderMaterial {
 export function makeContactShadow(radius: number): THREE.Mesh {
   const geo = new THREE.CircleGeometry(radius, 20);
   const mat = new THREE.MeshBasicMaterial({
-    color: '#3a4a32',
+    color: '#1a2838',
     transparent: true,
     opacity: 0.18,
     depthWrite: false,
