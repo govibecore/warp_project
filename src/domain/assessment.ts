@@ -38,7 +38,7 @@ export function createAssessment(
   const missionIds = subject === 'STEM' ? [...MISSION_IDS] : [...ENGLISH_MISSION_IDS];
   const missionItems = subject === 'STEM'
     ? MISSION_IDS.flatMap((missionId) => getMissionItems(missionId, classLevel, difficulty))
-    : ENGLISH_MISSION_IDS.flatMap((missionId) => getEnglishMissionItems(missionId, classLevel, difficulty));
+    : ENGLISH_MISSION_IDS.flatMap((missionId: string) => getEnglishMissionItems(missionId, classLevel, difficulty));
 
   const totalItems = calibrationItems.length + missionItems.length;
   const timeLimitMs = totalItems * SECONDS_PER_QUESTION[difficulty] * 1000;
