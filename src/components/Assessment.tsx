@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, AlertTriangle, RotateCcw, Lightbulb, Sparkles } from 'lucide-react';
 import { useAssessment } from '../hooks/useAssessment';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
-import { useAxiomSession } from '../context/AxiomSessionContext';
+import { useWarpSession } from '../context/WarpSessionContext';
 import { useAuthStore } from '../stores/authStore';
 import { supabase } from '../lib/supabase';
 import { Button } from './ui/button';
@@ -41,7 +41,7 @@ async function ensureGuestStudent(name: string, classLevel: number, difficulty: 
 export function Assessment() {
   const { user } = useSupabaseAuth();
   const { isGuest } = useAuthStore();
-  const { session } = useAxiomSession();
+  const { session } = useWarpSession();
   const {
     currentScenario: item,
     submitResponse,

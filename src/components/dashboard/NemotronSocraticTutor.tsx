@@ -33,7 +33,7 @@ export function NemotronSocraticTutor({
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'tutor',
-      text: `Hello! I am your Axiom Socratic STEM Tutor powered by NVIDIA Nemotron. 
+      text: `Hello! I am your WARP Socratic STEM Tutor powered by NVIDIA Nemotron. 
 Ask me about any problem you encountered, why a distractor option felt so tempting, or how a Singapore SASMO medalist uses visual bar modeling to solve it.`,
     },
   ]);
@@ -112,7 +112,7 @@ Ask me about any problem you encountered, why a distractor option felt so tempti
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="text-sm font-bold font-display text-foreground">
-                      Axiom Socratic Tutor
+                      WARP Socratic Tutor
                     </h3>
                     <span className="inline-flex items-center gap-1 rounded-none bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                       <Sparkles className="size-2.5" /> NVIDIA Nemotron-70B

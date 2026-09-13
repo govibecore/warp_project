@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
-import { useAxiomSession } from '../context/AxiomSessionContext';
+import { useWarpSession } from '../context/WarpSessionContext';
 import { normalizeDifficulty } from '../domain/assessment';
 import { Button } from './ui/button';
 import { Input, Select, Field } from './ui/input';
@@ -12,7 +12,7 @@ const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3);
 
 export function ProfileSetup() {
   const { user } = useSupabaseAuth();
-  const { setProfile } = useAxiomSession();
+  const { setProfile } = useWarpSession();
   const [fullName, setFullName] = useState('');
   const [parentName, setParentName] = useState('');
   const [schoolName, setSchoolName] = useState('');
@@ -63,7 +63,7 @@ export function ProfileSetup() {
       return;
     }
 
-    // Set axiom session profile to start the assessment
+    // Set warp session profile to start the assessment
     setProfile({
       name: updatedUser.full_name || 'Learner',
       classLevel: updatedUser.current_class || 8,

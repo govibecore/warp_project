@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, ArrowLeft, Sparkles, LogIn, TriangleAlert } from 'lucide-react';
-import { useAxiomSession } from '../context/AxiomSessionContext';
+import { useWarpSession } from '../context/WarpSessionContext';
 import { useAuthStore } from '../stores/authStore';
 import { Button } from './ui/button';
 import { Input, Select, Field } from './ui/input';
@@ -175,7 +175,7 @@ const HEADINGS: Record<FormMode, { title: string; body: string }> = {
 };
 
 export function Onboarding() {
-  const { setProfile, goHome } = useAxiomSession();
+  const { setProfile, goHome } = useWarpSession();
   const { setGuest } = useAuthStore();
   const [mode, setMode] = useState<FormMode>('choose');
 

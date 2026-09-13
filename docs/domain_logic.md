@@ -1,6 +1,6 @@
 # Domain Logic & Assessment Architecture
 
-The domain layer of AXIOM manages the core assessment logic, state transitions, scoring, and normative data.
+The domain layer of WARP manages the core assessment logic, state transitions, scoring, and normative data.
 
 ## Core Entities (`src/domain/types.ts`)
 
@@ -8,7 +8,7 @@ The domain layer of AXIOM manages the core assessment logic, state transitions, 
 - **EvidenceContribution**: Defines how much weight an option gives towards a specific competency.
 - **AssessmentItem**: Represents a single scenario-based question, including its options, state, and developmental band.
 - **ResultSnapshot**: A frozen record of a completed assessment, capturing class level, scores, responses, and regional percentiles.
-- **AxiomSession**: The root state object tracking the current assessment phase (`landing`, `onboarding`, `assessment`, `results`), the learner's profile, and answers.
+- **WarpSession**: The root state object tracking the current assessment phase (`landing`, `onboarding`, `assessment`, `results`), the learner's profile, and answers.
 
 ## Session Management (`src/domain/session.ts`)
 
@@ -22,7 +22,7 @@ The reducer captures user responses (`answerItem`) and allows reverting the last
 
 ## Scenarios & Developmental Bands (`src/data/scenarios.ts`)
 
-Instead of static questions, AXIOM defines **Mission Blueprints**. These are dynamically instantiated into `AssessmentItem`s based on the learner's class level. 
+Instead of static questions, WARP defines **Mission Blueprints**. These are dynamically instantiated into `AssessmentItem`s based on the learner's class level. 
 
 The `getDevelopmentalBand(classLevel)` function maps classes (3-12) to specific bands.
 The system then appends a band-specific instruction to the prompt:
@@ -46,4 +46,4 @@ The final scaled score maps the Z-score to a 100-900 scale, centered at 480:
 `score = 480 + 100 * Z`
 
 ### Regional Percentiles
-AXIOM compares the user's overall performance against simulated regional offsets (e.g., Singapore +8, USA +3). It averages the Z-scores and uses a Normal Cumulative Distribution Function (`normalCdf`) to estimate the percentile rank for that region.
+WARP compares the user's overall performance against simulated regional offsets (e.g., Singapore +8, USA +3). It averages the Z-scores and uses a Normal Cumulative Distribution Function (`normalCdf`) to estimate the percentile rank for that region.

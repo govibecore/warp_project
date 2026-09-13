@@ -1,4 +1,4 @@
-# AXIOM — Comprehensive Codebase, UI/UX & AI-Bloat Audit
+# WARP — Comprehensive Codebase, UI/UX & AI-Bloat Audit
 
 **Audit date:** 2026-09-08
 **Auditor:** WorkBuddy AI
@@ -8,16 +8,16 @@
 
 ## 0. Critical scope note — read first
 
-**The checked-out branch (`main`) at `C:\axion` contains no application code at all.** It holds only `PRODUCT.md`, `skills-lock.json`, and `docs/`. The real application lives in a git worktree:
+**The checked-out branch (`main`) at `C:\warp` contains no application code at all.** It holds only `PRODUCT.md`, `skills-lock.json`, and `docs/`. The real application lives in a git worktree:
 
 | Path | Branch | State |
 |---|---|---|
-| `C:\axion` | `main` | No `src/` — docs only |
-| `C:\axion\.worktrees\axiom-mvp` | `feat/ui-redesign-desktop` | **The real codebase, heavily modified but UNCOMMITTED** |
+| `C:\warp` | `main` | No `src/` — docs only |
+| `C:\warp\.worktrees\warp-mvp` | `feat/ui-redesign-desktop` | **The real codebase, heavily modified but UNCOMMITTED** |
 
-The worktree has ~20 modified and 2 deleted files relative to its own branch tip (`25ccd76`, 2026-08-14) — i.e. **the newest architecture has never been committed.** Two older branches (`feat/axiom-mvp`, `feat/ui-redesign`) are stale forks with 32 src files each vs. 36 on the current branch.
+The worktree has ~20 modified and 2 deleted files relative to its own branch tip (`25ccd76`, 2026-08-14) — i.e. **the newest architecture has never been committed.** Two older branches (`feat/warp-mvp`, `feat/ui-redesign`) are stale forks with 32 src files each vs. 36 on the current branch.
 
-All findings below are relative to `C:\axion\.worktrees\axiom-mvp`.
+All findings below are relative to `C:\warp\.worktrees\warp-mvp`.
 
 **Severity scale:** Critical = data/security breach or app-breaking · Major = significant defect or large debt · Minor = polish/consistency.
 
@@ -29,16 +29,16 @@ All findings below are relative to `C:\axion\.worktrees\axiom-mvp`.
 **File:** `src/components/admin/AdminLogin.tsx`, lines 18–24
 
 ```ts
-if (email === 'admin@axiom.com' && password === 'admin') {
-  setAdmin({ id: 'admin-1', email, fullName: 'Axiom Admin', role: 'super_admin' }, 'mock-token');
+if (email === 'admin@warp.com' && password === 'admin') {
+  setAdmin({ id: 'admin-1', email, fullName: 'Warp Admin', role: 'super_admin' }, 'mock-token');
 ```
 
 - **Root cause:** Placeholder auth never replaced; auth is decided entirely in the browser.
-- **Impact:** The admin portal gates access to all student PII (name, email, class, scores) and the full question bank. Anyone can bypass it by opening devtools and writing `localStorage['axiom-admin-auth'] = {"state":{"isAdminAuthenticated":true,...}}` — no server call required. The credentials are also plainly visible in the shipped JS bundle.
+- **Impact:** The admin portal gates access to all student PII (name, email, class, scores) and the full question bank. Anyone can bypass it by opening devtools and writing `localStorage['warp-admin-auth'] = {"state":{"isAdminAuthenticated":true,...}}` — no server call required. The credentials are also plainly visible in the shipped JS bundle.
 - **Remediation:** Delete client-side auth. Add a `role` check server-side in Convex (the `users` table already has a `role` field, currently hard-coded to `'student'` in `convex/users.ts:60`). Gate every admin query on `identity` + `role === 'admin'`. Move credentials out of the bundle entirely.
 
 ### 1.2 CRITICAL — Live secret key in a file that is NOT gitignored
-**File:** `C:\axion\.env.local` (repo root)
+**File:** `C:\warp\.env.local` (repo root)
 
 ```
 SUPABASE_SECRET_KEY=sb_secret_REDACTED
@@ -142,8 +142,8 @@ Two orphan roots — `app-shell.tsx` and `efferd-dashboard.tsx` (plus `hero.tsx`
 **Files:** `Assessment.tsx:116`, `ReportDetail.tsx:158`, `ReportDetail.tsx:233`, `ErrorBoundary.tsx:40`
 
 - **Root cause:** Using a nuke to reset one feature's state.
-- **Impact:** Wipes the Clerk session, Convex cache, `axiom.admin.auth`, and any other same-origin state — logging the user out and, on a shared origin, destroying other apps' data. `Assessment.tsx:116` is the "Start Over" button.
-- **Remediation:** Use the existing targeted API — `resetSession(storage)` in `persistence/storage.ts:55` removes exactly the three `axiom.*` keys. Pair with `useAuthStore.clearAuth()` / Clerk `signOut()`.
+- **Impact:** Wipes the Clerk session, Convex cache, `warp.admin.auth`, and any other same-origin state — logging the user out and, on a shared origin, destroying other apps' data. `Assessment.tsx:116` is the "Start Over" button.
+- **Remediation:** Use the existing targeted API — `resetSession(storage)` in `persistence/storage.ts:55` removes exactly the three `warp.*` keys. Pair with `useAuthStore.clearAuth()` / Clerk `signOut()`.
 
 ### 1.11 MAJOR — Tokens persisted to localStorage; comment contradicts the code
 **File:** `src/stores/authStore.ts`, lines 67–78
@@ -357,4 +357,4 @@ A full Recharts wrapper (`ChartContainer`, `ChartTooltip`, `ChartLegend`, contex
 13. Correct the false privacy/cloud claims, or change the architecture to match them (§2.12).
 14. Extract `getOrdinal`, `REGIONS`, and the gradient/score constants (§1.13).
 
-**Note on the uncommitted work:** ~20 modified files in `.worktrees/axiom-mvp` have never been committed, and `main` is three branches behind the real code. Commit or branch this work before making sweeping deletions, so the dead cluster remains recoverable from history.
+**Note on the uncommitted work:** ~20 modified files in `.worktrees/warp-mvp` have never been committed, and `main` is three branches behind the real code. Commit or branch this work before making sweeping deletions, so the dead cluster remains recoverable from history.

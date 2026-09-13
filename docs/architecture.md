@@ -1,6 +1,6 @@
 # System Architecture & Persistence
 
-AXIOM is designed as a standalone, offline-first React application targeting modern browsers. It requires zero backend infrastructure, networking APIs, or external databases post-initial load.
+WARP is designed as a standalone, offline-first React application targeting modern browsers. It requires zero backend infrastructure, networking APIs, or external databases post-initial load.
 
 ## Tech Stack
 - **Framework**: React 18
@@ -25,8 +25,8 @@ Since there is no backend, all user progression and profile data is saved locall
 It relies on the `StorageLike` interface (mapping to `window.localStorage`).
 
 ### Stored Entities
-- `axiom.profile.v1`: Stores the `LearnerProfile` (Name, Class Level, Difficulty).
-- `axiom.session.v2`: Stores the active or completed `AxiomSession` (phase, plan, responses, result snapshot).
+- `warp.profile.v1`: Stores the `LearnerProfile` (Name, Class Level, Difficulty).
+- `warp.session.v2`: Stores the active or completed `WarpSession` (phase, plan, responses, result snapshot).
 
 ### Hydration & Recovery
 When the app loads, `loadSession` reads the storage keys.

@@ -1,11 +1,11 @@
 # UI Components & State Management
 
-AXIOM's UI is built with React 18, utilizing functional components and Tailwind CSS v4. State is strictly managed by domain logic but injected into the React tree via the Context API.
+WARP's UI is built with React 18, utilizing functional components and Tailwind CSS v4. State is strictly managed by domain logic but injected into the React tree via the Context API.
 
-## State Management (`src/context/AxiomSessionContext.tsx`)
+## State Management (`src/context/WarpSessionContext.tsx`)
 
 The UI does not hold core business state natively; it wraps the `sessionReducer` inside a `useReducer` hook.
-- **Provider**: `AxiomSessionProvider` initializes the session from `localStorage` on the first render.
+- **Provider**: `WarpSessionProvider` initializes the session from `localStorage` on the first render.
 - **Actions**: Provides high-level dispatch methods (`setProfile`, `answer`, `undo`, `complete`, `startNew`) to child components without exposing the raw dispatch loop.
 - **Persistence Hooks**: `useLocalStorage` is triggered via `useEffect` to autosave on every mutation.
 

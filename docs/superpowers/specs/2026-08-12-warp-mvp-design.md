@@ -1,16 +1,16 @@
-# AXIOM MVP Design
+# WARP MVP Design
 
 **Status:** Approved for implementation
 
 ## Product intent
 
-AXIOM is a zero-backend, offline-first browser assessment that projects Indian students in Classes 3-12 onto a transparent global STEAM competency scale. It evaluates applied systems thinking through connected decisions rather than rote recall. The MVP is a single local learner profile per browser and does not include accounts, classroom administration, leaderboards, or a server.
+WARP is a zero-backend, offline-first browser assessment that projects Indian students in Classes 3-12 onto a transparent global STEAM competency scale. It evaluates applied systems thinking through connected decisions rather than rote recall. The MVP is a single local learner profile per browser and does not include accounts, classroom administration, leaderboards, or a server.
 
 ## Product boundary
 
 The MVP covers an onboarding flow, class selection, a calibration, three adaptive missions, an evidence-led results dashboard, and exact progress recovery after refresh or browser closure. The intended session length is 25-35 minutes.
 
-The assessment has five developmental content bands: Classes 3-4, 5-6, 7-8, 9-10, and 11-12. Norm selection remains exact to the learner's chosen class within its band. Each completed session is a projection using provisional expert-authored reference distributions; AXIOM must never present it as a validated global rank.
+The assessment has five developmental content bands: Classes 3-4, 5-6, 7-8, 9-10, and 11-12. Norm selection remains exact to the learner's chosen class within its band. Each completed session is a projection using provisional expert-authored reference distributions; WARP must never present it as a validated global rank.
 
 ## Experience and visual system
 
@@ -18,7 +18,7 @@ The application defaults to a dark slate-and-cyan cinematic interface that reads
 
 The assessment viewport has a locked shell:
 
-- A persistent top bar identifies AXIOM and local-save state.
+- A persistent top bar identifies WARP and local-save state.
 - A fixed left mission rail provides orientation on desktop.
 - A stable bottom action bar contains the response action and save indicator.
 - Mission prompt content changes inside the center panel without moving primary controls.
@@ -50,7 +50,7 @@ The calibration establishes a deterministic seed and band-appropriate first miss
 
 ## Benchmarking and results
 
-For each competency, AXIOM calculates the weighted raw percentage:
+For each competency, WARP calculates the weighted raw percentage:
 
 `rawPercent = 100 * earnedWeight / availableWeight`
 
@@ -66,7 +66,7 @@ On completion the engine creates an immutable result snapshot containing: assess
 
 ## Persistence and recovery
 
-`AxiomSession` is versioned JSON persisted under one local-storage key. A `useLocalStorage` hook owns safe serialization, parsing, validation, migration, write errors, and reset. `AxiomSessionProvider` uses that hook and is the only React-level owner of mutable session state.
+`WarpSession` is versioned JSON persisted under one local-storage key. A `useLocalStorage` hook owns safe serialization, parsing, validation, migration, write errors, and reset. `WarpSessionProvider` uses that hook and is the only React-level owner of mutable session state.
 
 The session is saved after learner profile edits, every answer, every navigation transition, and completed snapshot creation. The header visibly reports `Saved locally` when the most recent persistence operation succeeds, or an explicit non-destructive warning if browser storage is unavailable.
 

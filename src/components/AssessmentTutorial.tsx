@@ -2,14 +2,14 @@ import { motion } from 'motion/react';
 import { ArrowRight, Clock, Target, BrainCircuit, Lock } from 'lucide-react';
 import { Button } from './ui/button';
 
-import { useAxiomSession } from '../context/AxiomSessionContext';
+import { useWarpSession } from '../context/WarpSessionContext';
 
 interface AssessmentTutorialProps {
   onStart: () => void;
 }
 
 export function AssessmentTutorial({ onStart }: AssessmentTutorialProps) {
-  const { session, openHub } = useAxiomSession();
+  const { session, openHub } = useWarpSession();
   const subject = session.plan?.subject || 'STEM';
   const displayTitle = subject === 'STEM' ? 'International STEM Benchmark' : `${subject} Benchmark`;
 

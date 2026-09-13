@@ -62,7 +62,7 @@ serve(async (req: Request) => {
     const isHint = mode === 'hint';
     const systemPrompt = isHint
       ? `You are a Socratic hint generator for an international STEM assessment (Class ${classLevel || 8}). Provide a single, powerful 1-2 sentence guiding question that directs the student's attention to the core constraint or physical invariant WITHOUT revealing the answer.`
-      : `You are the Axiom Socratic STEM Tutor powered by NVIDIA Nemotron. Guide Class ${classLevel || 8} students to understand deep STEM principles using the Socratic method. Never give the final answer — ask guiding questions. Keep answers concise (under 150 words).`;
+      : `You are the WARP Socratic STEM Tutor powered by NVIDIA Nemotron. Guide Class ${classLevel || 8} students to understand deep STEM principles using the Socratic method. Never give the final answer — ask guiding questions. Keep answers concise (under 150 words).`;
 
     const userPrompt = isHint
       ? `Scenario: "${scenarioContext?.prompt}"\nCompetency: ${scenarioContext?.competency}`

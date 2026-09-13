@@ -1,4 +1,4 @@
-import { AxiomSessionProvider, useAxiomSession } from './context/AxiomSessionContext';
+import { WarpSessionProvider, useWarpSession } from './context/WarpSessionContext';
 import { AppShell } from './components/AppShell';
 import { Assessment } from './components/Assessment';
 import { AssessmentHub } from './components/AssessmentHub';
@@ -20,8 +20,8 @@ import { normalizeDifficulty } from './domain/assessment';
 // ── Admin portal: served at /admin or /admin/* ───────────────────────
 const isAdminRoute = window.location.pathname.startsWith('/admin');
 
-function AxiomApplication() {
-  const { session, enterApp, setProfile, selectSubject, goHome } = useAxiomSession();
+function WarpApplication() {
+  const { session, enterApp, setProfile, selectSubject, goHome } = useWarpSession();
   const { isGuest } = useAuthStore();
   const { isLoaded, isSignedIn, user } = useSupabaseAuth();
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
@@ -70,7 +70,7 @@ function AxiomApplication() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [enterApp, goHome]);
 
-  // Synchronize user to Supabase public.users and AxiomSession
+  // Synchronize user to Supabase public.users and WarpSession
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       if (isGuest) {
@@ -227,5 +227,5 @@ export default function App() {
     return <AdminApp />;
   }
 
-  return <AxiomSessionProvider><AxiomApplication /></AxiomSessionProvider>;
+  return <WarpSessionProvider><WarpApplication /></WarpSessionProvider>;
 }

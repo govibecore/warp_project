@@ -1,8 +1,8 @@
-# AXIOM Viewport Density Correction Implementation Plan
+# WARP Viewport Density Correction Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make AXIOM's onboarding, assessment, and dashboard reliably fit common viewport heights and widths without losing the dark benchmark character.
+**Goal:** Make WARP's onboarding, assessment, and dashboard reliably fit common viewport heights and widths without losing the dark benchmark character.
 
 **Architecture:** Preserve assessment behavior and compact the existing component layouts in CSS. Add stable test hooks, then test the rendered page at target viewports rather than inferring fit from unit tests.
 
@@ -58,7 +58,7 @@ Run `pnpm exec playwright test e2e/assessment.spec.ts --project=chromium --repor
 
 - [ ] **Step 5: Commit the red tests**
 
-Run `git add src/App.test.tsx e2e/assessment.spec.ts; git commit -m "test: cover AXIOM viewport density"`.
+Run `git add src/App.test.tsx e2e/assessment.spec.ts; git commit -m "test: cover WARP viewport density"`.
 
 ### Task 2: Apply compact viewport-safe layout rules
 
@@ -94,7 +94,7 @@ Run `pnpm test -- --run src/App.test.tsx` and `pnpm exec playwright test e2e/ass
 
 - [ ] **Step 4: Commit the implementation**
 
-Run `git add src/components/Onboarding.tsx src/styles/global.css src/App.test.tsx e2e/assessment.spec.ts; git commit -m "fix: compact AXIOM viewport layouts"`.
+Run `git add src/components/Onboarding.tsx src/styles/global.css src/App.test.tsx e2e/assessment.spec.ts; git commit -m "fix: compact WARP viewport layouts"`.
 
 ### Task 3: Full verification
 

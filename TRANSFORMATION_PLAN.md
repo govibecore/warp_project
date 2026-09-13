@@ -1,4 +1,4 @@
-# AXIOM Transformation Plan
+# WARP Transformation Plan
 
 > CTO-led remediation log tracking every audit finding to resolution.
 > Source: `CODEBASE_AUDIT.md` (Phase 1) → this plan (Phase 2 onward).
@@ -62,7 +62,7 @@
 | # | Finding | Status | Resolution |
 |---|---|---|---|
 | 5.1 | `Assessment.test.tsx` E2E test failing (regex mismatch) | ✅ Done | Button text is "Continue without an account" but test queried `/continue without account/i` (missing "an"). Fixed regex to `/continue without an account/i`. 21/21 → now 35/35. |
-| 5.2 | Vitest "window is not defined" when run from workspace root | ✅ Done | Root cause: `npx vitest` from `C:\axion` installs vitest@5 globally (no jsdom). Fix: always `cd C:/axion/.worktrees/axiom-mvp` before running `npx vitest`. |
+| 5.2 | Vitest "window is not defined" when run from workspace root | ✅ Done | Root cause: `npx vitest` from `C:\warp` installs vitest@5 globally (no jsdom). Fix: always `cd C:/warp/.worktrees/warp-mvp` before running `npx vitest`. |
 
 ### 6. Product Documentation
 
@@ -88,7 +88,7 @@
 ## Architecture (Current)
 
 ```
-AXIOM
+WARP
 ├── Frontend: Vite + React 18 + Tailwind CSS v4
 ├── Design System: Nordic Lagom (tokenised in src/styles/global.css)
 ├── Backend: Convex (real-time database, mutations, queries, actions)

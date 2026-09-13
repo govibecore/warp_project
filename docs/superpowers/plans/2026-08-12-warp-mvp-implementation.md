@@ -1,4 +1,4 @@
-# AXIOM MVP Implementation Plan
+# WARP MVP Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -38,7 +38,7 @@
 
 **Interfaces:**
 - Produces: a Vite React application mounted at `#root`, with `npm run dev`, `npm run test`, `npm run build`, and `npm run e2e` scripts.
-- Produces: `App(): JSX.Element`, initially rendering an AXIOM boot state.
+- Produces: `App(): JSX.Element`, initially rendering a WARP boot state.
 
 - [ ] **Step 1: Write the failing application shell test**
 
@@ -46,9 +46,9 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-it('renders the AXIOM boot state', () => {
+it('renders the WARP boot state', () => {
   render(<App />);
-  expect(screen.getByRole('heading', { name: /AXIOM/i })).toBeInTheDocument();
+  expect(screen.getByRole('heading', { name: /WARP/i })).toBeInTheDocument();
   expect(screen.getByText(/learning signal/i)).toBeInTheDocument();
 });
 ```
@@ -65,7 +65,7 @@ Create a React root that renders this reachable initial surface:
 
 ```tsx
 export default function App() {
-  return <main><p>Learning signal</p><h1>AXIOM</h1></main>;
+  return <main><p>Learning signal</p><h1>WARP</h1></main>;
 }
 ```
 
@@ -81,7 +81,7 @@ Expected: one passing test and a successful Vite production build.
 
 ```bash
 git add package.json vite.config.ts tsconfig.json index.html src
-git commit -m "chore: scaffold AXIOM React application"
+git commit -m "chore: scaffold WARP React application"
 ```
 
 ### Task 2: Implement canonical domain types, norms, and score projections
@@ -151,9 +151,9 @@ git commit -m "feat: add provisional competency benchmark engine"
 - Create: `src/domain/assessment.test.ts`
 
 **Interfaces:**
-- Produces: `createAssessment(classLevel: number, calibrationAnswers: Answer[]): AssessmentPlan` and `getNextItem(plan: AssessmentPlan, session: AxiomSession): AssessmentItem | null`.
+- Produces: `createAssessment(classLevel: number, calibrationAnswers: Answer[]): AssessmentPlan` and `getNextItem(plan: AssessmentPlan, session: WarpSession): AssessmentItem | null`.
 - Produces: `applyScenarioMutation(state: ScenarioState, mutation?: ScenarioMutation): ScenarioState`.
-- Consumes: `Competency`, `EvidenceContribution`, `AxiomSession`, and `AssessmentPlan` types from `src/domain/types.ts`.
+- Consumes: `Competency`, `EvidenceContribution`, `WarpSession`, and `AssessmentPlan` types from `src/domain/types.ts`.
 
 - [ ] **Step 1: Write failing deterministic-path and continuity tests**
 
@@ -200,7 +200,7 @@ git commit -m "feat: add deterministic systems-thinking missions"
 - Create: `src/domain/session.test.ts`
 
 **Interfaces:**
-- Produces: `const SESSION_KEY = 'axiom.session.v1'`, `loadSession(storage): LoadResult`, `saveSession(session, storage): PersistenceStatus`, and `resetSession(storage): void`.
+- Produces: `const SESSION_KEY = 'warp.session.v1'`, `loadSession(storage): LoadResult`, `saveSession(session, storage): PersistenceStatus`, and `resetSession(storage): void`.
 - Produces: `createSession()`, `sessionReducer(session, action)`, and `CURRENT_SESSION_VERSION`.
 - Consumes later: reducer actions `setProfile`, `answerItem`, `advance`, `complete`, and `reset`.
 
@@ -246,19 +246,19 @@ git commit -m "feat: add resilient local assessment persistence"
 
 **Files:**
 - Create: `src/hooks/useLocalStorage.ts`
-- Create: `src/context/AxiomSessionContext.tsx`
-- Create: `src/context/AxiomSessionContext.test.tsx`
+- Create: `src/context/WarpSessionContext.tsx`
+- Create: `src/context/WarpSessionContext.test.tsx`
 - Modify: `src/main.tsx`
 
 **Interfaces:**
-- Produces: `useAxiomSession(): AxiomSessionContextValue` with `session`, `persistenceStatus`, `setProfile`, `answer`, `advance`, `complete`, `startNew`, and `eraseLocalData`.
+- Produces: `useWarpSession(): WarpSessionContextValue` with `session`, `persistenceStatus`, `setProfile`, `answer`, `advance`, `complete`, `startNew`, and `eraseLocalData`.
 - Consumes: storage functions and reducer actions from Task 4; result calculation from Task 2; assessment planner from Task 3.
 
 - [ ] **Step 1: Write the failing provider hydration and write-through test**
 
 ```tsx
 it('hydrates a saved answer and persists a replacement answer', async () => {
-  render(<AxiomSessionProvider><Harness /></AxiomSessionProvider>);
+  render(<WarpSessionProvider><Harness /></WarpSessionProvider>);
   expect(screen.getByText(/saved answer: route-flex/i)).toBeInTheDocument();
   await userEvent.click(screen.getByRole('button', { name: /choose reserve/i }));
   expect(JSON.parse(localStorage.getItem(SESSION_KEY)!)).toMatchObject({ responses: expect.any(Object) });
@@ -267,17 +267,17 @@ it('hydrates a saved answer and persists a replacement answer', async () => {
 
 - [ ] **Step 2: Run the provider test to verify it fails**
 
-Run: `npm test -- --run src/context/AxiomSessionContext.test.tsx`
+Run: `npm test -- --run src/context/WarpSessionContext.test.tsx`
 
 Expected: FAIL because the hook and context do not exist.
 
 - [ ] **Step 3: Implement context as the only mutable UI boundary**
 
-Use one reducer-owned session. Persist through `useLocalStorage` after reducer state changes, expose an explicit persistence status, and provide strict context-hook misuse errors. Wrap `<App />` with `<AxiomSessionProvider>` in `main.tsx`.
+Use one reducer-owned session. Persist through `useLocalStorage` after reducer state changes, expose an explicit persistence status, and provide strict context-hook misuse errors. Wrap `<App />` with `<WarpSessionProvider>` in `main.tsx`.
 
 - [ ] **Step 4: Run provider tests**
 
-Run: `npm test -- --run src/context/AxiomSessionContext.test.tsx`
+Run: `npm test -- --run src/context/WarpSessionContext.test.tsx`
 
 Expected: PASS for startup hydration, response write-through, visible unavailable-storage state, and clean reset.
 
@@ -285,7 +285,7 @@ Expected: PASS for startup hydration, response write-through, visible unavailabl
 
 ```bash
 git add src/hooks src/context src/main.tsx
-git commit -m "feat: provide persistent AXIOM session context"
+git commit -m "feat: provide persistent WARP session context"
 ```
 
 ### Task 6: Build onboarding and the locked assessment experience
@@ -300,7 +300,7 @@ git commit -m "feat: provide persistent AXIOM session context"
 - Modify: `src/styles/global.css`
 
 **Interfaces:**
-- Consumes: `useAxiomSession()` and pure catalog items.
+- Consumes: `useWarpSession()` and pure catalog items.
 - Produces: accessible onboarding, assessment route states, `data-testid="assessment-shell"`, and stable `header`, `aside`, and action `footer` regions.
 
 - [ ] **Step 1: Write failing learner-flow tests**
@@ -324,7 +324,7 @@ Expected: FAIL because onboarding and assessment components do not exist.
 
 - [ ] **Step 3: Implement the cinematic locked shell**
 
-Build native-label onboarding for learner name and class 3-12. Render a stable AXIOM header, desktop mission rail, central prompt/choices, and bottom action bar. Use CSS grid and `position: sticky` only inside the app shell so primary controls remain visible without introducing document scroll jumps. Save status must state `Saved locally`, `Saving locally`, or `Local save unavailable` in text. Do not display real landmarks or speed-based feedback.
+Build native-label onboarding for learner name and class 3-12. Render a stable WARP header, desktop mission rail, central prompt/choices, and bottom action bar. Use CSS grid and `position: sticky` only inside the app shell so primary controls remain visible without introducing document scroll jumps. Save status must state `Saved locally`, `Saving locally`, or `Local save unavailable` in text. Do not display real landmarks or speed-based feedback.
 
 - [ ] **Step 4: Run learner-flow tests**
 
@@ -440,5 +440,5 @@ Expected: all unit/component tests, production build, and end-to-end refresh/res
 
 ```bash
 git add playwright.config.ts e2e/ README.md package.json
-git commit -m "test: verify AXIOM offline assessment journey"
+git commit -m "test: verify WARP offline assessment journey"
 ```

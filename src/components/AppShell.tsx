@@ -11,7 +11,7 @@ import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 import { supabase } from '../lib/supabase';
 import { User } from 'lucide-react';
 
-import { useAxiomSession } from '../context/AxiomSessionContext';
+import { useWarpSession } from '../context/WarpSessionContext';
 
 export function AppShell({
   children,
@@ -19,7 +19,7 @@ export function AppShell({
   hideHeader = false,
 }: PropsWithChildren<{ scrollable?: boolean; hideHeader?: boolean }>) {
   const { isSignedIn } = useSupabaseAuth();
-  const { goHome } = useAxiomSession();
+  const { goHome } = useWarpSession();
   return (
     <div
       className={

@@ -1,13 +1,13 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { calculateResult } from '../domain/scoring';
 import { createSession, sessionReducer } from '../domain/session';
-import type { AxiomSession, ItemResponse, LearnerProfile, Subject } from '../domain/types';
+import type { ItemResponse, LearnerProfile, Subject, WarpSession } from '../domain/types';
 import { usePersistence } from '../hooks/usePersistence';
 import { useAssessment } from '../hooks/useAssessment';
 import { loadSession, type PersistenceStatus, type StorageLike } from '../persistence/storage';
 
-interface AxiomSessionContextValue {
-  session: AxiomSession;
+interface WarpSessionContextValue {
+  session: WarpSession;
   persistenceStatus: PersistenceStatus;
   setProfile(profile: LearnerProfile): void;
   selectSubject(subject: Subject): void;
@@ -21,9 +21,9 @@ interface AxiomSessionContextValue {
   eraseLocalData(): void;
 }
 
-const AxiomSessionContext = createContext<AxiomSessionContextValue | null>(null);
+const WarpSessionContext = createContext<WarpSessionContextValue | null>(null);
 
-export function AxiomSessionProvider({ children, storage = window.localStorage }: PropsWithChildren<{ storage?: StorageLike }>) {
+export function WarpSessionProvider({ children, storage = window.localStorage }: PropsWithChildren<{ storage?: StorageLike }>) {
   const [session, dispatch] = useReducer(sessionReducer, undefined, () => loadSession(storage).session);
   const sessionRef = useRef(session);
   useEffect(() => {
@@ -64,7 +64,7 @@ export function AxiomSessionProvider({ children, storage = window.localStorage }
     dispatch({ type: 'reset' });
   }, [erase]);
 
-  const value = useMemo<AxiomSessionContextValue>(() => ({
+  const value = useMemo<WarpSessionContextValue>(() => ({
     session,
     persistenceStatus,
     setProfile,
@@ -79,12 +79,12 @@ export function AxiomSessionProvider({ children, storage = window.localStorage }
     eraseLocalData,
   }), [session, persistenceStatus, setProfile, selectSubject, answer, undo, complete, enterApp, openHub, goHome, startNew, eraseLocalData]);
 
-  return <AxiomSessionContext.Provider value={value}>{children}</AxiomSessionContext.Provider>;
+  return <WarpSessionContext.Provider value={value}>{children}</WarpSessionContext.Provider>;
 }
 
-export function useAxiomSession(): AxiomSessionContextValue {
-  const value = useContext(AxiomSessionContext);
-  if (!value) throw new Error('useAxiomSession must be used inside AxiomSessionProvider.');
+export function useWarpSession(): WarpSessionContextValue {
+  const value = useContext(WarpSessionContext);
+  if (!value) throw new Error('useWarpSession must be used inside WarpSessionProvider.');
   return value;
 }
 

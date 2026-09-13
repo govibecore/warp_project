@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>()(
       setGuest: () => set({ isGuest: true, isAuthenticated: false }),
     }),
     {
-      name:    'axiom.auth.v1',
+      name:    'warp.auth.v1',
       storage: createJSONStorage(() => localStorage),
       // Only persist non-sensitive fields; access token persisted for UX continuity
       // (short-lived 15min tokens are acceptable in localStorage for dev experience)

@@ -1,4 +1,4 @@
-# AXIOM viewport-density correction
+# WARP viewport-density correction
 
 ## Problem
 
@@ -6,7 +6,7 @@ The onboarding screen overflows vertically at ordinary desktop browser heights a
 
 ## Goal
 
-Keep every primary action and disclosure visible without scrolling at practical desktop sizes, while retaining AXIOM's dark, precise, applied-benchmark character. The interface must remain usable without horizontal overflow from 320 CSS pixels upward.
+Keep every primary action and disclosure visible without scrolling at practical desktop sizes, while retaining WARP's dark, precise, applied-benchmark character. The interface must remain usable without horizontal overflow from 320 CSS pixels upward.
 
 ## Layout rules
 

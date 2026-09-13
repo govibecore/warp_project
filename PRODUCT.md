@@ -16,7 +16,7 @@ Students in Classes 3–12 taking a STEM competency assessment, and their parent
 
 ## Product Purpose
 
-AXIOM is a STEM competency assessment that uses linked, fictional systems scenarios to generate a projected benchmark across five competencies — scientific inquiry, computational thinking, engineering design, mathematical reasoning, and systems thinking. Each of the 30 items is band-differentiated across five developmental bands (Classes 3–4, 5–6, 7–8, 9–10, 11–12), so a Class 3 learner and a Class 12 learner never see the same question text. Distractors are designed to diagnose canonical misconceptions, and every item is tagged with NGSS Science & Engineering Practices, PISA 2025 competencies, and NCF 2023 stage alignment.
+WARP is a STEM competency assessment that uses linked, fictional systems scenarios to generate a projected benchmark across five competencies — scientific inquiry, computational thinking, engineering design, mathematical reasoning, and systems thinking. Each of the 30 items is band-differentiated across five developmental bands (Classes 3–4, 5–6, 7–8, 9–10, 11–12), so a Class 3 learner and a Class 12 learner never see the same question text. Distractors are designed to diagnose canonical misconceptions, and every item is tagged with NGSS Science & Engineering Practices, PISA 2025 competencies, and NCF 2023 stage alignment.
 
 ## Positioning
 

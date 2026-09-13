@@ -1,7 +1,7 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "name": "axiom",
-  "homepage": "https://axiom.internal",
+  "name": "warp",
+  "homepage": "https://warp.internal",
   "include": [
     "ui/registry.json"
   ]

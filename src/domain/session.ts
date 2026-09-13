@@ -1,5 +1,5 @@
 import { createAssessment } from './assessment';
-import type { AxiomSession, ItemResponse, LearnerProfile, ResultSnapshot, Subject } from './types';
+import type { ItemResponse, LearnerProfile, ResultSnapshot, Subject, WarpSession } from './types';
 
 export const CURRENT_SESSION_VERSION = 1 as const;
 
@@ -14,7 +14,7 @@ export type SessionAction =
   | { type: 'openHub' }
   | { type: 'reset' };
 
-export function createSession(profile?: LearnerProfile): AxiomSession {
+export function createSession(profile?: LearnerProfile): WarpSession {
   if (!profile) {
     return { version: CURRENT_SESSION_VERSION, phase: 'landing', responses: {} };
   }
@@ -26,7 +26,7 @@ export function createSession(profile?: LearnerProfile): AxiomSession {
   };
 }
 
-export function sessionReducer(session: AxiomSession, action: SessionAction): AxiomSession {
+export function sessionReducer(session: WarpSession, action: SessionAction): WarpSession {
   if (action.type === 'reset') return createSession();
   if (action.type === 'enterApp') return { ...session, phase: 'onboarding' };
   if (action.type === 'goHome') return { ...session, phase: 'landing' };

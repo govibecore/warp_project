@@ -123,7 +123,7 @@ export interface LearnerProfile {
   schoolName?: string;
 }
 
-export interface AxiomSession {
+export interface WarpSession {
   _id?: string;
   version: 1;
   phase: 'landing' | 'onboarding' | 'hub' | 'assessment' | 'results';

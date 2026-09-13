@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { TriangleAlert, Plus, LogOut, Trophy, ArrowUpRight, ArrowDownRight, Trash2, TrendingUp, Brain } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { useAuthStore } from '../../stores/authStore';
-import { useAxiomSession } from '../../context/AxiomSessionContext';
+import { useWarpSession } from '../../context/WarpSessionContext';
 import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 import { supabase } from '../../lib/supabase';
 import { Leaderboard } from './Leaderboard';
@@ -65,7 +65,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 export function StudentDashboard() {
   const { isGuest } = useAuthStore();
   const { user, isLoaded } = useSupabaseAuth();
-  const { eraseLocalData, setProfile, enterApp } = useAxiomSession();
+  const { eraseLocalData, setProfile, enterApp } = useWarpSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 

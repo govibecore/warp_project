@@ -1,10 +1,10 @@
 import { createSession, sessionReducer } from '../domain/session';
-import type { AxiomSession, ItemResponse, LearnerProfile } from '../domain/types';
+import type { ItemResponse, LearnerProfile, WarpSession } from '../domain/types';
 
 
-export const SESSION_KEY = 'axiom.session.v2';
-export const PROFILE_KEY = 'axiom.profile.v1';
-export const SESSION_ID_KEY = 'axiom.session_id.v1';
+export const SESSION_KEY = 'warp.session.v2';
+export const PROFILE_KEY = 'warp.profile.v1';
+export const SESSION_ID_KEY = 'warp.session_id.v1';
 
 export interface StorageLike {
   getItem(key: string): string | null;
@@ -18,12 +18,12 @@ export type PersistenceStatus =
   | { state: 'offline_sync_pending' }
   | { state: 'unavailable'; message: string };
 export interface LoadResult {
-  session: AxiomSession;
+  session: WarpSession;
   recovered: boolean;
 }
 
 
-export async function saveSession(session: AxiomSession, storage: StorageLike): Promise<PersistenceStatus> {
+export async function saveSession(session: WarpSession, storage: StorageLike): Promise<PersistenceStatus> {
   let localSaved = false;
   try {
     storage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -44,7 +44,7 @@ export function loadSession(storage: StorageLike): LoadResult {
   try {
     const parsed: unknown = JSON.parse(raw);
     const session = migrateAndHydrate(parsed, profile);
-    if (!session) throw new Error('Invalid AXIOM session data.');
+    if (!session) throw new Error('Invalid WARP session data.');
     return { session, recovered: false };
   } catch {
     safelyRemove(storage, SESSION_KEY);
@@ -58,7 +58,7 @@ export function resetSession(storage: StorageLike): void {
   safelyRemove(storage, SESSION_ID_KEY);
 }
 
-function migrateAndHydrate(value: unknown, fallbackProfile?: LearnerProfile): AxiomSession | null {
+function migrateAndHydrate(value: unknown, fallbackProfile?: LearnerProfile): WarpSession | null {
   if (!isRecord(value)) return null;
   const profile = isProfile(value.profile) ? value.profile : fallbackProfile;
   if (!profile) return createSession();

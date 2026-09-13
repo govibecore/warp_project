@@ -23,7 +23,7 @@ const missionBlueprints: Record<MissionId, readonly ItemBlueprint[]> = {
 };
 
 /**
- * The AXIOM item bank.
+ * The WARP item bank.
  *
  * Every blueprint carries a full variant per developmental band: prompt,
  * context, hint, and four options are all rewritten for the band's reading

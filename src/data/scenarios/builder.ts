@@ -16,7 +16,7 @@ export function getDevelopmentalBand(classLevel: number): DevelopmentalBand {
   if (classLevel >= 7 && classLevel <= 8) return '7-8';
   if (classLevel >= 9 && classLevel <= 10) return '9-10';
   if (classLevel >= 11 && classLevel <= 12) return '11-12';
-  throw new Error(`Class ${classLevel} is outside AXIOM's Class 3-12 assessment range.`);
+  throw new Error(`Class ${classLevel} is outside WARP's Class 3-12 assessment range.`);
 }
 
 /** NCF 2023 stage each developmental band belongs to (India's 5+3+3+4 structure). */

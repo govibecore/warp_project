@@ -1,6 +1,6 @@
 # Testing Strategy
 
-AXIOM employs a dual testing strategy using Vitest for fast, localized unit and domain tests, and Playwright for end-to-end (E2E) browser interactions.
+WARP employs a dual testing strategy using Vitest for fast, localized unit and domain tests, and Playwright for end-to-end (E2E) browser interactions.
 
 ## Unit Testing (Vitest)
 

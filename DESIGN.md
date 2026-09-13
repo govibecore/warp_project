@@ -2,7 +2,7 @@
 
 > _"Lagom"_ — not too much, not too little. The right amount.
 
-A design system for AXIOM, a STEM competency assessment platform for students in Classes 3–12. The system prioritises legibility, calm, and trust. It is not decorative.
+A design system for WARP, a STEM competency assessment platform for students in Classes 3–12. The system prioritises legibility, calm, and trust. It is not decorative.
 
 ---
 
