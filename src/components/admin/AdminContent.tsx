@@ -59,10 +59,11 @@ export function AdminContent() {
 
       if (isInitial) setScenarioStatus('LoadingFirstPage');
 
-      let query = supabase.from('scenarios').select('*').order('class_level', { ascending: true }).order('created_at', { ascending: false });
+      let query = supabase.from('scenarios_safe' as any).select('*').order('created_at', { ascending: false });
       
       if (classFilter !== undefined) {
-        query = query.eq('class_level', classFilter);
+        const band = classFilter <= 4 ? '3-4' : classFilter <= 6 ? '5-6' : classFilter <= 8 ? '7-8' : classFilter <= 10 ? '9-10' : '11-12';
+        query = query.eq('developmental_band', band);
       }
       if (diffFilter) {
         query = query.eq('difficulty', diffFilter);

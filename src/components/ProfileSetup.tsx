@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 import { useAxiomSession } from '../context/AxiomSessionContext';
+import { normalizeDifficulty } from '../domain/assessment';
 import { Button } from './ui/button';
 import { Input, Select, Field } from './ui/input';
 import { TriangleAlert, Sparkles } from 'lucide-react';
@@ -68,7 +69,7 @@ export function ProfileSetup() {
     setProfile({
       name: updatedUser.full_name || 'Learner',
       classLevel: updatedUser.current_class || 8,
-      difficulty: (updatedUser.difficulty_pref as any) || 'Standard',
+      difficulty: normalizeDifficulty(updatedUser.difficulty_pref),
       schoolName: updatedUser.school_name ?? undefined
     });
 

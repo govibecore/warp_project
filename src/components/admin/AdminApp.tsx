@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
-import { supabase } from '../../lib/supabase';
 import { AdminLayout } from './AdminLayout';
 import { AdminOverview } from './AdminOverview';
 import { AdminStudents } from './AdminStudents';
@@ -16,10 +15,9 @@ export function AdminApp() {
 
   useEffect(() => {
     if (isSignedIn && user?.id) {
-      const isAdminUser = user.user_metadata?.role === 'admin' || user.email?.includes('admin');
-      supabase.from('students').select('id').eq('id', user.id).maybeSingle().then(({ data }) => {
-        setMe(isAdminUser || data ? { role: 'admin' } : null);
-      });
+      const email = user.email?.toLowerCase() || '';
+      const isAdminUser = user.user_metadata?.role === 'admin' || email.startsWith('admin@') || email.includes('+admin@');
+      setMe(isAdminUser ? { role: 'admin' } : null);
     } else if (isLoaded) {
       setMe(null);
     }

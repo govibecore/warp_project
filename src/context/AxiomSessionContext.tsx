@@ -3,6 +3,7 @@ import { calculateResult } from '../domain/scoring';
 import { createSession, sessionReducer } from '../domain/session';
 import type { AxiomSession, ItemResponse, LearnerProfile, Subject } from '../domain/types';
 import { usePersistence } from '../hooks/usePersistence';
+import { useAssessment } from '../hooks/useAssessment';
 import { loadSession, type PersistenceStatus, type StorageLike } from '../persistence/storage';
 
 interface AxiomSessionContextValue {
@@ -34,7 +35,10 @@ export function AxiomSessionProvider({ children, storage = window.localStorage }
   useEffect(() => { persist(session); }, [persist, session]);
 
   const setProfile = useCallback((profile: LearnerProfile) => dispatch({ type: 'setProfile', profile }), []);
-  const selectSubject = useCallback((subject: Subject) => dispatch({ type: 'selectSubject', subject }), []);
+  const selectSubject = useCallback((subject: Subject) => {
+    useAssessment.getState().resetAssessment();
+    dispatch({ type: 'selectSubject', subject });
+  }, []);
   const answer = useCallback((response: ItemResponse) => dispatch({ type: 'answerItem', response }), []);
   const undo = useCallback(() => dispatch({ type: 'undoLastResponse' }), []);
   const complete = useCallback(() => {
@@ -44,7 +48,10 @@ export function AxiomSessionProvider({ children, storage = window.localStorage }
     dispatch({ type: 'complete', result });
   }, []);
   const enterApp = useCallback(() => dispatch({ type: 'enterApp' }), []);
-  const openHub = useCallback(() => dispatch({ type: 'openHub' }), []);
+  const openHub = useCallback(() => {
+    useAssessment.getState().resetAssessment();
+    dispatch({ type: 'openHub' });
+  }, []);
   const goHome = useCallback(() => {
     if (typeof window !== 'undefined' && window.location.search) {
       window.history.pushState({}, '', window.location.pathname);

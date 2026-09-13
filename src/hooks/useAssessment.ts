@@ -153,11 +153,15 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
       currentScenario: null // clear while loading next
     });
 
-    // Fire & forget update to db
-    supabase.from('assessments').update({
+    // Persist response update to db before fetching next scenario
+    const { error: updateError } = await supabase.from('assessments').update({
       responses: newResponses,
       ability_theta: newThetaMap
-    }).eq('id', assessmentId).then();
+    }).eq('id', assessmentId);
+
+    if (updateError) {
+      console.warn('Failed to persist assessment response update:', updateError);
+    }
 
     // Full benchmark session: up to 30 items
     if (newSeen.length >= 30) {

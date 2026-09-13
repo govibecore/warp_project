@@ -15,6 +15,7 @@ import { useEffect, useState, useRef } from 'react';
 
 import { useSupabaseAuth } from './context/SupabaseAuthContext';
 import { supabase } from './lib/supabase';
+import { normalizeDifficulty } from './domain/assessment';
 
 // ── Admin portal: served at /admin or /admin/* ───────────────────────
 const isAdminRoute = window.location.pathname.startsWith('/admin');
@@ -76,15 +77,27 @@ function AxiomApplication() {
         useAuthStore.setState({ isGuest: false });
       }
 
-      // Store user in Supabase database
+      // Store user in Supabase database without overwriting existing current_class
       const syncUser = async () => {
         if (!user.email) return;
-        const { error } = await supabase.from('students').upsert({
-          id: user.id,
-          full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-          current_class: 8,
-        }, { onConflict: 'id' });
-        if (error) console.error('Failed to store user in Supabase:', error);
+        const { data: existing } = await supabase
+          .from('students')
+          .select('id')
+          .eq('id', user.id)
+          .maybeSingle();
+
+        if (!existing) {
+          const { error } = await supabase.from('students').insert({
+            id: user.id,
+            full_name: user.user_metadata?.full_name || user.email.split('@')[0],
+            current_class: 8,
+          });
+          if (error) console.error('Failed to insert user in Supabase:', error);
+        } else if (user.user_metadata?.full_name) {
+          await supabase.from('students').update({
+            full_name: user.user_metadata.full_name,
+          }).eq('id', user.id);
+        }
       };
       syncUser();
     }
@@ -165,7 +178,7 @@ function AxiomApplication() {
         if (!userData || !userData.full_name || !userData.current_class || !userData.parent_name || !userData.school_name) {
           setNeedsProfileSetup(true);
         } else {
-          if (userData.consent_status !== 'verified') {
+          if (userData.consent_status !== 'verified' && user.email_confirmed_at) {
             await supabase.from('students').update({
               consent_status: 'verified',
               consent_verified_at: new Date().toISOString()
@@ -181,7 +194,8 @@ function AxiomApplication() {
           setProfile({
             name: userData.full_name || 'Learner',
             classLevel: userData.current_class || 8,
-            difficulty: (userData.difficulty_pref as any) || 'standard'
+            difficulty: normalizeDifficulty(userData.difficulty_pref),
+            schoolName: userData.school_name ?? undefined
           });
         }
       });
