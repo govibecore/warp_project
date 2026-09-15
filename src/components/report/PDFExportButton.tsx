@@ -20,15 +20,16 @@ export function PDFExportButton({
   const [status, setStatus] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
 
   const handleExport = async () => {
-    const element = document.getElementById(targetId);
-    if (!element) {
-      console.warn(`Element #${targetId} not found for PDF generation. Fallback to print.`);
-      window.print();
-      return;
-    }
-
     try {
       setStatus('generating');
+
+      const element = document.getElementById(targetId);
+      if (!element) {
+        console.warn(`Element #${targetId} not found for PDF generation. Fallback to print.`);
+        window.print();
+        setStatus('idle');
+        return;
+      }
 
       const cleanName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
       const dateStr = new Date().toISOString().split('T')[0];

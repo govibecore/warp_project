@@ -81,7 +81,7 @@ export function AssessmentTutorial({ onStart }: AssessmentTutorialProps) {
           >
             Switch Track
           </Button>
-          <Button type="button" onClick={onStart} size="lg" className="w-full sm:w-auto px-12">
+          <Button type="button" onClick={onStart} size="lg" className="w-full sm:w-auto px-12" data-testid="tutorial-start-btn">
             Begin Assessment <ArrowRight className="size-4 ml-2" />
           </Button>
         </div>

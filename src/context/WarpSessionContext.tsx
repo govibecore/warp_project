@@ -1,6 +1,6 @@
 import { createContext, type PropsWithChildren, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { calculateResult } from '../domain/scoring';
-import { createSession, sessionReducer } from '../domain/session';
+import { sessionReducer } from '../domain/session';
 import type { ItemResponse, LearnerProfile, Subject, WarpSession } from '../domain/types';
 import { usePersistence } from '../hooks/usePersistence';
 import { useAssessment } from '../hooks/useAssessment';
@@ -87,5 +87,3 @@ export function useWarpSession(): WarpSessionContextValue {
   if (!value) throw new Error('useWarpSession must be used inside WarpSessionProvider.');
   return value;
 }
-
-export { createSession };

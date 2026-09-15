@@ -67,13 +67,16 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
 
   startAssessment: async (studentId, classLevel, difficulty, subject) => {
     const now = Date.now();
-    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now, subject });
+    const normalizedSubject = (subject === 'English' || subject === 'English Literacy')
+      ? 'English Literacy'
+      : (subject || 'STEM');
+    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now, subject: normalizedSubject });
     try {
       const { data: assessment, error } = await supabase.from('assessments').insert({
         student_id: studentId,
         class_level: classLevel,
         difficulty,
-        subject,
+        subject: normalizedSubject,
         status: 'in_progress'
       } as any).select().single();
 
@@ -209,16 +212,30 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         }
       }
 
-      const global_score = count > 0 ? Math.round(total_scaled / count) : 0;
+      if (count === 0 && Object.keys(theta).length > 0) {
+        console.error('Competency scoring failed: no competencies could be scored');
+        set({ status: 'error', loading: false, errorMessage: 'Failed to calculate competency scores' });
+        return;
+      }
 
-      await supabase.from('assessments').update({
+      // Only persist global_score when competency scoring succeeded; do not fabricate median score
+      const global_score = count > 0 ? Math.max(100, Math.min(900, Math.round(total_scaled / count))) : undefined;
+
+      const assessmentUpdate: Record<string, any> = {
         status: 'completed',
         completed_at: new Date().toISOString(),
         scaled_scores,
         percentiles,
-        global_score,
+        ...(global_score !== undefined ? { global_score } : {}),
         total_time_ms
-      }).eq('id', assessmentId);
+      };
+
+      const { error: updateError } = await supabase.from('assessments').update(assessmentUpdate as any).eq('id', assessmentId);
+      if (updateError) {
+        console.error('Failed to update assessment completion:', updateError);
+        set({ status: 'error', loading: false, errorMessage: 'Failed to save assessment completion' });
+        return;
+      }
 
       // Auto-generate and save comprehensive dual-audience report immediately
       if (studentId) {
