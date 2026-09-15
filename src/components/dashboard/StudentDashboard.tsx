@@ -79,7 +79,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 export function StudentDashboard() {
   const { isGuest } = useAuthStore();
   const { user, isLoaded } = useSupabaseAuth();
-  const { eraseLocalData, setProfile, enterApp } = useWarpSession();
+  const { setProfile, enterApp } = useWarpSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);

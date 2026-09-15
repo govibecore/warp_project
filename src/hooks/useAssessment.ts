@@ -224,7 +224,7 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         total_time_ms
       };
 
-      const { error: updateError } = await supabase.from('assessments').update(assessmentUpdate).eq('id', assessmentId);
+      const { error: updateError } = await supabase.from('assessments').update(assessmentUpdate as any).eq('id', assessmentId);
       if (updateError) {
         console.error('Failed to update assessment completion:', updateError);
       }

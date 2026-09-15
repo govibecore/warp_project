@@ -42,7 +42,7 @@ export interface StudentPreferences {
   antiGamification: boolean;
 }
 
-export const DEFAULT_STUDENT_PREFERENCES: StudentPreferences = {
+const DEFAULT_STUDENT_PREFERENCES: StudentPreferences = {
   whatsappReports: true,
   checkpointAlerts: true,
   socraticTips: false,
