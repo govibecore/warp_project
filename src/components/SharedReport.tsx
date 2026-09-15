@@ -71,7 +71,17 @@ export function SharedReport({ token }: { token: string }) {
     );
   }
 
-  // ── Render the parent variant ──
+  // ── Derive benchmark — prefer parent_variant, fall back to student_variant ──
+  const derivedBenchmark =
+    report.parent_variant?.benchmark ||
+    report.student_variant?.benchmark ||
+    {};
+  const derivedClassLevel =
+    report.parent_variant?.classLevel ||
+    report.student_variant?.classLevel ||
+    8;
+
+  // ── Render the report ──
   return (
     <SharedChrome>
       <div className="mx-auto w-full max-w-180 py-8 px-4 sm:px-6">
@@ -88,16 +98,24 @@ export function SharedReport({ token }: { token: string }) {
           )}
         </div>
 
-        {report.parent_variant ? (
+        {(report.parent_variant || derivedBenchmark?.aggregateScaledScore) ? (
           <ParentVariant
-            parentVariant={report.parent_variant}
-            benchmark={report.parent_variant?.benchmark || {}}
-            classLevel={report.parent_variant?.classLevel || 8}
+            parentVariant={report.parent_variant ?? undefined}
+            benchmark={derivedBenchmark}
+            classLevel={derivedClassLevel}
           />
         ) : (
-          <p className="text-sm text-foreground-secondary">
-            Report content is not available for this shared link.
-          </p>
+          <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
+            <p className="font-mono text-sm text-foreground-muted">
+              This report is still being generated. Please check back shortly.
+            </p>
+            <a
+              href="/"
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              ← Go to WARP SIGNAL
+            </a>
+          </div>
         )}
       </div>
     </SharedChrome>

@@ -375,7 +375,7 @@ export function BentoGridItem({
   return (
     <div
       className={cn(
-        'bg-background border border-border p-5 transition-all duration-200',
+        'bg-card border border-border p-5 transition-all duration-200 shadow-xs',
         dashed && 'border-dashed',
         getResponsiveClasses(
           colSpan,

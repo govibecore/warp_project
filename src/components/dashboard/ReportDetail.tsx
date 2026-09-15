@@ -1,7 +1,8 @@
-import { ArrowLeft, RefreshCw, Sparkles, GraduationCap, Users, Clock, Globe, TrendingUp } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, GraduationCap, Users, Clock, Globe, TrendingUp, FileCheck, Printer, LayoutDashboard, ArrowRight, FileText } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
 import { useState, useEffect } from 'react';
+import type React from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { WarpLogo } from '../WarpLogo';
@@ -14,11 +15,23 @@ import { PDFExportButton } from '../report/PDFExportButton';
 import { ShareButton } from '../report/ShareButton';
 import { StudentVariant } from '../report/StudentVariant';
 import { ParentVariant } from '../report/ParentVariant';
+import { ScenarioAudit } from '../report/ScenarioAudit';
 import { TrajectoryArc } from '../report/TrajectoryArc';
+import { OnePagePrintSummary } from '../report/OnePagePrintSummary';
+import { ParakhRadarChart } from '../report/ParakhRadarChart';
+import { ScoreRing } from '../ui/ScoreRing';
 import { BrainLoading } from '../animations/BrainLoading';
-import { GsapCounter } from '../animations/GsapCounter';
-import { OutcomeBadge } from '../ui/OutcomeBadge';
 
+import {
+  ShareBarList,
+  ShareBarListItem,
+  ShareBarListContent,
+  ShareBarListLabel,
+  ShareBarListValue,
+  ShareBarListFill,
+} from '../efferd/share-bar-list';
+
+type TabType = 'hub' | 'onepage' | 'student' | 'parent' | 'audit' | 'trajectory';
 
 function ordinal(n: number): string {
   if (!n) return '0th';
@@ -47,9 +60,11 @@ export function ReportDetail() {
   const [assessmentData, setAssessmentData] = useState<any>(null);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'student' | 'parent' | 'trajectory'>('student');
+  const [activeTab, setActiveTab] = useState<TabType>('hub');
   const [isTutorOpen, setIsTutorOpen] = useState(false);
+  const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
   const [studentName, setStudentName] = useState<string>('Candidate');
+  const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
 
   const params = new URLSearchParams(window.location.search);
   const shareToken = params.get('share');
@@ -239,12 +254,75 @@ export function ReportDetail() {
   const studentVariant = reportData?.student_variant;
   const parentVariant = reportData?.parent_variant;
 
+  // Derived high-signal metrics for Executive Summary Hub
+  const archetypeTitle = studentVariant?.archetypeTitle || benchmark.cognitiveArchetype?.title || 'Analytical Strategist';
+  const archetypeTagline = studentVariant?.archetypeTagline || benchmark.cognitiveArchetype?.tagline || 'Deconstructs multi-variable systems with structural precision';
+  const keyStrengths: string[] = studentVariant?.keyStrengths || [
+    benchmark.cognitiveArchetype?.primaryStrength || 'Parameter isolation & causal inference',
+  ];
+  const blindspots: string[] = studentVariant?.blindspots || [
+    benchmark.cognitiveArchetype?.criticalBlindspot || 'Premature optimization under time pressure',
+  ];
+  const realityCheck = benchmark.realityCheck || {};
+  const verdict = realityCheck.verdict || 'Developing Foundation';
+  const honestSummary = parentVariant?.realityCheckSummary || realityCheck.honestSummary || 'Demonstrates analytical decomposition; growth needed in multi-step deductive chaining.';
+  const boardGradeBand = benchmark.boardGradeBand;
+  const parakh = benchmark.parakhHolisticPillars;
+  const homeRoutines = parentVariant?.indianHomeRoutines || parentVariant?.immediateHomeRoutines || benchmark.parentActionBlueprint?.indianHomeRoutines || [];
+  const indiaPercentile = benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68;
+  const responses = assessmentData.responses || [];
+  const correctCount = responses.filter((r: any) => r.correct === true).length;
+  const totalCount = responses.length || 6;
+
+  const parakhVitals = [
+    {
+      domain: 'Core Domain',
+      label: 'Conceptual Knowledge',
+      value: parakh?.conceptualKnowledge?.score ?? 62,
+      suffix: '%',
+      band: parakh?.conceptualKnowledge?.level || 'Proficient',
+      delta: (parakh?.conceptualKnowledge?.score ?? 62) - 50,
+      observation: parakh?.conceptualKnowledge?.description || 'Evaluated via adaptive CAT item discrimination on first-principles reasoning.',
+    },
+    {
+      domain: 'Cognitive Domain',
+      label: 'Higher Order Thinking (HOTS)',
+      value: parakh?.higherOrderThinkingSkills?.score ?? 49,
+      suffix: '%',
+      band: parakh?.higherOrderThinkingSkills?.level || 'Developing',
+      delta: (parakh?.higherOrderThinkingSkills?.score ?? 49) - 50,
+      observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts and multi-step deduction analysis.',
+    },
+    {
+      domain: 'Methodological',
+      label: 'Application & Problem Solving',
+      value: parakh?.applicationAndProblemSolving?.score ?? 56,
+      suffix: '%',
+      band: parakh?.applicationAndProblemSolving?.level || 'Proficient',
+      delta: (parakh?.applicationAndProblemSolving?.score ?? 56) - 50,
+      observation: parakh?.applicationAndProblemSolving?.description || 'Applies foundational theorems to novel STEM challenge contexts.',
+    },
+    {
+      domain: 'Metacognitive',
+      label: 'Metacognition & Traps',
+      value: 78,
+      suffix: '%',
+      band: 'Advanced',
+      delta: 28,
+      observation: 'Pacing control and recognition of distractor choices engineered around formula traps.',
+    },
+  ];
+
   return (
     <div className="w-full flex-1 overflow-y-auto pb-12">
       <div className="mx-auto max-w-5xl" id="report-printable-area">
         {/* ── Header ── */}
-        <header className="bg-warp-grid border-b border-border bg-surface p-6 md:p-10">
-          <div className="mb-6 flex items-center justify-between gap-4">
+        <header
+          className="bg-warp-grid border-b border-border bg-surface px-6 pt-6 pb-8 md:px-10 md:pt-8 md:pb-10 screen-only"
+          style={{ animation: 'fadeIn 300ms cubic-bezier(.2,.7,.2,1) both' }}
+        >
+          {/* Top bar: nav + calibration badge */}
+          <div className="mb-5 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -260,7 +338,7 @@ export function ReportDetail() {
             </div>
             <div className="flex items-center gap-2">
               <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                <Globe className="size-3.5" /> Calibrated against Singapore, China, US & Europe
+                <Globe className="size-3.5" /> Calibrated against India (CBSE/PARAKH), Singapore, China & US
               </span>
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted">
                 Official Report
@@ -268,155 +346,168 @@ export function ReportDetail() {
             </div>
           </div>
 
-          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-start">
-            <div className="space-y-4">
+          {/* Hero: title + metadata strip on left, score ring on right */}
+          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-center">
+            <div
+              className="space-y-3"
+              style={{ animation: 'slideUp 350ms 100ms cubic-bezier(.2,.7,.2,1) both' }}
+            >
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                WARP Global STEM benchmark
+                WARP Global STEM Benchmark
               </p>
-              <h1 className="font-display text-3xl font-bold tracking-tight md:text-5xl">
+              <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
                 Diagnostic Executive Summary
               </h1>
-
-              <dl className="flex flex-wrap gap-6 pt-2 text-sm">
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Candidate
-                  </dt>
-                  <dd className="font-semibold text-foreground">
-                    {studentName}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Grade Level
-                  </dt>
-                  <dd className="font-semibold text-foreground">
-                    Class {snapshot.classLevel}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Questions Calibrated
-                  </dt>
-                  <dd className="font-semibold text-foreground">
-                    {assessmentData.responses?.length || 30} Scenarios
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Time Taken
-                  </dt>
-                  <dd className="font-semibold text-foreground flex items-center gap-1">
-                    <Clock className="size-3.5 text-foreground-muted" />
-                    {formatDuration(snapshot.totalTimeMs)}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                    Assessed Date
-                  </dt>
-                  <dd className="font-semibold text-foreground">
-                    {dateFmt.format(new Date(snapshot.completedAt))}
-                  </dd>
-                </div>
-              </dl>
+              {/* Compact metadata strip */}
+              <p className="text-xs font-mono text-foreground-secondary leading-relaxed">
+                <span className="text-foreground font-semibold">{studentName}</span>
+                {' · '}
+                <span>Class {snapshot.classLevel}</span>
+                {' · '}
+                <span>{assessmentData.responses?.length || 30} Scenarios</span>
+                {assessmentData.responses && assessmentData.responses.length > 0 && (
+                  <>
+                    {' · '}
+                    <span className="text-[--color-ok,#7FCBA0]">
+                      {Math.round((assessmentData.responses.filter((r: any) => r.correct === true).length / assessmentData.responses.length) * 100)}% accuracy
+                    </span>
+                  </>
+                )}
+                {snapshot.totalTimeMs && snapshot.totalTimeMs > 0 && (
+                  <>
+                    {' · '}
+                    <span><Clock className="inline size-3 -mt-0.5" /> {formatDuration(snapshot.totalTimeMs)}</span>
+                  </>
+                )}
+                {' · '}
+                <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
+              </p>
+              {/* India percentile quick read */}
+              <p className="text-xs font-semibold text-foreground-secondary">
+                🇮🇳 {ordinal(benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68)} percentile in India
+                {' · '}
+                🌐 {ordinal(benchmark.globalPercentile)} global
+                {' · '}
+                🇸🇬 {ordinal(benchmark.regionalPercentiles?.Singapore)} vs Singapore
+              </p>
             </div>
 
-            {/* Scorecard Hero */}
-            <div className="card corner-marks print-keep relative shrink-0 p-6 text-center md:min-w-64 bg-accent/20 border-border flex flex-col items-center">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-foreground-secondary">
-                Global Scaled Score
-              </p>
-              <div className="flex items-baseline justify-center">
-                <GsapCounter
-                  value={snapshot.overallScore || benchmark.aggregateScaledScore}
-                  className="font-display text-5xl font-bold tabular tracking-tight text-foreground"
-                />
-                <span className="text-sm font-normal text-foreground-muted ml-1"> / 900</span>
-              </div>
-              <OutcomeBadge
+            {/* Score Ring Hero */}
+            <div
+              className="shrink-0 print-keep"
+              style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
+            >
+              <ScoreRing
+                score={snapshot.overallScore || benchmark.aggregateScaledScore}
+                maxScore={900}
                 percentile={benchmark.globalPercentile}
-                size="sm"
-                className="mt-2.5"
+                boardGradeBand={benchmark.boardGradeBand}
               />
-              <div className="my-3 h-px w-full bg-border" />
-              <div className="space-y-1 w-full text-center">
-                <p className="text-xs font-semibold text-foreground">
-                  {ordinal(benchmark.globalPercentile)} percentile, Global
-                </p>
-                <p className="text-[11px] font-medium text-foreground-muted">
-                  🇸🇬 {ordinal(benchmark.regionalPercentiles.Singapore)} percentile vs Singapore
-                </p>
-              </div>
             </div>
           </div>
         </header>
 
-        {/* ── Audience Tabs, Share & PDF Actions ── */}
-        <div className="flex flex-wrap items-center justify-between border-b border-border bg-surface px-6 md:px-10 pt-4 gap-4">
-          <div className="flex space-x-6 overflow-x-auto pb-0">
-            <button
-              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'student'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-foreground-secondary hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab('student')}
-            >
-              <GraduationCap className="size-4" />
-              Student View
-            </button>
-            <button
-              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'parent'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-foreground-secondary hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab('parent')}
-            >
-              <Users className="size-4" />
-              Parent Blueprint
-            </button>
-            <button
-              className={`flex items-center gap-2 pb-4 text-sm font-semibold border-b-2 transition-colors whitespace-nowrap ${
-                activeTab === 'trajectory'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-foreground-secondary hover:text-foreground'
-              }`}
-              onClick={() => setActiveTab('trajectory')}
-            >
-              <TrendingUp className="size-4" />
-              Longitudinal Arc
-            </button>
-          </div>
+        {/* ── Sticky Pill Tab Navigation ── */}
+        <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-sm">
+          {/* Pill tab row */}
+          {(() => {
+            const tabs: Array<{ id: TabType; icon: React.ElementType; label: string; badge?: string }> = [
+              { id: 'hub', icon: LayoutDashboard, label: 'Executive Hub' },
+              { id: 'onepage', icon: FileText, label: '1-Page Brief', badge: 'Print Ready' },
+              { id: 'student', icon: GraduationCap, label: 'Student Sprint' },
+              { id: 'parent', icon: Users, label: 'Parent Blueprint' },
+              { id: 'audit', icon: FileCheck, label: 'Scenario Audit', badge: String(totalCount) },
+              { id: 'trajectory', icon: TrendingUp, label: 'Longitudinal Arc' },
+            ];
+            return (
+              <div className="flex items-center gap-1 overflow-x-auto px-4 md:px-6 pt-2 pb-0">
+                {tabs.map(({ id, icon: Icon, label, badge }) => (
+                  <button
+                    key={id}
+                    onClick={() => setActiveTab(id)}
+                    className={`flex items-center gap-1.5 px-3 py-2 mb-0 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 ${
+                      activeTab === id
+                        ? 'border-primary text-primary bg-primary/5'
+                        : 'border-transparent text-foreground-secondary hover:text-foreground hover:bg-surface/60'
+                    }`}
+                  >
+                    <Icon className="size-3.5 shrink-0" />
+                    {label}
+                    {badge && (
+                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary font-mono font-bold">
+                        {badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            );
+          })()}
 
-          <div className="pb-3 flex items-center gap-2.5 flex-wrap">
+          {/* Secondary action row */}
+          <div className="flex items-center justify-end gap-2 px-4 md:px-6 py-2 border-t border-border/50">
+            {/* Print Mode Selector */}
+            <div className="flex items-center border border-border bg-surface p-0.5 text-xs mr-auto">
+              <button
+                type="button"
+                onClick={() => setPrintMode('one-page')}
+                className={`px-2.5 py-1 font-mono text-[11px] font-semibold transition-colors ${
+                  printMode === 'one-page'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground-secondary hover:text-foreground'
+                }`}
+                title="Strict 1-Page condensed printout"
+              >
+                1-Page Print
+              </button>
+              <button
+                type="button"
+                onClick={() => setPrintMode('comprehensive')}
+                className={`px-2.5 py-1 font-mono text-[11px] font-semibold transition-colors ${
+                  printMode === 'comprehensive'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'text-foreground-secondary hover:text-foreground'
+                }`}
+                title="Full multi-page comprehensive report"
+              >
+                Full Dossier
+              </button>
+            </div>
             <ShareButton
               reportId={reportData?.id}
               assessmentId={assessmentData.id}
               initialShareToken={reportData?.share_token}
               studentName={studentName}
             />
-
             <PDFExportButton
               targetId="report-printable-area"
               studentName={studentName}
               classLevel={snapshot.classLevel}
             />
-
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              className="gap-1.5"
+              aria-label="Print official dossier"
+            >
+              <Printer className="size-3.5" />
+              <span>Print {printMode === 'one-page' ? '(1-Page)' : '(Full)'}</span>
+            </Button>
             <Button
               variant="secondary"
               size="sm"
               onClick={() => setIsTutorOpen(true)}
-              className="gap-1.5 border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20"
+              className="gap-1.5 border-border bg-accent/40 text-foreground hover:bg-accent"
             >
-              <Sparkles className="size-3.5" />
+              <Sparkles className="size-3.5 text-primary" />
               <span>Ask Nemotron Tutor</span>
             </Button>
           </div>
         </div>
 
-        <main className="space-y-8 p-4 sm:p-8 md:p-10">
+        {/* ── Screen-Only Interactive Main (Compact, Calm, Zero Bloat) ── */}
+        <main className="space-y-6 p-4 sm:p-8 md:p-10 screen-only">
           {aiGenerating && (
             <Card className="flex flex-col items-center justify-center py-10 gap-4">
               <Spinner size="lg" className="text-primary" />
@@ -424,7 +515,313 @@ export function ReportDetail() {
             </Card>
           )}
 
-          {/* ══════════════════ STUDENT VIEW ══════════════════ */}
+          {/* ══════════════════ EXECUTIVE SUMMARY HUB ══════════════════ */}
+          {!aiGenerating && activeTab === 'hub' && (
+            <div className="space-y-6 animate-in fade-in duration-200">
+              {/* High Signal Focus Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:grid-rows-[1fr]">
+                {/* ── CARD 1: Student Cognitive Profile — Cyan accent ── */}
+                <Card
+                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-1"
+                  style={{ borderLeftColor: 'var(--color-accent, #8FCFE8)' }}
+                >
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+                        Student Profile
+                      </span>
+                      <GraduationCap className="size-4 text-primary" />
+                    </div>
+
+                    <div>
+                      <h3 className="text-lg font-bold font-display text-foreground leading-snug">
+                        {archetypeTitle}
+                      </h3>
+                      <p className="text-xs text-foreground-secondary italic mt-0.5 line-clamp-2">
+                        "{archetypeTagline}"
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-xs pt-1 border-t border-border">
+                      <div>
+                        <span className="font-semibold text-foreground">Core Strength: </span>
+                        <span className="text-foreground-secondary">{keyStrengths[0]}</span>
+                      </div>
+                      <div>
+                        <span className="font-semibold text-foreground">Priority Growth: </span>
+                        <span className="text-foreground-secondary">{blindspots[0]}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setActiveTab('student')}
+                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <GraduationCap className="size-3.5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Explore 30-Day Sprint</div>
+                        <div className="text-[10px] text-foreground-muted font-normal">Targeted milestones & superpower expansion</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Card>
+
+                {/* ── CARD 2: Parent Educational Blueprint — Warm amber accent ── */}
+                <Card
+                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-2"
+                  style={{ borderLeftColor: 'var(--color-warm, #D9A86E)' }}
+                >
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+                        Parent Blueprint
+                      </span>
+                      <Users className="size-4 text-primary" />
+                    </div>
+
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold font-display text-foreground leading-snug">
+                          {boardGradeBand ? `Grade ${boardGradeBand.grade}` : verdict}
+                        </h3>
+                        {boardGradeBand && (
+                          <span className="text-[11px] font-mono px-1.5 py-0.5 bg-accent text-foreground-secondary font-medium">
+                            {boardGradeBand.band}
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-foreground-secondary mt-0.5">
+                        NEP 2020 & Board Diagnostic Verdict
+                      </p>
+                    </div>
+
+                    <div className="space-y-2 text-xs pt-1 border-t border-border">
+                      <div>
+                        <span className="font-semibold text-foreground">Ratta Reality: </span>
+                        <span className="text-foreground-secondary line-clamp-2">{honestSummary}</span>
+                      </div>
+                      {homeRoutines[0] && (
+                        <div>
+                          <span className="font-semibold text-foreground">Immediate Action: </span>
+                          <span className="text-foreground-secondary line-clamp-1">
+                            {typeof homeRoutines[0] === 'string' ? homeRoutines[0] : homeRoutines[0].routine || homeRoutines[0].title}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setActiveTab('parent')}
+                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <Users className="size-3.5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">View Board & PTM Guide</div>
+                        <div className="text-[10px] text-foreground-muted font-normal">Home routines & teacher discussion questions</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Card>
+
+                {/* ── CARD 3: Diagnostic Precision & Audit — Emerald accent ── */}
+                <Card
+                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-3"
+                  style={{ borderLeftColor: 'var(--color-ok, #7FCBA0)' }}
+                >
+                  <div className="space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
+                        Psychometric Audit
+                      </span>
+                      <FileCheck className="size-4 text-primary" />
+                    </div>
+
+                    <div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-bold font-display text-foreground">
+                          {snapshot.overallScore || benchmark.aggregateScaledScore}
+                        </span>
+                        <span className="text-xs font-mono text-foreground-muted">/ 900</span>
+                        <span className="text-xs font-semibold text-primary ml-auto font-mono">
+                          🇮🇳 {ordinal(indiaPercentile)} %ile
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground-secondary mt-0.5">
+                        {correctCount} of {totalCount} scenarios answered correctly ({Math.round((correctCount / totalCount) * 100)}%)
+                      </p>
+                    </div>
+
+                    {/* Efferd ShareBarList: Cohort Score Distribution */}
+                    <div className="space-y-1.5 pt-1 border-t border-border">
+                      <div className="flex items-center justify-between text-[10px] font-mono text-foreground-muted">
+                        <span>Cohort Benchmarks</span>
+                        <span>Score / 900</span>
+                      </div>
+                      <ShareBarList className="gap-1">
+                        <ShareBarListItem value={Math.round(((snapshot.overallScore || benchmark.aggregateScaledScore) / 900) * 100)}>
+                          <ShareBarListFill isHighlight />
+                          <ShareBarListContent>
+                            <ShareBarListLabel className="font-semibold text-primary">
+                              Candidate Scaled Score
+                            </ShareBarListLabel>
+                            <ShareBarListValue className="text-primary">
+                              {snapshot.overallScore || benchmark.aggregateScaledScore}
+                            </ShareBarListValue>
+                          </ShareBarListContent>
+                        </ShareBarListItem>
+                        <ShareBarListItem value={Math.round((510 / 900) * 100)}>
+                          <ShareBarListFill />
+                          <ShareBarListContent>
+                            <ShareBarListLabel>
+                              🇮🇳 India 50th %ile
+                            </ShareBarListLabel>
+                            <ShareBarListValue>510</ShareBarListValue>
+                          </ShareBarListContent>
+                        </ShareBarListItem>
+                        <ShareBarListItem value={Math.round((485 / 900) * 100)}>
+                          <ShareBarListFill />
+                          <ShareBarListContent>
+                            <ShareBarListLabel>
+                              Class {snapshot.classLevel} Cohort Mean
+                            </ShareBarListLabel>
+                            <ShareBarListValue>485</ShareBarListValue>
+                          </ShareBarListContent>
+                        </ShareBarListItem>
+                        <ShareBarListItem value={Math.round((690 / 900) * 100)}>
+                          <ShareBarListFill />
+                          <ShareBarListContent>
+                            <ShareBarListLabel>
+                              🇸🇬 Singapore SASMO 75th %ile
+                            </ShareBarListLabel>
+                            <ShareBarListValue>690</ShareBarListValue>
+                          </ShareBarListContent>
+                        </ShareBarListItem>
+                      </ShareBarList>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => setActiveTab('audit')}
+                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                        <FileCheck className="size-3.5" />
+                      </div>
+                      <div>
+                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Review Question Audit ({totalCount})</div>
+                        <div className="text-[10px] text-foreground-muted font-normal">3PL IRT latent theta & distractor traps</div>
+                      </div>
+                    </div>
+                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  </div>
+                </Card>
+              </div>
+
+              {/* Secondary Row: PARAKH 360° WebVitals Grid & Quick Socratic Assist */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                {/* PARAKH 360° Radar Chart */}
+                <Card className="md:col-span-2 p-5 border border-border bg-card hub-parakh">
+                  <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-foreground-secondary">
+                        PARAKH 360° Holistic Assessment Framework
+                      </span>
+                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary font-mono font-semibold">NEP 2020</span>
+                    </div>
+                    <span className="text-[11px] text-foreground-muted font-mono">Calibrated vs Class {snapshot.classLevel} Baseline</span>
+                  </div>
+                  <ParakhRadarChart pillars={parakhVitals} baseline={50} />
+                </Card>
+
+                {/* Socratic Tutor & Fast Actions */}
+                <Card className="p-5 border border-border bg-card flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center gap-2 mb-2 text-primary">
+                      <Sparkles className="size-4" />
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider">
+                        Nemotron Socratic Tutor
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-foreground mb-1">
+                      Need Live Socratic Explanations?
+                    </h4>
+                    <p className="text-xs text-foreground-secondary leading-relaxed">
+                      Nemotron walks candidate and parents through distractor traps step-by-step using first principles.
+                    </p>
+                  </div>
+
+                  <div className="pt-3 mt-3 border-t border-border space-y-2">
+                    <Button
+                      size="sm"
+                      onClick={() => setIsTutorOpen(true)}
+                      className="w-full gap-2 text-xs font-semibold"
+                    >
+                      <Sparkles className="size-3.5" />
+                      <span>Launch Socratic Tutor</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setActiveTab('trajectory')}
+                      className="w-full gap-2 text-xs font-semibold"
+                    >
+                      <TrendingUp className="size-3.5" />
+                      <span>View Longitudinal Arc</span>
+                    </Button>
+                  </div>
+                </Card>
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════ 1-PAGE SUMMARY SCREEN PREVIEW ══════════════════ */}
+          {!aiGenerating && activeTab === 'onepage' && (
+            <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between p-3.5 bg-surface border border-border text-xs">
+                <div className="flex items-center gap-2">
+                  <FileText className="size-4 text-primary" />
+                  <span className="font-semibold text-foreground">
+                    1-Page Executive Summary (Print-Ready Preview)
+                  </span>
+                  <span className="hidden md:inline text-[10px] font-mono text-foreground-muted">
+                    Exact single-page brief for students, parents & PTM discussions
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="outline" onClick={() => window.print()} className="gap-1.5 text-xs font-semibold">
+                    <Printer className="size-3.5" /> Print Single Page
+                  </Button>
+                </div>
+              </div>
+
+              <div className="shadow-sm">
+                <OnePagePrintSummary
+                  studentName={studentName}
+                  classLevel={snapshot.classLevel}
+                  completedAt={snapshot.completedAt}
+                  totalTimeMs={snapshot.totalTimeMs}
+                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  benchmark={benchmark}
+                  studentVariant={studentVariant}
+                  parentVariant={parentVariant}
+                  responses={assessmentData.responses || []}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* ══════════════════ INDIVIDUAL FOCUSED TABS ══════════════════ */}
           {!aiGenerating && activeTab === 'student' && (
             <StudentVariant
               studentVariant={studentVariant}
@@ -433,7 +830,6 @@ export function ReportDetail() {
             />
           )}
 
-          {/* ══════════════════ PARENT VIEW ══════════════════ */}
           {!aiGenerating && activeTab === 'parent' && (
             <ParentVariant
               parentVariant={parentVariant}
@@ -442,7 +838,20 @@ export function ReportDetail() {
             />
           )}
 
-          {/* ══════════════════ LONGITUDINAL TRAJECTORY ══════════════════ */}
+          {!aiGenerating && activeTab === 'audit' && (
+            <ScenarioAudit
+              responses={assessmentData.responses || []}
+              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              classLevel={snapshot.classLevel}
+              nationalPercentile={benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68}
+              boardGrade={benchmark.boardGradeBand?.grade || 'A2'}
+              onAskTutor={(scenarioIdx) => {
+                setSelectedTutorScenarioIndex(scenarioIdx);
+                setIsTutorOpen(true);
+              }}
+            />
+          )}
+
           {!aiGenerating && activeTab === 'trajectory' && (
             <TrajectoryArc
               studentId={assessmentData.student_id}
@@ -453,8 +862,116 @@ export function ReportDetail() {
           )}
         </main>
 
+        {/* ══════════════════ DYNAMIC PRINT DOSSIER ══════════════════ */}
+        <div className="hidden print:block print-dossier p-0 space-y-8">
+          {printMode === 'one-page' ? (
+            <div className="print-avoid-break">
+              <OnePagePrintSummary
+                studentName={studentName}
+                classLevel={snapshot.classLevel}
+                completedAt={snapshot.completedAt}
+                totalTimeMs={snapshot.totalTimeMs}
+                overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                benchmark={benchmark}
+                studentVariant={studentVariant}
+                parentVariant={parentVariant}
+                responses={assessmentData.responses || []}
+              />
+            </div>
+          ) : (
+            <>
+              {/* PAGE 1: EXECUTIVE 1-PAGE SUMMARY */}
+              <section className="print-avoid-break">
+                <OnePagePrintSummary
+                  studentName={studentName}
+                  classLevel={snapshot.classLevel}
+                  completedAt={snapshot.completedAt}
+                  totalTimeMs={snapshot.totalTimeMs}
+                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  benchmark={benchmark}
+                  studentVariant={studentVariant}
+                  parentVariant={parentVariant}
+                  responses={assessmentData.responses || []}
+                />
+              </section>
+
+              {/* PAGE 2: STUDENT COGNITIVE PROFILE & 30-DAY SPRINT */}
+              <section className="space-y-4 print-break-before pt-4">
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                      PAGE 2 · CANDIDATE PROFILE
+                    </span>
+                    <h2 className="text-base font-bold font-display text-foreground">
+                      Student Cognitive Profile & 30-Day Action Sprint
+                    </h2>
+                  </div>
+                  <span className="text-xs text-foreground-muted">
+                    Class {snapshot.classLevel} · {studentName}
+                  </span>
+                </div>
+                <StudentVariant
+                  studentVariant={studentVariant}
+                  benchmark={benchmark}
+                  classLevel={snapshot.classLevel}
+                />
+              </section>
+
+              {/* PAGE 3: PARENT EDUCATIONAL BLUEPRINT & BOARD ALIGNMENT */}
+              <section className="space-y-4 print-break-before pt-4">
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                      PAGE 3 · PARENT BLUEPRINT
+                    </span>
+                    <h2 className="text-base font-bold font-display text-foreground">
+                      Parent Educational Blueprint & Board Alignment (NEP 2020 / PARAKH)
+                    </h2>
+                  </div>
+                  <span className="text-xs text-foreground-muted">
+                    CBSE / ICSE / Global Benchmarking
+                  </span>
+                </div>
+                <ParentVariant
+                  parentVariant={parentVariant}
+                  benchmark={benchmark}
+                  classLevel={snapshot.classLevel}
+                />
+              </section>
+
+              {/* PAGE 4: SCENARIO DIAGNOSTIC AUDIT */}
+              <section className="space-y-4 print-break-before pt-4">
+                <div className="flex items-center justify-between border-b border-border pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
+                      PAGE 4 · DIAGNOSTIC AUDIT
+                    </span>
+                    <h2 className="text-base font-bold font-display text-foreground">
+                      Scenario Diagnostic Audit & Distractor Traps
+                    </h2>
+                  </div>
+                  <span className="text-xs text-foreground-muted">
+                    Item Response Theory (3PL IRT) Psychometric Transparency
+                  </span>
+                </div>
+                <ScenarioAudit
+                  responses={assessmentData.responses || []}
+                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  classLevel={snapshot.classLevel}
+                  nationalPercentile={benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68}
+                  boardGrade={benchmark.boardGradeBand?.grade || 'A2'}
+                  onAskTutor={(scenarioIdx) => {
+                    setSelectedTutorScenarioIndex(scenarioIdx);
+                    setIsTutorOpen(true);
+                  }}
+                />
+              </section>
+            </>
+          )}
+        </div>
+
         {/* ── Footer controls ── */}
-        <footer className="no-print mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border p-6 md:p-8">
+        <footer className="no-print print:hidden mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border p-6 md:p-8">
           <div className="flex items-center gap-2">
             <Button
               variant="ghost"
@@ -464,8 +981,8 @@ export function ReportDetail() {
               <ArrowLeft className="size-4" />
               Back to dashboard
             </Button>
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[10px] font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <Sparkles className="size-3" /> Synthesized with NVIDIA Nemotron-70B Psychometric Intelligence
+            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[10px] font-medium bg-muted text-foreground-secondary border border-border">
+              <Sparkles className="size-3 text-primary" /> Synthesized with NVIDIA Nemotron-70B Psychometric Intelligence
             </span>
           </div>
 
@@ -475,6 +992,14 @@ export function ReportDetail() {
               studentName={studentName}
               classLevel={snapshot.classLevel}
             />
+            <Button
+              variant="outline"
+              onClick={() => window.print()}
+              className="gap-1.5"
+            >
+              <Printer className="size-4" />
+              Print Dossier
+            </Button>
             <Button onClick={() => (window.location.href = '/')}>
               <RefreshCw className="size-4" />
               New assessment
@@ -487,7 +1012,9 @@ export function ReportDetail() {
           isOpen={isTutorOpen}
           onClose={() => setIsTutorOpen(false)}
           classLevel={snapshot.classLevel}
-          recentScenarios={assessmentData.responses || []}
+          initialScenarioIndex={selectedTutorScenarioIndex}
+          initialMode={activeTab === 'parent' ? 'parent' : 'student'}
+          recentScenarios={assessmentData?.responses || []}
         />
       </div>
     </div>

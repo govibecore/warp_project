@@ -220,6 +220,30 @@ export interface InternationalBenchmarkResult {
     immediateHomeRoutines: string[];
     recommendedCurricula: Array<{ name: string; urlDescription: string; purpose: string }>;
     quarterlyMilestones: string[];
+    indianHomeRoutines?: string[];
+    indianRecommendedCurricula?: Array<{ name: string; category?: string; urlDescription: string; purpose: string }>;
+    ptmDiscussionGuide?: string[];
+    streamOrientation?: { topStream: string; description: string; subjectFocus: string };
+  };
+  indiaNationalPercentile: number;
+  boardGradeBand: {
+    grade: string;
+    band: string;
+    descriptor: string;
+    percentileEquivalent: string;
+    schoolMarksCorrelation: string;
+  };
+  parakhHolisticPillars: {
+    conceptualKnowledge: { score: number; level: string; label: string; description: string };
+    applicationAndProblemSolving: { score: number; level: string; label: string; description: string };
+    higherOrderThinkingSkills: { score: number; level: string; label: string; description: string };
+    overallSummary: string;
+  };
+  indianCompetitiveFoundation: {
+    tier: string;
+    badge: string;
+    description: string;
+    recommendation: string;
   };
   unescoIndicators: {
     tier1Foundation: { score: number; level: string; description: string };
@@ -444,6 +468,124 @@ export function computeInternationalBenchmark(
   const studentChallengeSprint = getStudentSprint(classLevel, cognitiveArchetype.title, isEnglish);
   const parentActionBlueprint = getParentBlueprint(classLevel, breakdown, isEnglish);
 
+  const indiaNationalPercentile = regionalPercentiles.India;
+
+  // Compute CBSE/ICSE Board Grade Band
+  let boardGradeBand: {
+    grade: string;
+    band: string;
+    descriptor: string;
+    percentileEquivalent: string;
+    schoolMarksCorrelation: string;
+  };
+
+  if (aggregateScaledScore >= 720 || indiaNationalPercentile >= 90) {
+    boardGradeBand = {
+      grade: 'A1',
+      band: 'Outstanding Conceptual Mastery',
+      descriptor: 'Top 10% national tier; capable of solving high-order Olympiad and JEE/NEET foundation questions with independent first-principles reasoning.',
+      percentileEquivalent: 'Top 10% Nationally (90th–99th Percentile)',
+      schoolMarksCorrelation: 'Equivalent to 95–100% in CBSE/ICSE with high competitive Olympiad aptitude',
+    };
+  } else if (aggregateScaledScore >= 620 || indiaNationalPercentile >= 75) {
+    boardGradeBand = {
+      grade: 'A2',
+      band: 'Excellent / High Foundation',
+      descriptor: 'Solid conceptual clarity across foundational syllabus; ready to tackle non-routine multi-step challenges with structured guidance.',
+      percentileEquivalent: 'Top 25% Nationally (75th–89th Percentile)',
+      schoolMarksCorrelation: 'Equivalent to 85–94% in CBSE/ICSE; strong textbook grasp, developing Olympiad speed',
+    };
+  } else if (aggregateScaledScore >= 520 || indiaNationalPercentile >= 55) {
+    boardGradeBand = {
+      grade: 'B1',
+      band: 'Proficient Foundation',
+      descriptor: 'Reliable recall and routine formula application; occasionally susceptible to non-standard distractor options and multi-step word problems.',
+      percentileEquivalent: 'National Median to Top 45% (55th–74th Percentile)',
+      schoolMarksCorrelation: 'Equivalent to 75–84% in CBSE/ICSE; good classroom performance, needs Olympiad exposure',
+    };
+  } else if (aggregateScaledScore >= 420 || indiaNationalPercentile >= 40) {
+    boardGradeBand = {
+      grade: 'B2',
+      band: 'Developing Competency',
+      descriptor: 'Understands core syllabus concepts but relies heavily on practiced textbook questions; needs deliberate practice on unfamiliar variations.',
+      percentileEquivalent: 'Mid-Tier Nationally (40th–54th Percentile)',
+      schoolMarksCorrelation: 'Equivalent to 65–74% in CBSE/ICSE; prone to formula confusion under time pressure',
+    };
+  } else {
+    boardGradeBand = {
+      grade: 'C1',
+      band: 'Foundational Support Needed',
+      descriptor: 'Conceptual gaps in core definitions; requires rebuilding basics through concrete examples and visual diagrams before competitive drills.',
+      percentileEquivalent: 'Foundational Tier (Below 40th Percentile)',
+      schoolMarksCorrelation: 'Requires targeted revision of NCERT foundational chapters',
+    };
+  }
+
+  // PARAKH (NEP 2020) 3-Pillar Progress Card
+  const parakhP1Score = Math.max(15, Math.min(99, Math.round(55 + avgTheta * 16)));
+  const parakhP2Score = Math.max(10, Math.min(99, Math.round(48 + avgTheta * 18)));
+  const parakhP3Score = Math.max(10, Math.min(99, Math.round(40 + avgTheta * 20)));
+
+  const getParakhTier = (sc: number) => (sc >= 75 ? 'Advanced Mastery' : sc >= 55 ? 'Proficient Application' : 'Developing Baseline');
+
+  const parakhHolisticPillars = {
+    conceptualKnowledge: {
+      score: parakhP1Score,
+      level: getParakhTier(parakhP1Score),
+      label: 'Core Conceptual Knowledge & Recall',
+      description: isEnglish
+        ? 'Direct evidence extraction, core grammar syntax, and literal reading comprehension.'
+        : 'Mastery of fundamental definitions, scientific laws, and standard arithmetic/algebraic procedures (CBSE/ICSE syllabus alignment).',
+    },
+    applicationAndProblemSolving: {
+      score: parakhP2Score,
+      level: getParakhTier(parakhP2Score),
+      label: 'Application & Numerical Problem Solving',
+      description: isEnglish
+        ? 'Cross-paragraph thematic inference, rhetorical technique identification, and structured comparative analysis.'
+        : 'Translating real-world word problems into mathematical equations and physical models without relying on rote memorization.',
+    },
+    higherOrderThinkingSkills: {
+      score: parakhP3Score,
+      level: getParakhTier(parakhP3Score),
+      label: 'Higher-Order Thinking Skills (HOTS)',
+      description: isEnglish
+        ? 'Critical evaluation of authorial bias, subtext deconstruction, and robust immunity against deceptive distractor choices.'
+        : 'Critical inquiry, isolating invariants, spotting edge cases, and immunity to subtle distractor traps engineered around common misconceptions.',
+    },
+    overallSummary: `PARAKH (NEP 2020) 360° Profile: ${getParakhTier(parakhP1Score)} in Core Knowledge, ${getParakhTier(parakhP2Score)} in Application, and ${getParakhTier(parakhP3Score)} in HOTS.`,
+  };
+
+  // Indian Competitive Foundation (Olympiads / JEE-NEET)
+  let competitiveTier: string;
+  let competitiveBadge: string;
+  let competitiveDescription: string;
+  let competitiveRecommendation: string;
+
+  if (indiaNationalPercentile >= 85) {
+    competitiveTier = 'National Olympiad & Advanced Foundation Tier';
+    competitiveBadge = 'Podium Contender';
+    competitiveDescription = 'Demonstrates the analytical depth required for top ranks in SOF IMO/NSO, SilverZone, and early JEE/NEET Advanced foundation problem solving.';
+    competitiveRecommendation = 'Advance to NCERT Exemplar Achievers section and Level-2 Olympiad papers (Class 8/9 bridge level).';
+  } else if (indiaNationalPercentile >= 65) {
+    competitiveTier = 'Zonal & State Olympiad Contender Tier';
+    competitiveBadge = 'High Potential';
+    competitiveDescription = 'Well above average in school curriculum; with consistent weekly practice on non-routine questions, capable of securing top 5% zonal ranks.';
+    competitiveRecommendation = 'Focus on eliminating calculation rush errors and practice multi-variable constraint problems.';
+  } else {
+    competitiveTier = 'Strong Board Foundation & School Exam Tier';
+    competitiveBadge = 'Foundational Track';
+    competitiveDescription = 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to competitive problem patterns to build higher-order agility.';
+    competitiveRecommendation = 'Strengthen NCERT core concepts first, then attempt Level-1 Olympiad worksheets.';
+  }
+
+  const indianCompetitiveFoundation = {
+    tier: competitiveTier,
+    badge: competitiveBadge,
+    description: competitiveDescription,
+    recommendation: competitiveRecommendation,
+  };
+
   // UNESCO 3-Tier Indicator Framework
   const tier1Score = Math.max(10, Math.min(99, Math.round(50 + avgTheta * 18)));
   const tier2Score = Math.max(10, Math.min(99, Math.round(45 + avgTheta * 20)));
@@ -591,6 +733,10 @@ export function computeInternationalBenchmark(
     realityCheck,
     studentChallengeSprint,
     parentActionBlueprint,
+    indiaNationalPercentile,
+    boardGradeBand,
+    parakhHolisticPillars,
+    indianCompetitiveFoundation,
     unescoIndicators,
     ieeeMdlStage,
     nsfComparisons,
@@ -805,9 +951,99 @@ function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: bool
     'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure delta in latent ability theta and international percentile rank.',
   ];
 
+  const indianRecommendedCurricula = isEnglish
+    ? [
+        {
+          name: 'NCERT English Honeydew & It So Happened (Class 8)',
+          category: 'Core Curriculum & Literature Comprehension',
+          urlDescription: 'ncert.nic.in / Textual analysis & themes',
+          purpose: 'Foundational reading comprehension, vocabulary in context, and answering with textual evidence.',
+        },
+        {
+          name: 'Wren & Martin High School English Grammar & Composition',
+          category: 'Syntactic & Grammar Rigor',
+          urlDescription: 'Classical grammar rules and sentence synthesis',
+          purpose: 'Deconstructs sentence structures, active/passive nuances, and precise clause relationships.',
+        },
+        {
+          name: 'The Hindu Young World / Editorial Analysis',
+          category: 'Contemporary Non-Fiction & Opinion Pieces',
+          urlDescription: 'Daily analytical reading and vocabulary expansion',
+          purpose: 'Exposes student to diverse editorial viewpoints, distinguishing opinion from factual reporting.',
+        },
+        {
+          name: 'MTG International English Olympiad (IEO) Workbooks',
+          category: 'Competitive Analytical Reading',
+          urlDescription: 'mtg.in / SOF IEO Achievers section',
+          purpose: 'Timed passage inference, idioms, and multi-paragraph coherence tests.',
+        },
+      ]
+    : [
+        {
+          name: 'NCERT Exemplar Problems (Class 8 Mathematics & Science)',
+          category: 'Government Standard HOTS Benchmark',
+          urlDescription: 'ncert.nic.in / Exemplar Problems Portal',
+          purpose: 'Contains authentic Higher Order Thinking Skills (HOTS) questions that bridge school syllabus with competitive exam logic.',
+        },
+        {
+          name: 'RD Sharma / RS Aggarwal Mathematics (Class 8)',
+          category: 'Step-by-Step Foundational Rigor',
+          urlDescription: 'Standard Indian reference books for systematic practice',
+          purpose: 'Builds procedural calculation stamina across linear equations, rational numbers, quadrilaterals, and mensuration.',
+        },
+        {
+          name: 'Foundation Science (Lakhmir Singh & Manjit Kaur / HC Verma Foundation)',
+          category: 'Concept-First Science Clarity',
+          urlDescription: 'Physics, Chemistry & Biology with real-world applications',
+          purpose: 'Eliminates formula memorization by grounding concepts in observable experiments (force, friction, pressure, sound, light).',
+        },
+        {
+          name: 'MTG National Science & Math Olympiad (SOF NSO & IMO) Workbooks',
+          category: 'Competitive Olympiad Calibration',
+          urlDescription: 'mtg.in / Past 5-year papers & Achievers Section',
+          purpose: 'Trains the student in eliminating distractors and solving multi-concept questions under timed conditions.',
+        },
+        {
+          name: 'Khan Academy India (CBSE Class 8)',
+          category: 'Self-Paced Mastery & Simulations',
+          urlDescription: 'khanacademy.org / Free CBSE-mapped practice',
+          purpose: 'Provides instant mastery feedback and targeted video explanations when a child is stuck on a specific chapter.',
+        },
+      ];
+
+  const indianHomeRoutines = [
+    '45-Minute Daily Evening Study Session: 15 mins reviewing core theory from NCERT, 20 mins solving 3–5 challenging non-routine problems, and 10 mins self-correcting mistakes.',
+    'The "Why" Rule (Overcoming Ratta): When reviewing your child\'s homework, do not just check if the answer is right. Ask: "Can you explain the formula in your own words, and why this method works?"',
+    'Weekly Error Autopsy (Sunday 30 mins): Have your child maintain a dedicated "Mistake Notebook". Categorize each error: (1) Calculation slip, (2) Misread question, or (3) Conceptual gap.',
+    'Timed No-Calculator Drills (Twice Weekly): Indian board and competitive exams require rapid mental arithmetic and algebraic manipulation without calculator reliance.',
+  ];
+
+  const ptmDiscussionGuide = [
+    'Question 1: "Is my child applying first principles to unfamiliar questions, or are they relying primarily on memorized textbook exercise steps?"',
+    'Question 2: "How does my child perform on Higher Order Thinking Skills (HOTS) and application questions compared to straightforward recall questions?"',
+    'Question 3: "Are marks lost due to calculation rush or misreading the question, and what strategies does the school suggest to build exam calmness?"',
+    'Question 4: "Does the school offer Olympiad / competitive problem-solving clubs or supplementary challenge sheets for students ready for extra rigor?"',
+  ];
+
+  const streamOrientation = isEnglish
+    ? {
+        topStream: 'Law, Humanities, Economics & Communications Track',
+        description: 'Strong potential in legal reasoning, public policy, civil services (UPSC), and corporate communications.',
+        subjectFocus: 'Focus on argumentative writing, comparative politics, and economics with applied statistics.',
+      }
+    : {
+        topStream: 'Engineering / Computing / Pure Science Track (PCM & CS)',
+        description: 'Demonstrates analytical and logical reasoning traits well-suited for engineering disciplines, computer science, and data sciences.',
+        subjectFocus: 'Prioritize building deep foundational strength in Algebra, Mechanics, and Algorithmic Logic through Class 8-10.',
+      };
+
   return {
     immediateHomeRoutines,
     recommendedCurricula,
     quarterlyMilestones,
+    indianHomeRoutines,
+    indianRecommendedCurricula,
+    ptmDiscussionGuide,
+    streamOrientation,
   };
 }

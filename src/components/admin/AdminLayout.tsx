@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
-import { supabase } from '../../lib/supabase';
+import { signOutUser } from '../../lib/auth';
 import { BarChart3, GraduationCap, Library, LogOut } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -66,10 +66,7 @@ export function AdminLayout({ children, activeTab, onTabChange }: AdminLayoutPro
             </div>
           </div>
           <button
-            onClick={async () => {
-              await supabase.auth.signOut();
-              window.location.href = '/';
-            }}
+            onClick={() => signOutUser()}
             className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-foreground-secondary transition-colors hover:bg-accent hover:text-destructive"
           >
             <LogOut className="size-3.5" />

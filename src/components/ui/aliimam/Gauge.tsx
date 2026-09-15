@@ -7,6 +7,7 @@ interface GaugeProps {
   gaugePrimaryColor: string;
   gaugeSecondaryColor: string;
   className?: string;
+  showValue?: boolean;
 }
 
 export function Gauge({
@@ -16,6 +17,7 @@ export function Gauge({
   gaugePrimaryColor,
   gaugeSecondaryColor,
   className,
+  showValue = true,
 }: GaugeProps) {
   const circumference = 2 * Math.PI * 45;
   const percentPx = circumference / 100;
@@ -64,9 +66,11 @@ export function Gauge({
           }}
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-2xl font-bold">{value}</span>
-      </div>
+      {showValue && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-bold">{value}</span>
+        </div>
+      )}
     </div>
   );
 }

@@ -67,13 +67,16 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
 
   startAssessment: async (studentId, classLevel, difficulty, subject) => {
     const now = Date.now();
-    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now, subject });
+    const normalizedSubject = (subject === 'English' || subject === 'English Literacy')
+      ? 'English Literacy'
+      : (subject || 'STEM');
+    set({ loading: true, status: 'in_progress', studentId, seenScenarios: [], responses: [], irtResponses: {}, theta: {}, errorMessage: null, startTime: now, subject: normalizedSubject });
     try {
       const { data: assessment, error } = await supabase.from('assessments').insert({
         student_id: studentId,
         class_level: classLevel,
         difficulty,
-        subject,
+        subject: normalizedSubject,
         status: 'in_progress'
       } as any).select().single();
 
@@ -209,7 +212,9 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         }
       }
 
-      const global_score = count > 0 ? Math.round(total_scaled / count) : 0;
+      // Clamp global_score strictly within DB constraint [100, 900], defaulting to median 500
+      const rawScore = count > 0 ? Math.round(total_scaled / count) : 500;
+      const global_score = Math.max(100, Math.min(900, rawScore));
 
       await supabase.from('assessments').update({
         status: 'completed',

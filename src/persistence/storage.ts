@@ -71,7 +71,13 @@ function migrateAndHydrate(value: unknown, fallbackProfile?: LearnerProfile): Wa
   
   for (const response of responses) session = sessionReducer(session, { type: 'answerItem', response });
   
-  if (value.phase === 'results' && isRecord(value.result)) {
+  if (value.phase === 'landing') {
+    session.phase = 'landing';
+  } else if (value.phase === 'onboarding') {
+    session.phase = 'onboarding';
+  } else if (value.phase === 'hub') {
+    session.phase = 'hub';
+  } else if (value.phase === 'results' && isRecord(value.result)) {
     session.phase = 'results';
     session.result = value.result as any;
   }

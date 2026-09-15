@@ -16,7 +16,7 @@ import {
   Clock,
 } from 'lucide-react';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
-import { supabase } from '../lib/supabase';
+import { signOutUser } from '../lib/auth';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { BentoGrid, BentoGridItem } from './ui/bento';
@@ -31,6 +31,7 @@ import { DotPattern } from './ui/aliimam/DotPattern';
 import { GridPattern } from './ui/aliimam/GridPattern';
 import { WarpLogo } from './WarpLogo';
 import { CinematicHero } from './CinematicHero';
+import { TextMatrixDecode, IntersectionScope, ChromeGlowButton } from './ui/pixel-perfect';
 
 /**
  * The glade is lazy-loaded: three.js lands in its own chunk and never delays
@@ -40,7 +41,7 @@ const GladeCanvas = lazy(() => import('./GladeCanvas'));
 const StemCityCanvas = lazy(() => import('./StemCityCanvas'));
 
 interface LandingProps {
-  onEnter(): void;
+  onEnter(mode?: 'choose' | 'login' | 'register' | 'guest'): void;
 }
 
 const STATS = [
@@ -291,7 +292,7 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
         {/* Soft radial backdrop aura behind hero text block for enhanced legibility */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-10 -z-1 bg-[radial-gradient(ellipse_at_20%_40%,oklch(0.12_0.01_260/0.92)_0%,oklch(0.12_0.01_260/0.5)_50%,transparent_75%)] blur-xl"
+          className="pointer-events-none absolute -inset-10 -z-1 bg-[radial-gradient(ellipse_at_20%_40%,oklch(0.235_0.016_245/0.95)_0%,oklch(0.275_0.018_245/0.65)_50%,transparent_75%)] blur-xl"
         />
 
         <div ref={copyRef} className="flex flex-col items-start">
@@ -299,26 +300,31 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
           <a
             href="#stem-city"
             data-hero-reveal
-            className="group mb-5 inline-flex items-center gap-2.5 border border-white/15 bg-black/40 px-3 py-1.5 backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-black/60"
+            className="group mb-5 inline-flex items-center gap-2.5 border border-border bg-surface/85 px-3 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-surface"
           >
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping bg-primary opacity-75" />
               <span className="relative inline-flex size-2 bg-primary" />
             </span>
-            <span className="font-mono text-[10px] font-semibold tracking-wider text-primary uppercase">
+            <TextMatrixDecode
+              trigger="mount"
+              delay={0.3}
+              duration={0.8}
+              className="text-[10px] font-semibold tracking-wider text-primary uppercase"
+            >
               GLOBAL NORM
-            </span>
-            <span className="h-3 w-px bg-white/20" />
-            <span className="text-xs font-medium text-white/90">
+            </TextMatrixDecode>
+            <span className="h-3 w-px bg-border-strong" />
+            <span className="text-xs font-medium text-foreground-secondary">
               Five competencies · adaptive cohort
             </span>
-            <ArrowRight className="size-3 text-white/50 transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
+            <ArrowRight className="size-3 text-foreground-muted transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
           </a>
 
           {/* Heading with fluid single-line typewriter */}
           <h1
             data-hero-reveal
-            className="mb-4 font-display text-[clamp(2.5rem,5vw,4.25rem)] font-extrabold leading-none tracking-tight text-white whitespace-nowrap min-h-[1.15em] flex items-center sm:mb-5"
+            className="mb-4 font-display text-[clamp(2.5rem,5vw,4.25rem)] font-extrabold leading-none tracking-tight text-foreground whitespace-nowrap min-h-[1.15em] flex items-center sm:mb-5"
           >
             <Typewriter
               words={[
@@ -337,7 +343,7 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
           {/* Subtitle with balanced 2-line cadence */}
           <p
             data-hero-reveal
-            className="mb-7 max-w-xl text-base sm:text-lg leading-relaxed text-white/80 font-normal antialiased"
+            className="mb-7 max-w-xl text-base sm:text-lg leading-relaxed text-foreground-secondary font-normal antialiased"
           >
             WARP benchmarks how you think across five STEAM competencies against the
             global cohort — revealing your exact gap vector and how to close it.
@@ -345,25 +351,24 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
 
           {/* Harmonized CTA button pair */}
           <div data-hero-reveal className="flex flex-wrap items-center gap-3.5">
-            <Button
+            <ChromeGlowButton
               id="landing-start-btn"
               size="lg"
               onClick={onEnter}
               data-testid="landing-cta"
-              className="group font-semibold border border-primary/40"
             >
               Start your assessment
               <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </Button>
+            </ChromeGlowButton>
             <Button
               variant="ghost"
               size="lg"
-              className="h-11 px-6 border border-white/20 bg-black/40 text-white/90 hover:border-primary/50 hover:bg-black/60 hover:text-white backdrop-blur-sm transition-all duration-200 font-medium"
+              className="h-11 px-6 border border-border bg-surface/85 text-foreground hover:border-primary/50 hover:bg-elevated hover:text-foreground backdrop-blur-sm shadow-xs transition-all duration-200 font-medium"
               onClick={() =>
                 document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
               }
             >
-              <Activity className="size-3.5 text-primary/80" />
+              <Activity className="size-3.5 text-primary" />
               Explore telemetry
             </Button>
           </div>
@@ -371,21 +376,27 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
           {/* Calibrated telemetry footnote strip */}
           <div
             data-hero-reveal
-            className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] text-white/60"
+            className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] text-foreground-muted"
           >
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="size-3 text-primary" />
-              Free & open access
+              <TextMatrixDecode trigger="mount" delay={0.6} duration={0.9}>
+                Free & open access
+              </TextMatrixDecode>
             </span>
-            <span className="text-white/25">/</span>
+            <span className="text-border-strong">/</span>
             <span className="flex items-center gap-1.5">
               <Clock className="size-3 text-primary" />
-              ~10 min adaptive benchmark
+              <TextMatrixDecode trigger="mount" delay={0.8} duration={0.9}>
+                ~10 min adaptive benchmark
+              </TextMatrixDecode>
             </span>
-            <span className="text-white/25">/</span>
+            <span className="text-border-strong">/</span>
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="size-3 text-primary" />
-              Zero tracking or ads
+              <TextMatrixDecode trigger="mount" delay={1.0} duration={0.9}>
+                Zero tracking or ads
+              </TextMatrixDecode>
             </span>
           </div>
         </div>
@@ -1249,10 +1260,10 @@ function ClosingCTA({ onEnter }: { onEnter: () => void }) {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <Button size="lg" onClick={onEnter} className="w-full sm:w-auto">
+          <ChromeGlowButton size="lg" onClick={onEnter} className="w-full sm:w-auto">
             Start free assessment
             <ArrowRight className="size-4" />
-          </Button>
+          </ChromeGlowButton>
           <Button
             variant="outline"
             size="lg"
@@ -1389,9 +1400,15 @@ export function Landing({ onEnter }: LandingProps) {
         />
         <DotPattern className="opacity-20 mix-blend-overlay" />
 
-        {/* Floating nav — Ali Imam header-01 inspired instrument bar */}
+        {/* Floating nav — Ali Imam header-01 inspired instrument bar with glass transition & corner markers */}
         <nav className="relative z-3 px-6 pt-4 sm:px-12 sm:pt-6 md:px-20 lg:px-28">
-          <div className="relative flex h-14 w-full items-stretch justify-between border border-border bg-background shadow-xs">
+          <div className="relative flex h-14 w-full items-stretch justify-between border border-border/80 bg-background/85 backdrop-blur-md shadow-xs transition-colors duration-300 hover:border-primary/40">
+            {/* Technical corner brackets */}
+            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 select-none font-mono text-[9px] text-border/80">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 select-none font-mono text-[9px] text-border/80">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 select-none font-mono text-[9px] text-border/80">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 select-none font-mono text-[9px] text-border/80">+</span>
+
             <div className="flex h-full items-center">
               <a
                 href="#top"
@@ -1423,12 +1440,15 @@ export function Landing({ onEnter }: LandingProps) {
               {/* Telemetry live status indicator to balance instrument bar */}
               <div className="hidden xl:flex items-center border-l border-border px-4 font-mono text-[11px] text-foreground-secondary gap-2 select-none">
                 <span className="size-1.5 bg-emerald-400 animate-pulse" />
-                <span className="tracking-wider">3PL IRT · ACTIVE</span>
+                <TextMatrixDecode trigger="mount" delay={0.4} duration={1.0} className="tracking-wider">
+                  3PL IRT · ACTIVE
+                </TextMatrixDecode>
               </div>
 
               {!isSignedIn ? (
                 <button
-                  onClick={onEnter}
+                  id="landing-sign-in-btn"
+                  onClick={() => onEnter('login')}
                   className="flex h-full items-center border-l border-border px-4 sm:px-6 text-[13px] sm:text-[14px] font-semibold text-foreground-secondary transition-colors duration-200 hover:bg-surface hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring cursor-pointer"
                 >
                   Sign in
@@ -1436,7 +1456,7 @@ export function Landing({ onEnter }: LandingProps) {
               ) : (
                 <div className="flex h-full items-center border-l border-border px-3 sm:px-4">
                   <button
-                    onClick={() => supabase.auth.signOut()}
+                    onClick={() => signOutUser()}
                     className="flex size-8 items-center justify-center bg-surface text-foreground-secondary hover:text-foreground transition-colors cursor-pointer"
                     aria-label="Sign out"
                   >
@@ -1480,7 +1500,21 @@ export function Landing({ onEnter }: LandingProps) {
                     </a>
                   ))}
                 </div>
-                <div className="mt-4 pt-2">
+                <div className="mt-4 flex flex-col gap-2 pt-2">
+                  {!isSignedIn && (
+                    <Button
+                      id="mobile-landing-sign-in-btn"
+                      variant="outline"
+                      size="md"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onEnter('login');
+                      }}
+                      className="w-full"
+                    >
+                      Sign in
+                    </Button>
+                  )}
                   <Button
                     size="md"
                     onClick={() => {
@@ -1502,18 +1536,24 @@ export function Landing({ onEnter }: LandingProps) {
         <HeroCopy onEnter={onEnter} />
       </section>
 
-      {/* ── Stats band: Dashed metric grid ── */}
+      {/* ── Stats band: Dashed metric grid with IntersectionScope technical framing ── */}
       <section className="border-y border-dashed border-border bg-surface/40">
         <div className="mx-auto grid max-w-5xl grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-dashed divide-border sm:grid-cols-4">
-          {STATS.map((stat) => (
-            <div key={stat.label} className="flex flex-col items-center justify-center gap-1 p-6 sm:p-8">
+          {STATS.map((stat, idx) => (
+            <IntersectionScope
+              key={stat.label}
+              variant="crosshair"
+              className="border-none bg-transparent flex flex-col items-center justify-center gap-1 p-6 sm:p-8"
+            >
               <span className="font-display text-3xl font-bold tabular sm:text-4xl text-foreground">
-                {stat.value}
+                <TextMatrixDecode trigger="in-view" delay={idx * 0.1} duration={0.75}>
+                  {stat.value}
+                </TextMatrixDecode>
               </span>
               <span className="text-center font-mono text-[10px] uppercase tracking-[0.15em] text-foreground-secondary">
                 {stat.label}
               </span>
-            </div>
+            </IntersectionScope>
           ))}
         </div>
       </section>
@@ -1601,8 +1641,13 @@ export function Landing({ onEnter }: LandingProps) {
                 <BentoGridItem
                   key={c.n}
                   colSpan={colSpan}
-                  className="flex flex-col justify-between border border-border bg-background p-6 shadow-xs hover:border-primary/40 transition-colors"
+                  className="group relative flex flex-col justify-between border border-border bg-background/80 p-6 shadow-xs hover:border-primary/50 hover:bg-surface/40 transition-all duration-300"
                 >
+                  {/* Technical scope corner markers */}
+                  <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+                  <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
                   <div>
                     <div className="mb-4 flex items-center justify-between">
                       <span
@@ -1652,8 +1697,13 @@ export function Landing({ onEnter }: LandingProps) {
             <motion.div
               key={step.num}
               variants={fade}
-              className="relative flex flex-col items-center text-center p-6 border border-border bg-background hover:border-primary/30 transition-colors"
+              className="group relative flex flex-col items-center text-center p-6 border border-border bg-background hover:border-primary/40 hover:bg-surface/30 transition-all duration-200"
             >
+              {/* Technical scope corner markers */}
+              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
               <div className="relative z-1 mb-5 flex size-12 items-center justify-center border border-border bg-surface font-mono text-sm font-bold tabular text-primary">
                 {step.num}
               </div>

@@ -11,7 +11,7 @@ import { AdminApp } from './components/admin/AdminApp';
 import { SharedReport } from './components/SharedReport';
 import { AnimatePresence, motion } from 'motion/react';
 import { useAuthStore } from './stores/authStore';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { useSupabaseAuth } from './context/SupabaseAuthContext';
 import { supabase } from './lib/supabase';
@@ -50,7 +50,7 @@ function WarpApplication() {
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
     if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register') || searchParams.has('guest')) {
-      if (session.phase !== 'onboarding') {
+      if (session.phase !== 'onboarding' && session.phase !== 'hub' && session.phase !== 'assessment') {
         enterApp();
       }
     }
@@ -69,6 +69,18 @@ function WarpApplication() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, [enterApp, goHome]);
+
+  // Auto-redirect signed-in users from landing → dashboard.
+  // This covers two cases:
+  //   1. Google OAuth bounces to /?dashboard — URL already has the param so isDashboard is true (handled above).
+  //   2. A signed-in user manually navigates to / — send them to their dashboard.
+  useEffect(() => {
+    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard) {
+      window.history.replaceState({}, '', '/?dashboard');
+      // Force a URL-param re-read by reloading in-place
+      window.location.replace('/?dashboard');
+    }
+  }, [isLoaded, isSignedIn, session.phase, isDashboard]);
 
   // Synchronize user to Supabase public.users and WarpSession
   useEffect(() => {
@@ -125,6 +137,13 @@ function WarpApplication() {
     }
   }, [session.phase, session.result, hasAssessmentId, isGuest, user, session]);
 
+  const handleEnterApp = useCallback((mode?: 'choose' | 'login' | 'register' | 'guest') => {
+    if (mode && typeof window !== 'undefined') {
+      window.history.pushState({}, '', `?${mode}`);
+    }
+    enterApp();
+  }, [enterApp]);
+
   // Determine what body to render
   let body;
 
@@ -135,7 +154,7 @@ function WarpApplication() {
   } else if (hasAssessmentId) {
     body = <ReportDetail key="report" />;
   } else if (session.phase === 'landing') {
-    body = <Landing key="landing" onEnter={enterApp} />;
+    body = <Landing key="landing" onEnter={handleEnterApp} />;
   } else if (session.phase === 'onboarding') {
     if (needsProfileSetup) {
       body = <ProfileSetup key="profileSetup" />;
@@ -196,15 +215,20 @@ function WarpApplication() {
     }
   }, [session.phase, isLoaded, isSignedIn, user, session.profile, setProfile]);
 
-  // If a logged-out user returns, they shouldn't hit the "Sign In Required" wall on the assessment phase
+  // If a logged-out user returns or signs out, redirect to the landing page instead of hub/assessment/results
   useEffect(() => {
-    if (isLoaded && !isSignedIn && !isGuest && (session.phase === 'assessment' || session.phase === 'results')) {
+    if (
+      isLoaded &&
+      !isSignedIn &&
+      !isGuest &&
+      (session.phase === 'hub' || session.phase === 'assessment' || session.phase === 'results')
+    ) {
       goHome();
     }
   }, [isLoaded, isSignedIn, isGuest, session.phase, goHome]);
 
   return (
-    <AppShell scrollable={session.phase === 'landing' || session.phase === 'onboarding' || session.phase === 'hub'} hideHeader={session.phase === 'landing'}>
+    <AppShell scrollable={session.phase === 'landing' || session.phase === 'onboarding' || session.phase === 'hub'} hideHeader={session.phase === 'landing' && !isDashboard}>
       <AnimatePresence mode="wait">
         <motion.div
           key={isDashboard ? 'dash' : (hasAssessmentId || isSharedReport) ? 'rep' : session.phase}

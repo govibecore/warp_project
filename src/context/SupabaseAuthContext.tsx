@@ -23,6 +23,11 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        try {
+          window.sessionStorage.removeItem('logged_out');
+        } catch {}
+      }
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoaded(true);
@@ -31,6 +36,11 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        try {
+          window.sessionStorage.removeItem('logged_out');
+        } catch {}
+      }
       setSession(session);
       setUser(session?.user ?? null);
     });

@@ -11,6 +11,7 @@ import { Badge } from './ui/badge';
 import { Spinner } from './ui/spinner';
 import { getNemotronSocraticHint } from '../lib/nvidiaService';
 import { AssessmentTutorial } from './AssessmentTutorial';
+import { COMPETENCY_LABELS, CompetencyKey } from '../lib/irt/globalBenchmark';
 
 function getGuestId(): string {
   let id = localStorage.getItem('warp_guest_student_id');
@@ -321,7 +322,7 @@ export function Assessment() {
           >
             <div className="mb-8 flex flex-col gap-4">
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
-                {item.competency}
+                {COMPETENCY_LABELS[item.competency as CompetencyKey] || item.competency}
               </span>
 
               <h1 className="text-balance text-xl font-medium leading-normal md:text-2xl">

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import { ArrowRight, ArrowLeft, Sparkles, LogIn, TriangleAlert } from 'lucide-react';
@@ -15,15 +15,17 @@ const DIFFICULTIES = ['Standard', 'Advanced', 'Olympiad'] as const;
 function AuthForm({
   type,
   onSwitchMode,
+  initialNotice,
 }: {
   type: 'login' | 'register';
-  onSwitchMode: (mode: 'login' | 'register') => void;
+  onSwitchMode: (mode: 'login' | 'register', notice?: string) => void;
+  initialNotice?: string | null;
 }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice || null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +34,42 @@ function AuthForm({
     setNotice(null);
 
     if (type === 'register') {
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: {
+            full_name: email.trim().split('@')[0],
+          },
+        },
+      });
+
       if (error) {
         setError(error.message);
-      } else if (data.user && !data.session) {
-        setNotice('Registration successful! Please check your email inbox to confirm your account before signing in.');
-      } else if (data.user && data.session) {
+      } else if (data.session) {
         setNotice('Account created successfully! Signing you in...');
+      } else if (data.user) {
+        // Automatic immediate sign in — account is auto-confirmed in database
+        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password,
+        });
+        if (!signInErr && signInData.session) {
+          setNotice('Account created successfully! Signing you in...');
+        } else {
+          onSwitchMode('login', 'Account created! Please enter your password to sign in.');
+        }
       }
     } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
       if (error) {
         if (error.message.toLowerCase().includes('invalid login credentials')) {
-          setError('Invalid login credentials. If you haven\'t created an account yet, please sign up first.');
+          setError('Invalid login credentials. If you have not created an account yet, please click "Sign up" below.');
+        } else if (error.message.toLowerCase().includes('email not confirmed')) {
+          setError('Account is being activated. Please try clicking "Sign in" again.');
         } else {
           setError(error.message);
         }
@@ -103,7 +128,10 @@ function AuthForm({
         disabled={loading}
         onClick={async () => {
           setLoading(true);
-          const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: `${window.location.origin}/?dashboard` },
+          });
           if (error) {
             setError(error.message);
             setLoading(false);
@@ -177,7 +205,46 @@ const HEADINGS: Record<FormMode, { title: string; body: string }> = {
 export function Onboarding() {
   const { setProfile, goHome } = useWarpSession();
   const { setGuest } = useAuthStore();
-  const [mode, setMode] = useState<FormMode>('choose');
+  const [mode, setMode] = useState<FormMode>(() => {
+    if (typeof window !== 'undefined' && window.location.search) {
+      const p = new URLSearchParams(window.location.search);
+      if (p.has('login')) return 'login';
+      if (p.has('register')) return 'register';
+      if (p.has('guest')) return 'guest';
+    }
+    return 'choose';
+  });
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (typeof window !== 'undefined' && window.location.search) {
+        const p = new URLSearchParams(window.location.search);
+        if (p.has('login')) setMode('login');
+        else if (p.has('register')) setMode('register');
+        else if (p.has('guest')) setMode('guest');
+        else setMode('choose');
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const [sharedNotice, setSharedNotice] = useState<string | null>(null);
+
+  const switchMode = (newMode: FormMode, notice?: string) => {
+    setMode(newMode);
+    setSharedNotice(notice || null);
+    if (typeof window !== 'undefined') {
+      window.history.pushState({}, '', newMode === 'choose' ? window.location.pathname : `?${newMode}`);
+    }
+  };
+
+  const handleBackToHome = () => {
+    if (typeof window !== 'undefined' && window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+    goHome();
+  };
 
   const [name, setName] = useState('');
   const [classLevel, setClassLevel] = useState('8');
@@ -192,6 +259,9 @@ export function Onboarding() {
       return;
     }
     setFormError(null);
+    if (typeof window !== 'undefined' && window.location.search) {
+      window.history.replaceState({}, '', window.location.pathname);
+    }
     setGuest();
     setProfile({ name: name.trim(), classLevel: Number(classLevel), difficulty, schoolName: schoolName.trim() });
   };
@@ -219,7 +289,7 @@ export function Onboarding() {
             <motion.div key="choose" {...FADE_SLIDE} className="flex w-full flex-col gap-3">
               <button
                 type="button"
-                onClick={() => setMode('register')}
+                onClick={() => switchMode('register')}
                 className="card card-interactive flex w-full items-center justify-between gap-3 p-5 text-left"
               >
                 <span className="flex items-center gap-3">
@@ -236,7 +306,7 @@ export function Onboarding() {
 
               <button
                 type="button"
-                onClick={() => setMode('login')}
+                onClick={() => switchMode('login')}
                 className="card card-interactive flex w-full items-center justify-between gap-3 p-5 text-left"
               >
                 <span className="flex items-center gap-3">
@@ -251,11 +321,11 @@ export function Onboarding() {
                 <ArrowRight className="size-4 shrink-0 text-foreground-secondary" aria-hidden="true" />
               </button>
 
-              <Button variant="ghost" size="sm" onClick={() => setMode('guest')}>
+              <Button variant="ghost" size="sm" onClick={() => switchMode('guest')}>
                 Continue without an account
               </Button>
 
-              <Button variant="ghost" size="sm" onClick={goHome} data-testid="back-to-home-btn">
+              <Button variant="ghost" size="sm" onClick={handleBackToHome} data-testid="back-to-home-btn">
                 <ArrowLeft className="size-4" />
                 Back to home
               </Button>
@@ -264,8 +334,8 @@ export function Onboarding() {
 
           {mode === 'login' && (
             <motion.div key="login" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <AuthForm type="login" onSwitchMode={setMode} />
-              <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
+              <AuthForm type="login" onSwitchMode={switchMode} initialNotice={sharedNotice} />
+              <Button variant="ghost" size="sm" onClick={() => switchMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
               </Button>
@@ -274,8 +344,8 @@ export function Onboarding() {
 
           {mode === 'register' && (
             <motion.div key="register" {...FADE_SLIDE} className="flex w-full flex-col items-center gap-4">
-              <AuthForm type="register" onSwitchMode={setMode} />
-              <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
+              <AuthForm type="register" onSwitchMode={switchMode} initialNotice={sharedNotice} />
+              <Button variant="ghost" size="sm" onClick={() => switchMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
               </Button>

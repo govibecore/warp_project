@@ -108,32 +108,32 @@ function deterministicReport(
   return {
     student_variant: {
       archetypeTitle: 'Versatile STEM Investigator',
-      summary: `Hello ${name}! You scored ${globalScore}/900 on your STEM benchmark. Your strongest area is ${strongest.replace(/([A-Z])/g, ' $1').trim()}, and your biggest growth opportunity is in ${weakest.replace(/([A-Z])/g, ' $1').trim()}. Keep pushing — every international competitor started exactly where you are now.`,
+      summary: `Hello ${name}! You scored ${globalScore}/900 on your STEM benchmark. Your strongest area is ${strongest.replace(/([A-Z])/g, ' $1').trim()}, and your biggest growth opportunity is in ${weakest.replace(/([A-Z])/g, ' $1').trim()}. In India, this places you in a solid competitive tier for Class ${classLevel}, but stepping up to top Olympiad (SOF IMO/NSO) and international (Singapore/AMC) percentiles requires transitioning from textbook formula memory to first-principles problem solving.`,
       keyStrengths: [
-        `Strong foundation in ${strongest.replace(/([A-Z])/g, ' $1').trim()}.`,
-        'Demonstrated persistence through all benchmark scenarios.',
-        'Ability to filter baseline distractors in non-routine problems.',
+        `Strong foundation in ${strongest.replace(/([A-Z])/g, ' $1').trim()} (Solid execution on Class ${classLevel} concepts).`,
+        'Demonstrated persistence through all non-routine benchmark scenarios.',
+        'Ability to filter baseline distractors in unfamiliar problem contexts.',
       ],
-      nextMission: `Focus on ${weakest.replace(/([A-Z])/g, ' $1').trim()} this week: solve 5 non-routine problems using first-principles reasoning.`,
+      nextMission: `Focus on ${weakest.replace(/([A-Z])/g, ' $1').trim()} this week: solve 5 non-routine problems from NCERT Exemplar or Olympiad sets using first-principles reasoning without checking formulas.`,
     },
     parent_variant: {
-      overallAssessment: `Diagnostic for ${name} (Class ${classLevel}): Your child scored ${globalScore}/900 on the international STEM benchmark. Standard school exams (90%+ marks) often create a false sense of security — international benchmarks test whether a student can apply first principles to unfamiliar scenarios. This assessment reveals both strengths and areas requiring focused intervention to compete with Singapore and Chinese peers.`,
+      overallAssessment: `Diagnostic for Parents of ${name} (Class ${classLevel}): Your child scored ${globalScore}/900 on the Global STEM benchmark. Standard Indian school examinations (often yielding 90%+ marks) test recall of practiced textbook exercises; this benchmark tests whether your child can apply fundamental scientific and mathematical principles to completely unfamiliar scenarios. While your child demonstrates unmistakable potential, bridging the gap to top-tier competitive percentiles (Olympiads, JEE/NEET foundation, and international cohorts) requires moving beyond rote formulas toward deep conceptual models.`,
       keyStrengths: [
         `Solid conceptual foundation in ${strongest.replace(/([A-Z])/g, ' $1').trim()}.`,
-        'Perseverance on non-standard adaptive problem prompts.',
-        'High growth ceiling with systematic heuristic training.',
+        'Perseverance on non-standard adaptive problem prompts under timed conditions.',
+        'High growth ceiling when trained with structured first-principles heuristics.',
       ],
       growthAreas: [
-        `Heuristic gap in ${weakest.replace(/([A-Z])/g, ' $1').trim()}: tendency to jump to calculation before defining invariants.`,
-        'Vulnerability to distractors engineered around common textbook misconceptions.',
-        'Underdeveloped visual bar modeling habits compared to Singapore cohorts.',
+        `Heuristic gap in ${weakest.replace(/([A-Z])/g, ' $1').trim()}: tendency to jump to calculation before diagramming the problem and defining invariants.`,
+        'Vulnerability to distractor choices engineered around common school textbook misconceptions.',
+        'Need to practice multi-variable constraint problems beyond standard single-step NCERT chapter exercises.',
       ],
       actionPlan: [
-        { title: 'Implement Singapore CPA Routine', description: 'Require your child to draw diagrams before writing equations.', estimatedDuration: '45 mins/week' },
-        { title: 'Weekly Error Autopsy', description: 'Review wrong answers together: why was the trap answer tempting?', estimatedDuration: '30 mins/Sunday' },
-        { title: 'Register for International Benchmarks', description: 'SASMO, AMC 8/10, or Bebras for authentic competition calibration.', estimatedDuration: '1-2 months' },
+        { title: '45-Minute Daily Home Routine', description: '15m NCERT theory review, 20m solving 3-5 challenging non-routine problems, and 10m error self-correction.', estimatedDuration: '45 mins/evening' },
+        { title: 'Weekly Error Autopsy', description: 'Review wrong answers together in a dedicated Mistake Notebook: was it a calculation rush, misread constraint, or concept gap?', estimatedDuration: '30 mins/Sunday' },
+        { title: 'Olympiad & Competitive Exposure', description: 'Practice with MTG Olympiad workbooks (SOF IMO/NSO) and NCERT Exemplar HOTS questions.', estimatedDuration: '1-2 months' },
       ],
-      parentGuidance: 'Enforce a "No Calculator" rule for non-routine homework. Adopt the 2-Minute Explanation Rule: after correct answers, ask your child to explain why the other choices are impossible.',
+      parentGuidance: 'Enforce a "No Calculator" rule for homework to build mental arithmetic stamina. Adopt the 2-Minute Explanation Rule: after correct answers, ask your child to explain why the other three options are mathematically impossible.',
     },
   };
 }
@@ -244,13 +244,13 @@ async function callAI(
 
 // ── System prompt ──────────────────────────────────────────────────────
 const SYSTEM_PROMPT = `You are the lead psychometrician for WARP Global STEM Assessment.
-You evaluate student problem solving against authentic international benchmarks (Singapore SASMO/PSLE, China National Olympiad/Gaokao, USA AMC 8/10, European Bebras).
+You evaluate student problem solving against authentic Indian (CBSE, ICSE, SOF Olympiads, JEE/NEET Foundation) and international benchmarks (Singapore SASMO/PSLE, China National Olympiad/Gaokao, USA AMC 8/10, European Bebras).
 
 Guidelines:
-- Avoid generic praise. Cut through school grade inflation directly.
-- Contrast local classroom test scores with international non-routine transfer tasks.
-- For student_variant: Explain why surface intuition fails on deep problems. Be encouraging yet intellectually candid.
-- For parent_variant: Provide honest executive summary comparing directly to Singapore/China cohorts. Include specific actionable steps.
+- Avoid generic praise. Cut through school exam grade inflation (where 90%+ marks in classroom tests mask deeper conceptual transfer deficits).
+- Contrast local classroom test recall with competitive non-routine transfer tasks.
+- For student_variant: Provide clear, empowering cognitive diagnosis in relatable terms. Explain why surface intuition and textbook rote memorization fail on tricky multi-variable problems.
+- For parent_variant: Provide an honest executive summary comparing the student's standing both nationally in India (CBSE/ICSE cohort) and internationally (Singapore/US). Include specific actionable steps: daily home study routine, recommended reference books (e.g. NCERT Exemplar, RD Sharma, MTG Olympiad), and key questions for the next school Parent-Teacher Meeting (PTM).
 - Output MUST be valid JSON matching the requested schema exactly.`;
 
 // ── Main handler ───────────────────────────────────────────────────────

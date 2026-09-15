@@ -37,6 +37,15 @@ export interface GeneratedReport {
       purpose: string;
     }>;
     immediateHomeRoutines?: string[];
+    indianRecommendedCurricula?: Array<{
+      name: string;
+      category?: string;
+      urlDescription: string;
+      purpose: string;
+    }>;
+    indianHomeRoutines?: string[];
+    ptmDiscussionGuide?: string[];
+    streamOrientation?: { topStream: string; description: string; subjectFocus: string };
     parentGuidance?: string;
     benchmark?: InternationalBenchmarkResult;
     classLevel?: number;
@@ -180,12 +189,12 @@ function buildDeterministicReport(
   const topGlobalPct = (topCompetency[1] as any)?.globalPercentile || 50;
 
   const studentSummary = isEnglish
-    ? `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nGlobally, your analytical literacy performance ranks in the ${benchmark.globalPercentile}th percentile. When benchmarked against Singapore MOE and Cambridge English standards, your relative standing is ${benchmark.regionalPercentiles.Singapore}th percentile. Your strongest execution is in ${topLabel}, while your biggest growth opportunity is in ${lowestLabel}.\n\nTo excel against top international students in Singapore, the US, and Europe, focus on deep rhetorical evaluation and evidence synthesis rather than passive reading.`
-    : `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nGlobally, your analytical performance ranks in the ${benchmark.globalPercentile}th percentile. However, when benchmarked against the Singapore SASMO and Chinese Olympiad standards, your relative percentile is ${benchmark.regionalPercentiles.Singapore}th. Your greatest analytical leverage comes from ${topLabel}, while your biggest vulnerability to trap options is in ${lowestLabel}.\n\nTo compete with the top STEM minds across Singapore, the US, China, and Europe, you need to transition from "calculating answers" to "modeling first principles."`;
+    ? `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nIn India, your performance places you in the ${benchmark.indiaNationalPercentile}th percentile nationally (Projected Board Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}), and in the ${benchmark.globalPercentile}th percentile globally. When benchmarked against Singapore MOE and Cambridge English standards, your relative standing is ${benchmark.regionalPercentiles.Singapore}th percentile. Your strongest execution is in ${topLabel}, while your biggest growth opportunity is in ${lowestLabel}.\n\nTo excel against top students in India and internationally (Singapore, US, and Europe), focus on deep rhetorical evaluation and evidence synthesis rather than passive reading.`
+    : `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nIn India, your analytical performance ranks in the ${benchmark.indiaNationalPercentile}th percentile nationally (Projected Board Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}), and in the ${benchmark.globalPercentile}th percentile globally. Benchmarked against Singapore SASMO standards, your relative percentile is ${benchmark.regionalPercentiles.Singapore}th. Your greatest analytical leverage comes from ${topLabel}, while your biggest vulnerability to trap options is in ${lowestLabel}.\n\nTo compete with top STEM minds across India (Olympiads/JEE Foundation) and globally (Singapore, US, China), you need to transition from "calculating textbook answers" to "modeling first principles."`;
 
   const parentAssessment = isEnglish
-    ? `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway:\nYour child demonstrates strong reading potential, but currently leans on superficial keyword matching on complex multi-text tasks. Standard school English examinations reward rote recall; international benchmarks (such as PISA Reading Literacy or Cambridge O-Levels) test whether a student can synthesize conflicting perspectives and deconstruct authorial bias. Follow the actionable blueprint below to cultivate globally competitive critical literacy.`
-    : `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway:\nYour child has demonstrated unmistakable potential, but currently leans on familiar patterns rather than first-principles reasoning. In standard classroom examinations, this approach yields A-grades. In international competitions (such as AMC 8/10, SASMO, or Bebras), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, globally competitive mathematical and scientific reasoning.`;
+    ? `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} — ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child demonstrates strong reading potential, but currently leans on superficial keyword matching on complex multi-text tasks. Standard Indian school examinations reward rote recall of prescribed book questions; competitive benchmarks (such as PISA Reading Literacy, Cambridge, and Olympiads) test whether a student can synthesize conflicting perspectives and deconstruct authorial bias. Follow the actionable blueprint below to cultivate globally competitive critical literacy.`
+    : `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} — ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child has demonstrated unmistakable potential, but currently leans on familiar textbook formulas rather than first-principles reasoning. In standard classroom examinations, this approach often yields 90%+ marks. In national Olympiads (SOF IMO/NSO) and international competitions (such as AMC 8/10 or SASMO), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, competitive mathematical and scientific reasoning.`;
 
   return {
     student_variant: {
@@ -194,7 +203,7 @@ function buildDeterministicReport(
       summary: studentSummary,
       keyStrengths: [
         cognitiveArchetype.primaryStrength,
-        `Demonstrates consistent execution in ${topLabel} (Scaled Score: ${topScore}/800).`,
+        `Demonstrates consistent execution in ${topLabel} (Scaled Score: ${topScore}/900).`,
         `Able to filter baseline distractors and isolate key problem parameters.`,
       ],
       blindspots: [
@@ -212,15 +221,15 @@ function buildDeterministicReport(
       internationalGapSummary: realityCheck.internationalGapSummary,
       gradeInflationWarning: realityCheck.gradeInflationWarning,
       keyStrengths: [
-        `Demonstrated baseline resilience across challenging international problem sets.`,
+        `Demonstrated baseline resilience across challenging competitive and international problem sets.`,
         `High growth velocity when provided with structured heuristic frameworks.`,
-        `Strongest comparative standing in ${topLabel} (${topGlobalPct}th percentile globally).`,
+        `Strongest comparative standing in ${topLabel} (${topGlobalPct}th percentile globally, ${benchmark.indiaNationalPercentile}th percentile nationally).`,
       ],
       growthAreas: [
-        `Heuristic gap in ${lowestLabel}: tendency to rush to conclusions without rigorous verification.`,
+        `Heuristic gap in ${lowestLabel}: tendency to rush to calculation without rigorous first-principles verification.`,
         `Susceptibility to non-standard distractors engineered around common textbook misconceptions.`,
         isEnglish
-          ? `Underdeveloped active annotation habits compared to Singapore and UK top-decile cohorts.`
+          ? `Underdeveloped active margin annotation habits compared to Singapore and UK top-decile cohorts.`
           : `Underdeveloped visual bar modeling habits compared to Singapore cohorts.`,
       ],
       actionPlan: isEnglish
@@ -237,13 +246,13 @@ function buildDeterministicReport(
             },
             {
               title: 'Long-Form Analytical Reading',
-              description: 'Read 2 editorial essays weekly from authentic publications (e.g. Smithsonian, The Economist).',
+              description: 'Read 2 editorial essays weekly from authentic publications (e.g. The Hindu Young World, Smithsonian, The Economist).',
               estimatedDuration: '45 mins/week',
             },
           ]
         : [
             {
-              title: 'Implement Singapore CPA Routine',
+              title: 'Implement First-Principles Diagramming Routine',
               description: 'Require your child to draw diagrams and define invariants before writing equations.',
               estimatedDuration: '45 mins/week',
             },
@@ -253,13 +262,17 @@ function buildDeterministicReport(
               estimatedDuration: '30 mins/Sunday',
             },
             {
-              title: 'Register for International Contests',
-              description: 'Enter SASMO, AMC 8/10, or Bebras for authentic international calibration.',
+              title: 'Register for Authentic Competitions',
+              description: 'Enter SOF Olympiads (IMO/NSO), SASMO, AMC 8/10, or Bebras for authentic calibration.',
               estimatedDuration: '1–2 months',
             },
           ],
       recommendedCurricula: parentActionBlueprint.recommendedCurricula,
       immediateHomeRoutines: parentActionBlueprint.immediateHomeRoutines,
+      indianRecommendedCurricula: parentActionBlueprint.indianRecommendedCurricula,
+      indianHomeRoutines: parentActionBlueprint.indianHomeRoutines,
+      ptmDiscussionGuide: parentActionBlueprint.ptmDiscussionGuide,
+      streamOrientation: parentActionBlueprint.streamOrientation,
       parentGuidance: isEnglish
         ? 'Enforce active reading habits. Adopt the 2-Minute Explanation Rule: after answering, ask your child to explain why the other three choices are demonstrably false based solely on the text.'
         : 'Enforce a "No Calculator" rule for non-routine homework. Adopt the 2-Minute Explanation Rule: after correct answers, ask your child to explain why the other choices are impossible.',

@@ -17,7 +17,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, dashed, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn('card overflow-hidden', dashed && 'border-dashed', className)}
+      className={cn('card border border-border bg-card text-card-foreground overflow-hidden shadow-xs', dashed && 'border-dashed', className)}
       {...props}
     />
   ),

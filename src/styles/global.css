@@ -22,138 +22,80 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* ── Light: warm paper ─────────────────────────────────────────────────── */
-:root {
-  color-scheme: light;
-
-  --background: oklch(1 0 0);
-  --surface: oklch(0.968 0.004 90);
-  --elevated: oklch(1 0 0);
-
-  --foreground: oklch(0.147 0.004 49.3);
-  --foreground-secondary: oklch(0.5 0.008 260);
-  --foreground-muted: oklch(0.62 0.008 260);
-
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.147 0.004 49.3);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.147 0.004 49.3);
-
-  /* Fjord — the single accent. Action, focus, selection. */
-  --primary: oklch(0.518 0.253 323.949);
-  --primary-foreground: oklch(0.977 0.017 320.058);
-  --primary-subtle: oklch(0.96 0.018 230);
-
-  /* Semantics */
-  --success: oklch(0.55 0.1 150);
-  --success-foreground: oklch(0.99 0 0);
-  --success-subtle: oklch(0.96 0.02 150);
-
-  --warning: oklch(0.58 0.12 40);
-  --warning-foreground: oklch(0.99 0 0);
-  --warning-subtle: oklch(0.96 0.02 40);
-
-  --highlight: oklch(0.68 0.13 75);
-  --highlight-foreground: oklch(0.25 0.03 75);
-  --highlight-subtle: oklch(0.96 0.03 75);
-
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.99 0 0);
-  --destructive-subtle: oklch(0.96 0.02 25);
-
-  /* Structure */
-  --border: oklch(0.922 0.005 34.3);
-  --border-strong: oklch(0.82 0.007 90);
-  --input: oklch(0.922 0.005 34.3);
-  --ring: oklch(0.714 0.014 41.2);
-
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.96 0.002 17.2);
-  --muted-foreground: oklch(0.547 0.021 43.1);
-  --accent: oklch(0.96 0.002 17.2);
-  --accent-foreground: oklch(0.214 0.009 43.1);
-
-  /* Data visualisation — five distinguishable, contrast-safe hues */
-  --chart-1: oklch(0.897 0.196 126.665);
-  --chart-2: oklch(0.768 0.233 130.85);
-  --chart-3: oklch(0.648 0.2 131.684);
-  --chart-4: oklch(0.532 0.157 131.589);
-  --chart-5: oklch(0.453 0.124 130.933);
-  --radius: 0;
-  --sidebar: oklch(0.986 0.002 67.8);
-  --sidebar-foreground: oklch(0.147 0.004 49.3);
-  --sidebar-primary: oklch(0.591 0.293 322.896);
-  --sidebar-primary-foreground: oklch(0.977 0.017 320.058);
-  --sidebar-accent: oklch(0.96 0.002 17.2);
-  --sidebar-accent-foreground: oklch(0.214 0.009 43.1);
-  --sidebar-border: oklch(0.922 0.005 34.3);
-  --sidebar-ring: oklch(0.714 0.014 41.2);
-}
-
-/* ── Dark: nordic night ────────────────────────────────────────────────── */
+/* ── Nordic Twilight Slate: "Not Too Dark" (Default 2026) ───────────────────
+   Balanced mineral slate (~24% lightness) avoiding both stark white and
+   pitch-black OLED void. Restrained, high-contrast, zero eye-strain.
+   ────────────────────────────────────────────────────────────────────────── */
+:root,
 .dark {
   color-scheme: dark;
 
-  --background: oklch(0.147 0.004 49.3);
-  --surface: oklch(0.2 0.009 260);
-  --elevated: oklch(0.24 0.01 260);
+  /* 60% Canvas & Surfaces (Mineral Slate, NOT pitch black #0a0d14) */
+  --background: oklch(0.235 0.016 245);          /* #1B212D Eye-comfort mineral slate */
+  --surface: oklch(0.275 0.018 245);             /* #242C3B Sub-surface / inputs / tabs */
+  --elevated: oklch(0.315 0.020 245);            /* #2D374A Distinct elevated surface */
 
-  --foreground: oklch(0.986 0.002 67.8);
-  --foreground-secondary: oklch(0.68 0.008 90);
-  --foreground-muted: oklch(0.56 0.008 90);
+  /* 30% Typographic Hierarchy (Cloud white to slate gray, >12:1 contrast) */
+  --foreground: oklch(0.96 0.008 240);           /* #F1F5F9 Crisp cloud white */
+  --foreground-secondary: oklch(0.82 0.012 240); /* #CBD5E1 Readable slate gray */
+  --foreground-muted: oklch(0.68 0.015 240);     /* #94A3B8 Secondary / captions */
 
-  --card: oklch(0.214 0.009 43.1);
-  --card-foreground: oklch(0.986 0.002 67.8);
-  --popover: oklch(0.214 0.009 43.1);
-  --popover-foreground: oklch(0.986 0.002 67.8);
+  --card: oklch(0.295 0.019 245);                /* #283244 Elevated card surface */
+  --card-foreground: oklch(0.96 0.008 240);
+  --popover: oklch(0.295 0.019 245);
+  --popover-foreground: oklch(0.96 0.008 240);
 
-  --primary: oklch(0.452 0.211 324.591);
-  --primary-foreground: oklch(0.977 0.017 320.058);
-  --primary-subtle: oklch(0.26 0.03 230);
+  /* 10% Luminous Fjord Cyan Accent */
+  --primary: oklch(0.72 0.16 225);               /* #38BDF8 Luminous Fjord Cyan */
+  --primary-foreground: oklch(0.15 0.02 240);    /* #0F172A Deep slate text on cyan */
+  --primary-subtle: oklch(0.32 0.04 230);        /* #1E3A5F Subtle cyan wash */
 
-  --success: oklch(0.72 0.11 150);
-  --success-foreground: oklch(0.18 0.02 150);
-  --success-subtle: oklch(0.26 0.035 150);
+  /* Semantics (Nordic Mineral Tones) */
+  --success: oklch(0.75 0.15 145);               /* #34D399 Nordic Moss */
+  --success-foreground: oklch(0.14 0.02 145);
+  --success-subtle: oklch(0.30 0.04 145);
 
-  --warning: oklch(0.74 0.11 50);
-  --warning-foreground: oklch(0.2 0.02 50);
-  --warning-subtle: oklch(0.27 0.035 50);
+  --warning: oklch(0.78 0.14 65);                /* #FBBF24 Nordic Amber */
+  --warning-foreground: oklch(0.15 0.02 65);
+  --warning-subtle: oklch(0.32 0.04 65);
 
-  --highlight: oklch(0.8 0.12 80);
-  --highlight-foreground: oklch(0.22 0.03 80);
-  --highlight-subtle: oklch(0.28 0.04 80);
+  --highlight: oklch(0.80 0.13 85);
+  --highlight-foreground: oklch(0.16 0.02 85);
+  --highlight-subtle: oklch(0.32 0.04 85);
 
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.18 0.02 25);
-  --destructive-subtle: oklch(0.27 0.04 25);
+  --destructive: oklch(0.72 0.18 25);            /* #F87171 Nordic Rowan Coral */
+  --destructive-foreground: oklch(0.14 0.02 25);
+  --destructive-subtle: oklch(0.30 0.04 25);
 
-  --border: oklch(1 0 0 / 10%);
-  --border-strong: oklch(0.38 0.012 260);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.547 0.021 43.1);
+  /* Structure & Hairline Borders (Crisp 1px slate boundaries) */
+  --border: oklch(0.38 0.020 245);               /* #3B485E Visible 1px hairline border */
+  --border-strong: oklch(0.48 0.025 245);        /* #536480 Focused slate border */
+  --input: oklch(0.38 0.020 245);
+  --ring: oklch(0.72 0.16 225);
 
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.268 0.011 36.5);
-  --muted-foreground: oklch(0.714 0.014 41.2);
-  --accent: oklch(0.268 0.011 36.5);
-  --accent-foreground: oklch(0.986 0.002 67.8);
+  --secondary: oklch(0.28 0.018 245);
+  --secondary-foreground: oklch(0.96 0.008 240);
+  --muted: oklch(0.28 0.018 245);
+  --muted-foreground: oklch(0.68 0.015 240);
+  --accent: oklch(0.32 0.035 230);
+  --accent-foreground: oklch(0.96 0.008 240);
 
-  /* Data visualisation — five hues tuned for dark surfaces */
-  --chart-1: oklch(0.897 0.196 126.665);
-  --chart-2: oklch(0.768 0.233 130.85);
-  --chart-3: oklch(0.648 0.2 131.684);
-  --chart-4: oklch(0.532 0.157 131.589);
-  --chart-5: oklch(0.453 0.124 130.933);
-  --sidebar: oklch(0.214 0.009 43.1);
-  --sidebar-foreground: oklch(0.986 0.002 67.8);
-  --sidebar-primary: oklch(0.667 0.295 322.15);
-  --sidebar-primary-foreground: oklch(0.977 0.017 320.058);
-  --sidebar-accent: oklch(0.268 0.011 36.5);
-  --sidebar-accent-foreground: oklch(0.986 0.002 67.8);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.547 0.021 43.1);
+  /* 5 STEAM Competency Mineral Spectrum */
+  --chart-1: oklch(0.72 0.16 225);               /* Scientific Inquiry (Glacier Cyan #38BDF8) */
+  --chart-2: oklch(0.68 0.18 275);               /* Computational Thinking (Cobalt Petrol #818CF8) */
+  --chart-3: oklch(0.72 0.14 175);               /* Engineering Design (Pine Teal #2DD4BF) */
+  --chart-4: oklch(0.78 0.14 65);                /* Mathematical Reasoning (Warm Amber #FBBF24) */
+  --chart-5: oklch(0.72 0.18 305);               /* Systems Thinking (Heather Amethyst #C084FC) */
+
+  --radius: 0;
+  --sidebar: oklch(0.25 0.016 245);
+  --sidebar-foreground: oklch(0.96 0.008 240);
+  --sidebar-primary: oklch(0.72 0.16 225);
+  --sidebar-primary-foreground: oklch(0.15 0.02 240);
+  --sidebar-accent: oklch(0.30 0.018 245);
+  --sidebar-accent-foreground: oklch(0.96 0.008 240);
+  --sidebar-border: oklch(0.38 0.020 245);
+  --sidebar-ring: oklch(0.72 0.16 225);
 }
 
 /* ── Theme mapping ─────────────────────────────────────────────────────── */
@@ -371,10 +313,12 @@
       height: auto !important;
     }
 
-    .no-print {
+    .no-print,
+    .screen-only {
       display: none !important;
     }
-    .print-only {
+    .print-only,
+    .print-dossier {
       display: block !important;
     }
 
@@ -390,6 +334,15 @@
     .print-keep,
     .card {
       break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .print-break-before {
+      break-before: page !important;
+      page-break-before: always !important;
+    }
+    .print-avoid-break {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
     }
     thead {
       display: table-header-group;
@@ -397,11 +350,12 @@
   }
 }
 
-/* Paper palette override for the report.
+/* Paper palette override for the report in native print & html2pdf export.
    Lives outside @layer base so it beats the unlayered .dark token block above:
    layered rules always lose to unlayered ones, regardless of source order. */
 @media print {
-  .dark {
+  .dark,
+  body {
     --background: #ffffff;
     --surface: #ffffff;
     --elevated: #ffffff;
@@ -432,6 +386,76 @@
     --chart-4: #a16207;
     --chart-5: #7e22ce;
   }
+}
+
+/* ── html2pdf Rendering Mode Styling ───────────────────────────────────── */
+.pdf-rendering-mode {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+
+  --background: #ffffff !important;
+  --surface: #ffffff !important;
+  --elevated: #ffffff !important;
+  --card: #ffffff !important;
+
+  --foreground: #111827 !important;
+  --foreground-secondary: #4b5563 !important;
+  --foreground-muted: #6b7280 !important;
+
+  --primary: #0e7490 !important;
+  --primary-foreground: #ffffff !important;
+  --primary-subtle: #ecfeff !important;
+
+  --success: #15803d !important;
+  --warning: #b45309 !important;
+  --destructive: #b91c1c !important;
+  --destructive-subtle: #fef2f2 !important;
+
+  --border: #d1d5db !important;
+  --border-strong: #9ca3af !important;
+  --input: #e5e7eb !important;
+  --accent: #f3f4f6 !important;
+
+  --chart-1: #0e7490 !important;
+  --chart-2: #15803d !important;
+  --chart-3: #b45309 !important;
+  --chart-4: #a16207 !important;
+  --chart-5: #7e22ce !important;
+}
+
+.pdf-rendering-mode .no-print,
+.pdf-rendering-mode .print\:hidden,
+.pdf-rendering-mode .screen-only {
+  display: none !important;
+}
+
+.pdf-rendering-mode .print-dossier {
+  display: block !important;
+}
+
+.pdf-rendering-mode .print-break-before {
+  break-before: page !important;
+  page-break-before: always !important;
+}
+
+.pdf-rendering-mode .print-keep,
+.pdf-rendering-mode .card {
+  break-inside: avoid !important;
+  page-break-inside: avoid !important;
+  background-color: #ffffff !important;
+  border-color: #e5e7eb !important;
+  box-shadow: none !important;
+}
+
+.pdf-rendering-mode .bg-surface,
+.pdf-rendering-mode .bg-background,
+.pdf-rendering-mode .bg-elevated {
+  background-color: #ffffff !important;
+}
+
+.pdf-rendering-mode .bg-accent\/20,
+.pdf-rendering-mode .bg-accent\/30 {
+  background-color: #f3f4f6 !important;
 }
 
 /* ── Composed pieces ───────────────────────────────────────────────────── */
@@ -562,3 +586,93 @@ body.isChromatic *, body.isChromatic *::before, body.isChromatic *::after {
   animation-duration: 0s !important; 
   transition-duration: 0s !important; 
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   REPORT AWARD-WINNING DESIGN — STAGGER ANIMATION SYSTEM
+   Lagom easing: cubic-bezier(.2,.7,.2,1)  |  All gated by prefers-reduced-motion
+   ══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Hub card stagger — each card appears 75ms after the previous */
+.hub-card-1 {
+  animation: slideUp 300ms 150ms cubic-bezier(.2,.7,.2,1) both;
+}
+.hub-card-2 {
+  animation: slideUp 300ms 225ms cubic-bezier(.2,.7,.2,1) both;
+}
+.hub-card-3 {
+  animation: slideUp 300ms 300ms cubic-bezier(.2,.7,.2,1) both;
+}
+.hub-parakh {
+  animation: slideUp 350ms 400ms cubic-bezier(.2,.7,.2,1) both;
+}
+.hub-tutor {
+  animation: slideUp 350ms 450ms cubic-bezier(.2,.7,.2,1) both;
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .hub-card-1,
+  .hub-card-2,
+  .hub-card-3,
+  .hub-parakh,
+  .hub-tutor {
+    animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   NATIVE FORM CONTROLS: SELECT & OPTION CONTRAST FIX
+   Guarantees high-contrast text and background across all browser engines
+   ══════════════════════════════════════════════════════════════════════════ */
+
+select {
+  color-scheme: dark;
+}
+
+select option,
+select optgroup {
+  background-color: #12161f !important;
+  color: #f1f5f9 !important;
+}
+
+select option:checked {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
+select option:hover,
+select option:focus {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+}
+
+/* Light mode overrides if app ever toggles off .dark */
+html:not(.dark) select,
+:root:not(.dark) select {
+  color-scheme: light;
+}
+
+html:not(.dark) select option,
+:root:not(.dark) select option,
+html:not(.dark) select optgroup,
+:root:not(.dark) select optgroup {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+}
+
+html:not(.dark) select option:checked,
+:root:not(.dark) select option:checked {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+}
+
