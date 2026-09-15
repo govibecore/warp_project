@@ -66,7 +66,7 @@ export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ className, compact, children, ...props }, ref) => (
+  ({ className, compact, children, style, ...props }, ref) => (
     <select
       ref={ref}
       className={cn(
@@ -79,7 +79,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         colorScheme: 'dark',
         backgroundImage:
           "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E\")",
-        ...props.style,
+        ...style,
       }}
       {...props}
     >

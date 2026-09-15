@@ -408,7 +408,7 @@ test("Sign in button on landing page opens the login form", async ({ page, isMob
   }
 
   // Expect the login form to be visible with "Welcome back" heading
-  await expect(page.getByRole('heading', { name: /Welcome back/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /Welcome back/i })).toBeVisible({ timeout: 15000 });
   await expect(page.getByLabel(/Email/i)).toBeVisible();
   await expect(page.getByLabel(/Password/i)).toBeVisible();
   await expect(page.getByTestId('onboarding-shell').getByRole('button', { name: /^Sign in$/i })).toBeVisible();

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseUrl } from '../lib/supabase';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 import { useWarpSession } from '../context/WarpSessionContext';
 import { normalizeDifficulty } from '../domain/assessment';
@@ -32,8 +32,23 @@ import {
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 
-const SUPABASE_URL = 'https://uanqjksfodudwkakyglt.supabase.co';
 const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3); // Classes 3–12
+
+export interface StudentPreferences {
+  whatsappReports: boolean;
+  checkpointAlerts: boolean;
+  socraticTips: boolean;
+  nordicCanvas: boolean;
+  antiGamification: boolean;
+}
+
+export const DEFAULT_STUDENT_PREFERENCES: StudentPreferences = {
+  whatsappReports: true,
+  checkpointAlerts: true,
+  socraticTips: false,
+  nordicCanvas: true,
+  antiGamification: true,
+};
 
 export type ProfileTab = 'profile' | 'settings' | 'account';
 export type StudentGender = 'male' | 'female' | 'other' | 'prefer_not_to_say';
@@ -83,6 +98,27 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
   const [avatarUploading, setAvatarUploading] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLElement>(null);
+  const previousActiveElementRef = useRef<HTMLElement | null>(null);
+
+  // ── Persistent Student Preferences ──────────────────────────────────────────
+  const [preferences, setPreferences] = useState<StudentPreferences>(() => {
+    try {
+      const stored = localStorage.getItem('warp_student_preferences');
+      if (stored) return { ...DEFAULT_STUDENT_PREFERENCES, ...JSON.parse(stored) };
+    } catch {}
+    return DEFAULT_STUDENT_PREFERENCES;
+  });
+
+  const updatePreference = (key: keyof StudentPreferences, val: boolean) => {
+    setPreferences(prev => {
+      const next = { ...prev, [key]: val };
+      try {
+        localStorage.setItem('warp_student_preferences', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
 
   // ── Listen for custom open events from User Dropdown & URL params ─────────
   useEffect(() => {
@@ -110,17 +146,58 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
     };
   }, []);
 
-  // ── Keyboard accessibility: Escape to close ──────────────────────────────
+  // ── Dialog semantics, focus trap, and Escape key handling ────────────────
   useEffect(() => {
+    if (!open) return;
+
+    previousActiveElementRef.current = document.activeElement as HTMLElement | null;
+
+    const focusTimer = window.setTimeout(() => {
+      const focusable = panelRef.current?.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable && focusable.length > 0) {
+        focusable[0].focus();
+      }
+    }, 50);
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && open) {
+      if (e.key === 'Escape') {
         setOpen(false);
+        return;
+      }
+
+      if (e.key === 'Tab' && panelRef.current) {
+        const focusable = Array.from(
+          panelRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(el => el.offsetParent !== null);
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
-    if (open) {
-      window.addEventListener('keydown', handleKeyDown);
-      return () => window.removeEventListener('keydown', handleKeyDown);
-    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', handleKeyDown);
+      previousActiveElementRef.current?.focus?.();
+    };
   }, [open]);
 
   // ── Load profile from Supabase eagerly on user change ────────────────────
@@ -195,7 +272,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
 
   // ── Avatar URL + Initials ──────────────────────────────────────────────────
   const avatarSrc = profile.avatar_url
-    ? `${SUPABASE_URL}/storage/v1/object/public/avatars/${profile.avatar_url}`
+    ? `${supabaseUrl}/storage/v1/object/public/avatars/${profile.avatar_url}`
     : null;
 
   const displayName =
@@ -213,10 +290,22 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file || !user) return;
+
+    const ALLOWED: Record<string, string> = {
+      'image/jpeg': 'jpg',
+      'image/png': 'png',
+      'image/webp': 'webp',
+      'image/gif': 'gif',
+    };
+    const ext = ALLOWED[file.type];
+    if (!ext) {
+      setError('Only JPEG, PNG, WebP, or GIF images are allowed.');
+      return;
+    }
+
     setAvatarUploading(true);
     setError(null);
 
-    const ext = file.name.split('.').pop();
     const path = `${user.id}/avatar.${ext}`;
 
     const { error: uploadError } = await supabase.storage
@@ -389,6 +478,9 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
         {open && (
           <motion.aside
             key="panel"
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -400,7 +492,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
             <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-surface/30">
               <div className="flex items-center gap-2">
                 <span className="size-2 rounded-full bg-primary" />
-                <span className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-primary">
+                <span id="profile-panel-title" className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-primary">
                   WARP // Identity & Settings
                 </span>
               </div>
@@ -556,10 +648,11 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
 
                           <div className="grid grid-cols-2 gap-3">
                             <div>
-                              <label className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
+                              <label htmlFor="profile-current-class" className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
                                 Current Class
                               </label>
                               <select
+                                id="profile-current-class"
                                 value={profile.current_class}
                                 disabled={!isSignedIn}
                                 onChange={e => setLocalProfile(p => ({ ...p, current_class: Number(e.target.value) }))}
@@ -573,10 +666,11 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                             </div>
 
                             <div>
-                              <label className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
+                              <label htmlFor="profile-gender" className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
                                 Gender
                               </label>
                               <select
+                                id="profile-gender"
                                 value={profile.gender || 'prefer_not_to_say'}
                                 disabled={!isSignedIn}
                                 onChange={e => setLocalProfile(p => ({ ...p, gender: e.target.value as StudentGender }))}
@@ -643,7 +737,11 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
 
                         {/* About Me */}
                         <FieldGroup label="Student Bio & Notes" icon={<BookOpen className="size-3.5" />}>
+                          <label htmlFor="profile-student-bio" className="sr-only">
+                            Student Bio & Notes
+                          </label>
                           <textarea
+                            id="profile-student-bio"
                             value={profile.bio}
                             onChange={e => setLocalProfile(p => ({ ...p, bio: e.target.value }))}
                             disabled={!isSignedIn}
@@ -703,10 +801,11 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                           </div>
 
                           <div className="pt-2">
-                            <label className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
+                            <label htmlFor="profile-preferred-language" className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
                               Primary Test Language
                             </label>
                             <select
+                              id="profile-preferred-language"
                               value={profile.preferred_language}
                               disabled={!isSignedIn}
                               onChange={e => setLocalProfile(p => ({ ...p, preferred_language: e.target.value }))}
@@ -724,19 +823,22 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                             label="WhatsApp PTM Reports"
                             description="Automatically dispatch PDF audit summaries after tests"
                             icon={<Phone className="size-3.5" />}
-                            defaultChecked={true}
+                            checked={preferences.whatsappReports}
+                            onChange={v => updatePreference('whatsappReports', v)}
                           />
                           <ToggleRow
                             label="30-Day Checkpoint Alerts"
                             description="Notifications when your next calibration window opens"
                             icon={<Bell className="size-3.5" />}
-                            defaultChecked={true}
+                            checked={preferences.checkpointAlerts}
+                            onChange={v => updatePreference('checkpointAlerts', v)}
                           />
                           <ToggleRow
                             label="Socratic Guidance Tips"
                             description="Weekly cognitive misstep analysis and hints"
                             icon={<Sparkles className="size-3.5" />}
-                            defaultChecked={false}
+                            checked={preferences.socraticTips}
+                            onChange={v => updatePreference('socraticTips', v)}
                           />
                         </FieldGroup>
 
@@ -745,13 +847,15 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                             label="Nordic Lagom Canvas"
                             description="High-contrast dark theme optimized for long study sessions"
                             icon={<Moon className="size-3.5" />}
-                            defaultChecked={true}
+                            checked={preferences.nordicCanvas}
+                            onChange={v => updatePreference('nordicCanvas', v)}
                           />
                           <ToggleRow
                             label="Anti-Gamification Guard"
                             description="Suppresses distracting confetti and pressure countdowns"
                             icon={<Shield className="size-3.5" />}
-                            defaultChecked={true}
+                            checked={preferences.antiGamification}
+                            onChange={v => updatePreference('antiGamification', v)}
                           />
                         </FieldGroup>
                       </>
@@ -911,6 +1015,7 @@ function FieldGroup({
 }
 
 function ProfileInput({
+  id,
   label,
   value,
   onChange,
@@ -920,6 +1025,7 @@ function ProfileInput({
   placeholder,
   hint,
 }: {
+  id?: string;
   label: string;
   value: string;
   onChange: (v: string) => void;
@@ -929,10 +1035,11 @@ function ProfileInput({
   placeholder?: string;
   hint?: string;
 }) {
+  const inputId = id || `profile-input-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted">
+        <label htmlFor={inputId} className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted">
           {label}
         </label>
         {hint && <span className="text-[9px] font-mono text-foreground-muted">{hint}</span>}
@@ -940,6 +1047,7 @@ function ProfileInput({
       <div className="relative flex items-center">
         {icon && <span className="absolute left-2.5 text-foreground-muted pointer-events-none">{icon}</span>}
         <input
+          id={inputId}
           type={type}
           value={value}
           onChange={e => onChange(e.target.value)}
@@ -1025,6 +1133,7 @@ function ToggleRow({
       <button
         type="button"
         onClick={toggle}
+        aria-label={label}
         className={`relative inline-flex h-5 w-9 items-center rounded-none transition-colors border ${
           on ? 'bg-primary border-primary' : 'bg-surface border-border'
         }`}
@@ -1147,8 +1256,9 @@ function InlineAuthCard({ onSuccess }: { onSuccess?: () => void }) {
 
       <form onSubmit={handleSubmit} className="space-y-2.5">
         <div>
-          <label className="block text-[10px] font-mono text-foreground-muted mb-1">Email</label>
+          <label htmlFor="inline-auth-email" className="block text-[10px] font-mono text-foreground-muted mb-1">Email</label>
           <input
+            id="inline-auth-email"
             type="email"
             required
             value={email}
@@ -1158,8 +1268,9 @@ function InlineAuthCard({ onSuccess }: { onSuccess?: () => void }) {
           />
         </div>
         <div>
-          <label className="block text-[10px] font-mono text-foreground-muted mb-1">Password</label>
+          <label htmlFor="inline-auth-password" className="block text-[10px] font-mono text-foreground-muted mb-1">Password</label>
           <input
+            id="inline-auth-password"
             type="password"
             required
             value={password}

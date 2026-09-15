@@ -127,7 +127,7 @@ export function DeltaValue({
 }) {
   const resolvedValue = useDeltaValue();
   const val = absolute ? Math.abs(resolvedValue) : resolvedValue;
-  const prefix = showPlus && val > 0 ? "+" : "";
+  const prefix = showPlus && resolvedValue > 0 ? "+" : "";
   const formattedValue = `${prefix}${val.toFixed(precision)}`;
 
   return (

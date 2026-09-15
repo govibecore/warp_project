@@ -93,27 +93,30 @@ export async function askNemotronSocraticTutor(
   try {
     const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://uanqjksfodudwkakyglt.supabase.co';
     const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token || import.meta.env?.VITE_SUPABASE_ANON_KEY || '';
+    const token = session?.access_token;
 
-    const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
-      },
-      body: JSON.stringify({
-        messages,
-        scenarioContext,
-        studentQuestion,
-        classLevel,
-        mode,
-      }),
-    });
+    if (token) {
+      const boundedMessages = (messages || []).slice(-10);
+      const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
+        },
+        body: JSON.stringify({
+          messages: boundedMessages,
+          scenarioContext,
+          studentQuestion,
+          classLevel,
+          mode,
+        }),
+      });
 
-    if (response.ok) {
-      const result = await response.json();
-      if (result.reply) return result.reply;
+      if (response.ok) {
+        const result = await response.json();
+        if (result.reply) return result.reply;
+      }
     }
   } catch (err) {
     console.warn('[Nemotron Tutor] Edge Function call failed:', err);
@@ -131,12 +134,13 @@ export async function getNemotronSocraticHint(
   competency: string,
   classLevel: number
 ): Promise<string> {
+  // Tier 1: Local Vite Development Middleware
   try {
     const localRes = await fetch('/api/socratic-tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        mode: 'student',
+        mode: 'hint',
         studentQuestion: 'Give me a brief 1-2 sentence Socratic hint to isolate the invariant in this problem.',
         scenarioContext: { prompt, competency },
         classLevel,
@@ -146,6 +150,37 @@ export async function getNemotronSocraticHint(
     if (localRes.ok) {
       const data = await localRes.json();
       if (data.reply) return data.reply;
+    }
+  } catch {
+    // Proceed to Tier 2
+  }
+
+  // Tier 2: Authenticated Production Edge Function
+  try {
+    const supabaseUrl = import.meta.env?.VITE_SUPABASE_URL || 'https://uanqjksfodudwkakyglt.supabase.co';
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+
+    if (token) {
+      const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
+        },
+        body: JSON.stringify({
+          mode: 'hint',
+          studentQuestion: 'Give me a brief 1-2 sentence Socratic hint to isolate the invariant in this problem.',
+          scenarioContext: { prompt, competency },
+          classLevel,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.reply) return result.reply;
+      }
     }
   } catch {
     // Proceed to static hint

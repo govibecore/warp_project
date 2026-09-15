@@ -428,7 +428,7 @@ export function Onboarding() {
                 <ArrowRight className="size-4" />
               </Button>
 
-              <Button variant="ghost" size="sm" onClick={() => setMode('choose')}>
+              <Button variant="ghost" size="sm" onClick={() => switchMode('choose')}>
                 <ArrowLeft className="size-4" />
                 Back
               </Button>

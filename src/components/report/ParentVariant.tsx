@@ -389,16 +389,27 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
           <p className="text-xs text-foreground-secondary mb-3">
             Ask these 4 high-impact questions to your child's school teacher at the next PTM:
           </p>
-          <ul className="space-y-3.5 text-xs text-foreground-secondary">
-            {(ptmGuide.length > 0 ? ptmGuide : quarterlyMilestones).map((ptmQ: string, i: number) => (
-              <li key={i} className="flex items-start gap-3">
-                <span className="size-5 rounded-none bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 font-mono">
-                  Q{i + 1}
-                </span>
-                <span className="leading-snug">{ptmQ}</span>
-              </li>
-            ))}
-          </ul>
+          {(() => {
+            const rawQuestions = ptmGuide.length > 0 ? ptmGuide : quarterlyMilestones;
+            const validQuestions = (Array.isArray(rawQuestions) ? rawQuestions : [])
+              .map(q => (typeof q === 'string' ? q : (q && typeof q === 'object' && ('title' in q || 'description' in q)) ? `${q.title ? q.title + ': ' : ''}${q.description || ''}` : ''))
+              .filter(Boolean);
+            if (validQuestions.length === 0) {
+              return <p className="text-xs text-foreground-muted">No discussion questions available.</p>;
+            }
+            return (
+              <ul className="space-y-3.5 text-xs text-foreground-secondary">
+                {validQuestions.map((ptmQ: string, i: number) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="size-5 rounded-none bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold text-[10px] shrink-0 mt-0.5 font-mono">
+                      Q{i + 1}
+                    </span>
+                    <span className="leading-snug">{ptmQ}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+          })()}
         </Card>
       </div>
 

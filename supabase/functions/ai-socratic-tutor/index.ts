@@ -2,7 +2,7 @@
 // Server-side Socratic hint/tutor — NVIDIA keys in Supabase Vault only.
 
 import { serve } from "@std/http/server";
-
+import { createClient } from "@supabase/supabase-js";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -22,23 +22,46 @@ serve(async (req: Request) => {
   }
 
   try {
-
-
-    // Enforce authentication via session token or valid anon apikey
+    // Enforce authentication via verified Supabase bearer token
     const authHeader = req.headers.get('Authorization') || req.headers.get('authorization');
-    const apiKey = req.headers.get('apikey');
-
-    if (!authHeader && !apiKey) {
-      return new Response(JSON.stringify({ error: 'Missing Authorization or apikey header' }), {
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 401,
       });
     }
 
+    const token = authHeader.replace(/^[Bb]earer\s+/, '');
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') || '';
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
+    if (supabaseUrl && supabaseServiceKey) {
+      const supabase = createClient(supabaseUrl, supabaseServiceKey);
+      const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+      if (userError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: Valid authenticated session required' }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401,
+        });
+      }
+    }
+
     const { messages: incomingMessages, scenarioContext, studentQuestion, classLevel = 8, mode = 'student' } = await req.json();
+
+    // Enforce payload length guards to prevent context window and quota exhaustion
+    if (studentQuestion && typeof studentQuestion === 'string' && studentQuestion.length > 2000) {
+      return new Response(JSON.stringify({ error: 'Question exceeds maximum length limit of 2000 characters' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      });
+    }
 
     const isParent = mode === 'parent';
     const isHint = mode === 'hint';
+
+    const safePrompt = String(scenarioContext?.prompt || 'STEM Problem').slice(0, 1500);
+    const safeCompetency = String(scenarioContext?.competency || 'Analytical Problem Solving').slice(0, 200);
+    const safeSelected = String(scenarioContext?.userSelectedOption || 'Not specified').slice(0, 500);
+    const safeCorrect = String(scenarioContext?.correctOption || 'Not specified').slice(0, 500);
 
     const STRICT_INSTRUCTIONS = `\n\nIMPORTANT: DO NOT output your internal thinking process, planning steps, or preface your response with phrases like "Here's a thinking process:". Respond DIRECTLY and ONLY with the final message to the user in your designated persona.`;
 
@@ -49,37 +72,41 @@ serve(async (req: Request) => {
       systemPrompt = `You are the WARP AI Educational Advisor powered by NVIDIA Nemotron.
 Audience: Parent of a Class ${classLevel} student.
 Context:
-- Problem: "${scenarioContext?.prompt || 'STEM Problem'}"
-- Competency: ${scenarioContext?.competency || 'Analytical Problem Solving'}
-- Candidate Selected: "${scenarioContext?.userSelectedOption || 'Not specified'}"
-- Correct Principle: "${scenarioContext?.correctOption || 'Not specified'}"
+- Problem: "${safePrompt}"
+- Competency: ${safeCompetency}
+- Candidate Selected: "${safeSelected}"
+- Correct Principle: "${safeCorrect}"
 Provide empathetic, pragmatic educational advice bridging school exam marks (CBSE/ICSE) with international Olympiad standards (SASMO, AMC 8, PISA). Recommending curricula (NCERT Exemplar, MTG Foundation, RD Sharma), realistic study routines, and PTM questions.` + STRICT_INSTRUCTIONS;
     } else {
       systemPrompt = `You are the WARP Socratic STEM Tutor powered by NVIDIA Nemotron.
 Audience: Class ${classLevel} student.
 Context:
-- Problem: "${scenarioContext?.prompt || 'STEM Problem'}"
-- Competency: ${scenarioContext?.competency || 'Analytical Problem Solving'}
-- Candidate Selected: "${scenarioContext?.userSelectedOption || 'Not specified'}"
-- Correct Principle: "${scenarioContext?.correctOption || 'Not specified'}"
+- Problem: "${safePrompt}"
+- Competency: ${safeCompetency}
+- Candidate Selected: "${safeSelected}"
+- Correct Principle: "${safeCorrect}"
 Guide the student using the Socratic method and first-principles reasoning. Never give the direct final answer outright. Deconstruct why distractor choices feel tempting, uncover physical/mathematical invariants, and apply Olympiad heuristics (boundary checks, Singapore CPA modeling). Format with crisp markdown, numbered steps, and LaTeX math.` + STRICT_INSTRUCTIONS;
     }
 
-    let outgoingMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
+    let outgoingMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
+      { role: 'system', content: systemPrompt }
+    ];
+
+    const MAX_HISTORY_TURNS = 10;
+    const MAX_CHAR_PER_MSG = 2500;
 
     if (Array.isArray(incomingMessages) && incomingMessages.length > 0) {
-      outgoingMessages.push({ role: 'system', content: systemPrompt });
-      for (const m of incomingMessages) {
+      const recentMessages = incomingMessages.slice(-MAX_HISTORY_TURNS);
+      for (const m of recentMessages) {
+        const rawContent = String(m.content || m.text || '').slice(0, MAX_CHAR_PER_MSG);
         outgoingMessages.push({
           role: m.role === 'tutor' || m.role === 'assistant' ? 'assistant' : 'user',
-          content: m.content || m.text || '',
+          content: rawContent,
         });
       }
     } else {
-      outgoingMessages = [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: studentQuestion || 'How do I think about this problem from first principles?' },
-      ];
+      const rawQuestion = String(studentQuestion || 'How do I think about this problem from first principles?').slice(0, MAX_CHAR_PER_MSG);
+      outgoingMessages.push({ role: 'user', content: rawQuestion });
     }
 
     for (const model of MODEL_CASCADE) {

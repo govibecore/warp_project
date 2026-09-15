@@ -4,13 +4,11 @@ import { WarpLogo } from './WarpLogo';
 import { Button } from './ui/button';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 import { useWarpSession } from '../context/WarpSessionContext';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseUrl } from '../lib/supabase';
 import { LayoutDashboard, LogOut, User, ChevronDown, Settings } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { ProfilePanel } from './ProfilePanel';
 import { signOutUser } from '../lib/auth';
-
-const SUPABASE_URL = 'https://uanqjksfodudwkakyglt.supabase.co';
 
 /**
  * The frame every student screen lives in. One header, one hairline, no
@@ -114,7 +112,7 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
       .then(({ data }) => {
         const row = data as any;
         if (row?.avatar_url) {
-          setAvatarUrl(`${SUPABASE_URL}/storage/v1/object/public/avatars/${row.avatar_url}`);
+          setAvatarUrl(`${supabaseUrl}/storage/v1/object/public/avatars/${row.avatar_url}`);
         }
       });
   }, [user?.id]);

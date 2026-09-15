@@ -177,14 +177,16 @@ Output strict JSON:
     "keyStrengths": ["3 strings"],
     "nextMission": "string (1 actionable challenge for Week 1)"
   },
-  "parent_variant": {
-    "overallAssessment": "string (3 paragraphs, honest executive reality check comparing to international cohorts)",
-    "keyStrengths": ["3 strings"],
-    "growthAreas": ["3 strings"],
-    "actionPlan": [{"title":"string","description":"string","estimatedDuration":"string"}],
-    "parentGuidance": "string (specific home routines)"
-  }
-}`;
+    "parent_variant": {
+      "overallAssessment": "string (3 paragraphs, honest executive reality check comparing to international cohorts)",
+      "keyStrengths": ["3 strings"],
+      "growthAreas": ["3 strings"],
+      "actionPlan": [{"title":"string","description":"string","estimatedDuration":"string"}],
+      "parentGuidance": "string (specific home routines)",
+      "ptmDiscussionGuide": ["4 strings (targeted questions for the school teacher at the next PTM)"],
+      "indianRecommendedCurricula": [{"name":"string","category":"string","urlDescription":"string","purpose":"string"}]
+    }
+  }`;
 }
 
 // ── Call AI provider ───────────────────────────────────────────────────

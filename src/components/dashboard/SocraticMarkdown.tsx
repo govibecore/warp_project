@@ -25,7 +25,8 @@ export function SocraticMarkdown({ content, className = '' }: SocraticMarkdownPr
   let listItems: React.ReactNode[] = [];
 
   const flushTable = (keyIndex: number) => {
-    if (inTable && tableRows.length > 0) {
+    if (!inTable) return;
+    if (tableRows.length > 0) {
       elements.push(
         <div key={`table-${keyIndex}`} className="my-3 overflow-x-auto border border-border bg-surface/50">
           <table className="w-full text-left text-xs border-collapse font-sans">
@@ -54,10 +55,10 @@ export function SocraticMarkdown({ content, className = '' }: SocraticMarkdownPr
           </table>
         </div>
       );
-      tableHeader = [];
-      tableRows = [];
-      inTable = false;
     }
+    tableHeader = [];
+    tableRows = [];
+    inTable = false;
   };
 
   const flushList = (keyIndex: number) => {
@@ -300,8 +301,8 @@ function cleanMathFormula(raw: string): string {
   cleaned = cleaned.replace(/\\cdot/g, '·');
   cleaned = cleaned.replace(/\\times/g, '×');
   cleaned = cleaned.replace(/\\approx/g, '≈');
-  cleaned = cleaned.replace(/\\le/g, '≤');
-  cleaned = cleaned.replace(/\\ge/g, '≥');
+  cleaned = cleaned.replace(/\\leq?\b/g, '≤');
+  cleaned = cleaned.replace(/\\geq?\b/g, '≥');
   cleaned = cleaned.replace(/\\to/g, '→');
   cleaned = cleaned.replace(/\\Delta/g, 'Δ');
   cleaned = cleaned.replace(/\\theta/g, 'θ');

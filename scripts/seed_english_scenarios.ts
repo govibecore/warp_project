@@ -7,13 +7,16 @@ import { englishBand9_10 } from './scenarios/english_band_9_10';
 import { englishBand11_12 } from './scenarios/english_band_11_12';
 import { ScenarioDef } from './scenarios/english_types';
 
+import { fileURLToPath } from 'url';
+
 function escapeSql(str: string): string {
   return str.replace(/'/g, "''");
 }
 
 function scenarioToSql(s: ScenarioDef): string {
   const optionsJson = JSON.stringify(s.options).replace(/'/g, "''");
-  return `('${escapeSql(s.scenario_code)}', 'English Literacy', '${escapeSql(s.competency)}', '${escapeSql(s.developmental_band)}', '${escapeSql(s.difficulty)}', '${escapeSql(s.prompt)}', '${optionsJson}'::jsonb, '${escapeSql(s.learning_objective)}', '${escapeSql(s.hint)}', ${s.irt_a}, ${s.irt_b}, ${s.irt_c}, true, 0)`;
+  const benchmarkVal = s.international_benchmark ? `'${escapeSql(s.international_benchmark)}'` : 'NULL';
+  return `('${escapeSql(s.scenario_code)}', 'English Literacy', '${escapeSql(s.competency)}', '${escapeSql(s.developmental_band)}', '${escapeSql(s.difficulty)}', '${escapeSql(s.prompt)}', '${optionsJson}'::jsonb, '${escapeSql(s.learning_objective)}', '${escapeSql(s.hint)}', ${s.irt_a}, ${s.irt_b}, ${s.irt_c}, true, 0, ${benchmarkVal})`;
 }
 
 export function generateEnglishScenariosSql(): { fullSql: string; batches: string[] } {
@@ -36,7 +39,7 @@ export function generateEnglishScenariosSql(): { fullSql: string; batches: strin
     const sql = `INSERT INTO public.scenarios (
   scenario_code, subject, competency, developmental_band, difficulty,
   prompt, options, learning_objective, hint,
-  irt_a, irt_b, irt_c, is_active, usage_count
+  irt_a, irt_b, irt_c, is_active, usage_count, international_benchmark
 ) VALUES
 ${values}
 ON CONFLICT (scenario_code) DO UPDATE SET
@@ -51,7 +54,8 @@ ON CONFLICT (scenario_code) DO UPDATE SET
   irt_a = EXCLUDED.irt_a,
   irt_b = EXCLUDED.irt_b,
   irt_c = EXCLUDED.irt_c,
-  is_active = EXCLUDED.is_active;`;
+  is_active = EXCLUDED.is_active,
+  international_benchmark = EXCLUDED.international_benchmark;`;
     batches.push(sql);
   }
 
@@ -59,8 +63,11 @@ ON CONFLICT (scenario_code) DO UPDATE SET
   return { fullSql, batches };
 }
 
-// Generate the output SQL file
-const { fullSql, batches } = generateEnglishScenariosSql();
-const outputPath = path.resolve('supabase', 'seed', 'seed_english_literacy_scenarios.sql');
-fs.writeFileSync(outputPath, fullSql, 'utf-8');
-console.log(`Generated ${batches.length} batches written to ${outputPath}`);
+// Generate the output SQL file only when executed directly
+const isMain = process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1]);
+if (isMain) {
+  const { fullSql, batches } = generateEnglishScenariosSql();
+  const outputPath = path.resolve('supabase', 'seed', 'seed_english_literacy_scenarios.sql');
+  fs.writeFileSync(outputPath, fullSql, 'utf-8');
+  console.log(`Generated ${batches.length} batches written to ${outputPath}`);
+}

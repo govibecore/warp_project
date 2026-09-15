@@ -60,17 +60,18 @@ export function ReportDetail() {
   const [assessmentData, setAssessmentData] = useState<any>(null);
   const [reportData, setReportData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<TabType>('hub');
-  const [isTutorOpen, setIsTutorOpen] = useState(false);
-  const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
-  const [studentName, setStudentName] = useState<string>('Candidate');
-  const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
-
   const params = new URLSearchParams(window.location.search);
   const shareToken = params.get('share');
   const rawId = params.get('assessment');
   const isValidUuid = Boolean(rawId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawId));
   const assessmentId = isValidUuid ? rawId : undefined;
+  const shouldOpenTutor = params.get('tutor') === 'true';
+
+  const [activeTab, setActiveTab] = useState<TabType>('hub');
+  const [isTutorOpen, setIsTutorOpen] = useState(Boolean(shouldOpenTutor && assessmentId));
+  const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
+  const [studentName, setStudentName] = useState<string>('Candidate');
+  const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
 
   const stream = useReportStream(assessmentId || null);
 
@@ -554,9 +555,10 @@ export function ReportDetail() {
                     </div>
                   </div>
 
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setActiveTab('student')}
-                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -568,7 +570,7 @@ export function ReportDetail() {
                       </div>
                     </div>
                     <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </div>
+                  </button>
                 </Card>
 
                 {/* ── CARD 2: Parent Educational Blueprint — Warm amber accent ── */}
@@ -616,9 +618,10 @@ export function ReportDetail() {
                     </div>
                   </div>
 
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setActiveTab('parent')}
-                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -630,7 +633,7 @@ export function ReportDetail() {
                       </div>
                     </div>
                     <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </div>
+                  </button>
                 </Card>
 
                 {/* ── CARD 3: Diagnostic Precision & Audit — Emerald accent ── */}
@@ -710,9 +713,10 @@ export function ReportDetail() {
                     </div>
                   </div>
 
-                  <div
+                  <button
+                    type="button"
                     onClick={() => setActiveTab('audit')}
-                    className="pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
+                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
                       <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
@@ -724,7 +728,7 @@ export function ReportDetail() {
                       </div>
                     </div>
                     <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </div>
+                  </button>
                 </Card>
               </div>
 
@@ -812,6 +816,7 @@ export function ReportDetail() {
                   completedAt={snapshot.completedAt}
                   totalTimeMs={snapshot.totalTimeMs}
                   overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  abilityTheta={benchmark.abilityTheta}
                   benchmark={benchmark}
                   studentVariant={studentVariant}
                   parentVariant={parentVariant}
@@ -872,6 +877,7 @@ export function ReportDetail() {
                 completedAt={snapshot.completedAt}
                 totalTimeMs={snapshot.totalTimeMs}
                 overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                abilityTheta={benchmark.abilityTheta}
                 benchmark={benchmark}
                 studentVariant={studentVariant}
                 parentVariant={parentVariant}
@@ -888,6 +894,7 @@ export function ReportDetail() {
                   completedAt={snapshot.completedAt}
                   totalTimeMs={snapshot.totalTimeMs}
                   overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                  abilityTheta={benchmark.abilityTheta}
                   benchmark={benchmark}
                   studentVariant={studentVariant}
                   parentVariant={parentVariant}

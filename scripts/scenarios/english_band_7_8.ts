@@ -352,7 +352,7 @@ export const englishBand7_8: ScenarioDef[] = [
     competency: 'locatingInformation',
     developmental_band: '7-8',
     difficulty: 'olympiad',
-    prompt: 'Genetic Sequencing Field Report: "Amplification of the cytochrome c oxidase subunit I (COI) barcode locus required an initial denaturation phase of 95°C for 3 minutes, followed by 35 cycles of 94°C (30s), 52°C (40s), and 72°C (1 min). What was the annealing temperature during the 35 cycles?',
+    prompt: 'Genetic Sequencing Field Report: "Amplification of the cytochrome c oxidase subunit I (COI) barcode locus required an initial denaturation phase of 95°C for 3 minutes, followed by 35 cycles of 94°C (30s), 52°C (40s), and 72°C (1 min)." What was the annealing temperature during the 35 cycles?',
     options: makeOptions('locatingInformation',
       '52°C',
       ['95°C', '94°C', '72°C']
@@ -554,7 +554,7 @@ export const englishBand7_8: ScenarioDef[] = [
     competency: 'evaluatingReflecting',
     developmental_band: '7-8',
     difficulty: 'standard',
-    prompt: '"The historian repeatedly describes the medieval parchment manuscript as \'whispering forgotten heresies from beneath centuries of dust.\' What stylistic resonance is achieved by this personification?',
+    prompt: '"The historian repeatedly describes the medieval parchment manuscript as \'whispering forgotten heresies from beneath centuries of dust.\'" What stylistic resonance is achieved by this personification?',
     options: makeOptions('evaluatingReflecting',
       'It endows the physical artifact with mysterious agency, historical intimacy, and suppressed ideological drama.',
       ['It provides literal acoustic decibel measurements of parchment vibration.', 'It proves that the manuscript was copied by multiple illiterate scribes.', 'It casts doubt on the archaeological authenticity of the parchment provenance.']
@@ -626,7 +626,7 @@ export const englishBand7_8: ScenarioDef[] = [
     competency: 'evaluatingReflecting',
     developmental_band: '7-8',
     difficulty: 'advanced',
-    prompt: '"The op-ed writer opens: \'Either we ban all artificial intelligence development immediately, or we surrender our humanity to silicon overlords.\' Which logical fallacy undermines this polemic?',
+    prompt: '"The op-ed writer opens: \'Either we ban all artificial intelligence development immediately, or we surrender our humanity to silicon overlords.\'" Which logical fallacy undermines this polemic?',
     options: makeOptions('evaluatingReflecting',
       'False dilemma (bifurcation): reducing a multifaceted regulatory issue into two extreme, mutually exclusive choices.',
       ['Ad hominem attack against individual software developers.', 'Circular reasoning that repeats the premise as the conclusion.', 'Post hoc ergo propter hoc causal confusion.']

@@ -13,7 +13,8 @@ function escapeSql(str: string): string {
 
 function scenarioToSql(s: ScenarioDef): string {
   const optionsJson = JSON.stringify(s.options).replace(/'/g, "''");
-  return `('${escapeSql(s.scenario_code)}', 'English Literacy', '${escapeSql(s.competency)}', '${escapeSql(s.developmental_band)}', '${escapeSql(s.difficulty)}', '${escapeSql(s.prompt)}', '${optionsJson}'::jsonb, '${escapeSql(s.learning_objective)}', '${escapeSql(s.hint)}', ${s.irt_a}, ${s.irt_b}, ${s.irt_c}, true, 0)`;
+  const benchmarkVal = s.international_benchmark ? `'${escapeSql(s.international_benchmark)}'` : 'NULL';
+  return `('${escapeSql(s.scenario_code)}', 'English Literacy', '${escapeSql(s.competency)}', '${escapeSql(s.developmental_band)}', '${escapeSql(s.difficulty)}', '${escapeSql(s.prompt)}', '${optionsJson}'::jsonb, '${escapeSql(s.learning_objective)}', '${escapeSql(s.hint)}', ${s.irt_a}, ${s.irt_b}, ${s.irt_c}, true, 0, ${benchmarkVal})`;
 }
 
 function bandToSql(scenarios: ScenarioDef[]): string {
@@ -21,7 +22,7 @@ function bandToSql(scenarios: ScenarioDef[]): string {
   return `INSERT INTO public.scenarios (
   scenario_code, subject, competency, developmental_band, difficulty,
   prompt, options, learning_objective, hint,
-  irt_a, irt_b, irt_c, is_active, usage_count
+  irt_a, irt_b, irt_c, is_active, usage_count, international_benchmark
 ) VALUES
 ${values}
 ON CONFLICT (scenario_code) DO UPDATE SET
@@ -36,7 +37,8 @@ ON CONFLICT (scenario_code) DO UPDATE SET
   irt_a = EXCLUDED.irt_a,
   irt_b = EXCLUDED.irt_b,
   irt_c = EXCLUDED.irt_c,
-  is_active = EXCLUDED.is_active;`;
+  is_active = EXCLUDED.is_active,
+  international_benchmark = EXCLUDED.international_benchmark;`;
 }
 
 const bands = [

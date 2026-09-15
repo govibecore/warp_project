@@ -9,8 +9,6 @@ interface PDFExportButtonProps {
   studentName?: string;
   classLevel?: number;
   className?: string;
-  onBeforeExport?: () => Promise<void> | void;
-  onAfterExport?: () => void;
 }
 
 export function PDFExportButton({
@@ -18,20 +16,12 @@ export function PDFExportButton({
   studentName = 'Candidate',
   classLevel = 8,
   className = '',
-  onBeforeExport,
-  onAfterExport,
 }: PDFExportButtonProps) {
   const [status, setStatus] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
 
   const handleExport = async () => {
     try {
       setStatus('generating');
-
-      if (onBeforeExport) {
-        await onBeforeExport();
-        // Allow React render and SVG charts to settle
-        await new Promise((resolve) => setTimeout(resolve, 300));
-      }
 
       const element = document.getElementById(targetId);
       if (!element) {
@@ -73,14 +63,12 @@ export function PDFExportButton({
       await html2pdf().set(options as any).from(element).save();
 
       element.classList.remove('pdf-rendering-mode');
-      if (onAfterExport) onAfterExport();
       setStatus('success');
       setTimeout(() => setStatus('idle'), 3000);
     } catch (err) {
       console.error('html2pdf generation error, falling back to window.print():', err);
       const el = document.getElementById(targetId);
       if (el) el.classList.remove('pdf-rendering-mode');
-      if (onAfterExport) onAfterExport();
       setStatus('error');
       // Fallback to browser print dialog
       window.print();

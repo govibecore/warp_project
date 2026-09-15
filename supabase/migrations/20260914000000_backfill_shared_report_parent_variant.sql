@@ -53,7 +53,7 @@ SET parent_variant = '{
     "Weekly review of one non-routine Olympiad problem together"
   ],
   "ptmDiscussionGuide": [
-    "Ask teacher: Does my child attempt problems they haven'\''t seen before, or only familiar templates?",
+    "Ask teacher: Does my child attempt problems they haven''t seen before, or only familiar templates?",
     "Ask teacher: How does my child perform on extended/open-ended questions vs. standard recall questions?",
     "Request sample Olympiad-style questions to use as a home diagnostic."
   ],

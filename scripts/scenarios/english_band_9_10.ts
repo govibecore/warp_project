@@ -609,7 +609,7 @@ export const englishBand9_10: ScenarioDef[] = [
     developmental_band: '9-10',
     difficulty: 'standard',
     prompt: 'A historian analyzes a 19th-century colonial diary: "The diarist documents indigenous harvesting methods not to understand local ecology, but to estimate taxable surplus for the imperial treasury." What does this observation reveal about the diarist\'s perspective?',
-    options: makeOptions('understanding',
+    options: makeOptions('evaluatingReflecting',
       'The diarist\'s gaze was purely extractive and administrative, viewing indigenous practices through the lens of colonial fiscal exploitation.',
       ['The diarist was an objective botanical scientist committed to biodiversity conservation.', 'The diarist intended to surrender colonial authority to indigenous tribal councils.', 'The diary was forged by 20th-century counterfeiters to defame the colonial government.']
     ),

@@ -7,6 +7,7 @@ interface OnePagePrintSummaryProps {
   completedAt: string;
   totalTimeMs?: number;
   overallScore: number;
+  abilityTheta?: number | null;
   benchmark: any;
   studentVariant?: any;
   parentVariant?: any;
@@ -41,6 +42,7 @@ export function OnePagePrintSummary({
   completedAt,
   totalTimeMs,
   overallScore,
+  abilityTheta,
   benchmark,
   studentVariant,
   parentVariant,
@@ -179,7 +181,11 @@ export function OnePagePrintSummary({
           <div>
             <div className="flex items-baseline justify-between">
               <span className="font-bold text-neutral-900 text-xs">{archetypeTitle}</span>
-              <span className="text-[9px] font-mono text-cyan-800 font-semibold">Latent Theta: +0.42σ</span>
+              {typeof (abilityTheta ?? benchmark?.abilityTheta ?? benchmark?.averageTheta) === 'number' && (
+                <span className="text-[9px] font-mono text-cyan-800 font-semibold">
+                  Latent Theta: {(abilityTheta ?? benchmark?.abilityTheta ?? benchmark?.averageTheta) >= 0 ? '+' : ''}{(abilityTheta ?? benchmark?.abilityTheta ?? benchmark?.averageTheta).toFixed(2)}σ
+                </span>
+              )}
             </div>
             <p className="text-[10px] italic text-neutral-600 mt-0.5">"{archetypeTagline}"</p>
           </div>
@@ -290,9 +296,12 @@ export function OnePagePrintSummary({
             <span className="text-[8px] font-mono text-neutral-500">Benchmark: National Class {classLevel} Average</span>
           </div>
 
-          <div className="grid grid-cols-4 gap-1.5 text-center">
+          <div className="grid grid-cols-3 gap-1.5 text-center">
             {parakh ? (
-              Object.entries(parakh).slice(0, 4).map(([pillar, data]: [string, any]) => (
+              Object.entries(parakh)
+                .filter(([_, data]) => data && typeof data === 'object' && ('score' in data || 'band' in data))
+                .slice(0, 3)
+                .map(([pillar, data]: [string, any]) => (
                 <div key={pillar} className="p-1.5 border border-neutral-200 bg-neutral-50">
                   <span className="text-[8px] font-mono text-neutral-500 uppercase block truncate">
                     {pillar.replace(/([A-Z])/g, ' $1').trim()}

@@ -212,18 +212,22 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         }
       }
 
-      // Clamp global_score strictly within DB constraint [100, 900], defaulting to median 500
-      const rawScore = count > 0 ? Math.round(total_scaled / count) : 500;
-      const global_score = Math.max(100, Math.min(900, rawScore));
+      // Only persist global_score when competency scoring succeeded; do not fabricate median score
+      const global_score = count > 0 ? Math.max(100, Math.min(900, Math.round(total_scaled / count))) : undefined;
 
-      await supabase.from('assessments').update({
+      const assessmentUpdate: Record<string, any> = {
         status: 'completed',
         completed_at: new Date().toISOString(),
         scaled_scores,
         percentiles,
-        global_score,
+        ...(global_score !== undefined ? { global_score } : {}),
         total_time_ms
-      }).eq('id', assessmentId);
+      };
+
+      const { error: updateError } = await supabase.from('assessments').update(assessmentUpdate).eq('id', assessmentId);
+      if (updateError) {
+        console.error('Failed to update assessment completion:', updateError);
+      }
 
       // Auto-generate and save comprehensive dual-audience report immediately
       if (studentId) {

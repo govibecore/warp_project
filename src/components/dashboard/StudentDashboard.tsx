@@ -426,7 +426,7 @@ export function StudentDashboard() {
             <button
               onClick={() => {
                 if (summary.recentAssessments[0]?.id) {
-                  window.location.href = `/?assessment=${summary.recentAssessments[0].id}`;
+                  window.location.href = `/?assessment=${summary.recentAssessments[0].id}&tutor=true`;
                 }
               }}
               disabled={summary.recentAssessments.length === 0}
@@ -895,10 +895,8 @@ export function StudentDashboard() {
           <div className="card border-border overflow-hidden">
             <button
               onClick={() => {
-                setDangerOpen(prev => {
-                  if (prev) setConfirmDelete(false);
-                  return !prev;
-                });
+                if (dangerOpen) setConfirmDelete(false);
+                setDangerOpen(prev => !prev);
               }}
               className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/50 transition-colors"
               aria-expanded={dangerOpen}

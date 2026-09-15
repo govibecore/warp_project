@@ -11,7 +11,18 @@ import { resetSession } from '../persistence/storage';
  * 4. Cleans any URL search parameters (like ?dashboard, ?choose) and redirects cleanly to '/' (Landing Page)
  */
 export async function signOutUser(): Promise<void> {
-  // 1. Reset Warp session storage & guest IDs
+  // 1. Sign out of Supabase first so SDK can transmit revocation request to auth server
+  try {
+    await supabase.auth.signOut();
+  } catch (e) {
+    console.error('Supabase sign out error:', e);
+  }
+
+  // 2. Clear zustand stores
+  useAuthStore.getState().clearAuth();
+  useAssessment.getState().resetAssessment();
+
+  // 3. Reset Warp session storage & remove any remaining client tokens
   if (typeof window !== 'undefined') {
     try {
       window.sessionStorage.setItem('logged_out', 'true');
@@ -22,7 +33,7 @@ export async function signOutUser(): Promise<void> {
       window.localStorage.removeItem('warp.session_id.v1');
       window.localStorage.removeItem('warp_persisted_session');
 
-      // Clear any Supabase client auth tokens
+      // Clear any leftover Supabase client auth tokens
       const keysToRemove: string[] = [];
       for (let i = 0; i < window.localStorage.length; i++) {
         const k = window.localStorage.key(i);
@@ -32,17 +43,6 @@ export async function signOutUser(): Promise<void> {
       }
       keysToRemove.forEach(k => window.localStorage.removeItem(k));
     } catch {}
-  }
-
-  // 2. Clear zustand stores
-  useAuthStore.getState().clearAuth();
-  useAssessment.getState().resetAssessment();
-
-  // 3. Sign out of Supabase
-  try {
-    await supabase.auth.signOut();
-  } catch (e) {
-    console.error('Supabase sign out error:', e);
   }
 
   // 4. Redirect cleanly to landing page

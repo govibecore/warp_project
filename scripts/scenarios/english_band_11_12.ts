@@ -334,7 +334,7 @@ export const englishBand11_12: ScenarioDef[] = [
     competency: 'locatingInformation',
     developmental_band: '11-12',
     difficulty: 'olympiad',
-    prompt: 'Maritime Boundary Adjudication: "The International Court of Justice determined that the provisional equidistance line must be adjusted seaward by 14.2 nautical miles along Azimuth 246° to account for the disproportionate coastal coastal concavity of Bay Alpha, thereby ensuring that the ratio of coastal lengths (1:1.68) mirrors the allocated maritime space." What azimuth heading was designated for the 14.2-nautical-mile adjustment?',
+    prompt: 'Maritime Boundary Adjudication: "The International Court of Justice determined that the provisional equidistance line must be adjusted seaward by 14.2 nautical miles along Azimuth 246° to account for the disproportionate coastal concavity of Bay Alpha, thereby ensuring that the ratio of coastal lengths (1:1.68) mirrors the allocated maritime space." What azimuth heading was designated for the 14.2-nautical-mile adjustment?',
     options: makeOptions('locatingInformation',
       'Azimuth 246°',
       ['Azimuth 168°', 'Azimuth 14.2°', 'Azimuth 90°']
@@ -681,7 +681,7 @@ export const englishBand11_12: ScenarioDef[] = [
     developmental_band: '11-12',
     difficulty: 'olympiad',
     prompt: '"The dramatist constructs the play so that every character\'s impassioned ideological defense of their actions is shown to be an elaborate, self-deluding rationalization for base material self-interest. What overarching cynical worldview permeates the theatrical dramaturgy?"',
-    options: makeOptions('understanding',
+    options: makeOptions('evaluatingReflecting',
       'A corrosive hermeneutics of suspicion: positing that moral ideals are merely post-hoc intellectual disguises for primal animal egoism and resource acquisition.',
       ['A celebration of transcendent altruism and selfless human martyrdom.', 'A classical tragedy validating the absolute divine justice of mythological deities.', 'A pedagogical demonstration of classical rhetorical elocution techniques.']
     ),

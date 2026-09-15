@@ -194,17 +194,19 @@ function BenchmarkTooltip({ active, payload }: any) {
 export function RegionalBenchmarkBarChart({ regionalPercentiles }: { regionalPercentiles: Record<string, number> }) {
   const regionOrder = ['India', 'Global', 'Singapore', 'USA', 'Europe', 'China'];
 
-  const data: RegionalBarDataPoint[] = regionOrder.map((region) => {
-    const meta = REGION_META[region];
-    return {
-      name: region,
-      student: regionalPercentiles[region] ?? 50,
-      olympiadThreshold: meta.threshold,
-      flag: meta.flag,
-      benchmarkStandard: meta.standard,
-      color: regionColors[region] || 'var(--color-primary)',
-    };
-  });
+  const data: RegionalBarDataPoint[] = regionOrder
+    .filter((region) => typeof regionalPercentiles[region] === 'number')
+    .map((region) => {
+      const meta = REGION_META[region];
+      return {
+        name: region,
+        student: regionalPercentiles[region],
+        olympiadThreshold: meta.threshold,
+        flag: meta.flag,
+        benchmarkStandard: meta.standard,
+        color: regionColors[region] || 'var(--color-primary)',
+      };
+    });
 
   return (
     <ChartContainer config={regionalChartConfig} className="w-full h-72">
@@ -297,20 +299,20 @@ export function BenchmarkLegend() {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-foreground-muted mt-2">
       <span className="flex items-center gap-1">
-        <span className="inline-block w-6 h-0.5 bg-foreground-muted opacity-50" style={{ borderTop: '1px dashed currentColor' }} />
-        Olympiad Zone (75th %ile)
+        <span className="inline-block w-6 h-0.5 opacity-50" style={{ borderTop: '1px dashed var(--foreground-muted)' }} />
+        Olympiad Threshold (~75th %ile)
       </span>
       <span className="flex items-center gap-1">
-        <span className="inline-block w-6 h-0.5 opacity-30" style={{ borderTop: '1px dashed currentColor' }} />
+        <span className="inline-block w-6 h-0.5 opacity-30" style={{ borderTop: '1px dotted var(--foreground-muted)' }} />
         World Median (50th %ile)
       </span>
       <span className="flex items-center gap-1 ml-auto">
-        <span className="inline-block w-2.5 h-2.5 rounded-sm bg-amber-500 opacity-65" />
-        Below Olympiad bar
+        <span className="inline-block w-2.5 h-2.5 rounded-sm bg-surface border border-border" />
+        Below regional bar
       </span>
       <span className="flex items-center gap-1">
-        <span className="inline-block w-2.5 h-2.5 rounded-sm bg-primary" />
-        At or above Olympiad bar
+        <span className="inline-block w-2.5 h-2.5 rounded-sm bg-primary opacity-90" />
+        At or above regional bar
       </span>
     </div>
   );

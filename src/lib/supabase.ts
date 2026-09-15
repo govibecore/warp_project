@@ -8,3 +8,4 @@ const supabaseUrl = envUrl || 'https://uanqjksfodudwkakyglt.supabase.co';
 const supabaseAnonKey = envKey || 'sb_publishable_T8BWgvUCR4w5cO_l3iO0HA_VM9ygNjX';
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
+export { supabaseUrl };

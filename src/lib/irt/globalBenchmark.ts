@@ -176,6 +176,7 @@ export function thetaToRadarIndex(theta: number): number {
 
 export interface InternationalBenchmarkResult {
   subject?: string;
+  abilityTheta?: number;
   aggregateScaledScore: number;
   globalPercentile: number;
   regionalPercentiles: Record<BenchmarkRegion, number>;
@@ -479,7 +480,7 @@ export function computeInternationalBenchmark(
     schoolMarksCorrelation: string;
   };
 
-  if (aggregateScaledScore >= 720 || indiaNationalPercentile >= 90) {
+  if (indiaNationalPercentile >= 90) {
     boardGradeBand = {
       grade: 'A1',
       band: 'Outstanding Conceptual Mastery',
@@ -487,7 +488,7 @@ export function computeInternationalBenchmark(
       percentileEquivalent: 'Top 10% Nationally (90th–99th Percentile)',
       schoolMarksCorrelation: 'Equivalent to 95–100% in CBSE/ICSE with high competitive Olympiad aptitude',
     };
-  } else if (aggregateScaledScore >= 620 || indiaNationalPercentile >= 75) {
+  } else if (indiaNationalPercentile >= 75) {
     boardGradeBand = {
       grade: 'A2',
       band: 'Excellent / High Foundation',
@@ -495,7 +496,7 @@ export function computeInternationalBenchmark(
       percentileEquivalent: 'Top 25% Nationally (75th–89th Percentile)',
       schoolMarksCorrelation: 'Equivalent to 85–94% in CBSE/ICSE; strong textbook grasp, developing Olympiad speed',
     };
-  } else if (aggregateScaledScore >= 520 || indiaNationalPercentile >= 55) {
+  } else if (indiaNationalPercentile >= 55) {
     boardGradeBand = {
       grade: 'B1',
       band: 'Proficient Foundation',
@@ -503,7 +504,7 @@ export function computeInternationalBenchmark(
       percentileEquivalent: 'National Median to Top 45% (55th–74th Percentile)',
       schoolMarksCorrelation: 'Equivalent to 75–84% in CBSE/ICSE; good classroom performance, needs Olympiad exposure',
     };
-  } else if (aggregateScaledScore >= 420 || indiaNationalPercentile >= 40) {
+  } else if (indiaNationalPercentile >= 40) {
     boardGradeBand = {
       grade: 'B2',
       band: 'Developing Competency',
@@ -724,6 +725,7 @@ export function computeInternationalBenchmark(
 
   return {
     subject,
+    abilityTheta: avgTheta,
     aggregateScaledScore,
     globalPercentile,
     regionalPercentiles,
@@ -844,39 +846,31 @@ function getStudentSprint(classLevel: number, _archetype: string, isEnglish: boo
 }
 
 function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: boolean = false) {
-  if (isEnglish) {
-    return {
-      immediateHomeRoutines: [
+  const isElementary = classLevel <= 5;
+  const isMiddle = classLevel >= 6 && classLevel <= 8;
+
+  const immediateHomeRoutines = isEnglish
+    ? [
         'Enforce Active Summaries: Ask your child to summarize any article they read in exactly 3 sentences: Premise, Key Evidence, and Final Conclusion.',
         'Adopt the Distractor Deconstruction Rule: After multiple-choice reading, ask: "Explain why each of the wrong choices was deliberately crafted to trap readers."',
         'Maintain a Non-Routine Vocabulary Journal: Keep a weekly notebook of Tier-2 and Tier-3 academic vocabulary encountered in serious reading.',
         'Expose to Authentic Long-Form Journalism: Subscribe to or read age-appropriate publications (e.g. The Economist, Smithsonian, BBC, National Geographic) rather than simplified textbook excerpts.',
-      ],
-      recommendedCurricula: [
+      ]
+    : [
+        'Enforce a "No Calculator" rule for non-routine homework (mental estimation and fractional intuition are crucial for Class 3-8 international parity).',
+        'Adopt the 2-Minute Explanation Rule: Whenever your child gets an answer right, ask: "Explain to me why the other three choices are mathematically impossible."',
+        'Maintain an Error Journal: Have the student document the root cause of every mistake (Conceptual Gap vs Calculation Slip vs Misread Constraint).',
+        'Expose to Authentic Timed Contests: Register for SASMO, AMC 8/10, or Bebras to calibrate against authentic international cohorts rather than local school averages.',
+      ];
+
+  const recommendedCurricula = isEnglish
+    ? [
         { name: 'PISA Reading Literacy Framework', urlDescription: 'oecd.org/pisa/reading', purpose: 'Gold-standard international benchmark for reading comprehension and evaluation.' },
         { name: 'Cambridge Lower Secondary & O-Level English', urlDescription: 'cambridgeinternational.org', purpose: 'Rigorous English comprehension, synthesis, and discursive analysis.' },
         { name: 'ReadTheory / Lexile Framework', urlDescription: 'readtheory.org', purpose: 'Adaptive reading comprehension with nuanced distractor rationale.' },
         { name: 'The Great Books Foundation', urlDescription: 'greatbooks.org', purpose: 'Shared Inquiry method for critical textual analysis and discussion.' },
-      ],
-      quarterlyMilestones: [
-        'Month 1: Diagnostic Clean-up — Remediate textual comprehension and vocabulary vulnerabilities identified in this report.',
-        'Month 2: Fluency & Synthesis — Read 10 challenging non-fiction articles and complete annotated comparative tables.',
-        'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure growth in critical reading percentiles.',
-      ],
-    };
-  }
-
-  const isElementary = classLevel <= 5;
-  const isMiddle = classLevel >= 6 && classLevel <= 8;
-
-  const immediateHomeRoutines = [
-    'Enforce a "No Calculator" rule for non-routine homework (mental estimation and fractional intuition are crucial for Class 3-8 international parity).',
-    'Adopt the 2-Minute Explanation Rule: Whenever your child gets an answer right, ask: "Explain to me why the other three choices are mathematically impossible."',
-    'Maintain an Error Journal: Have the student document the root cause of every mistake (Conceptual Gap vs Calculation Slip vs Misread Constraint).',
-    'Expose to Authentic Timed Contests: Register for SASMO, AMC 8/10, or Bebras to calibrate against authentic international cohorts rather than local school averages.',
-  ];
-
-  const recommendedCurricula = isElementary
+      ]
+    : isElementary
     ? [
         {
           name: 'Singapore Math (Marshall Cavendish / Dimensions Math)',
@@ -945,11 +939,17 @@ function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: bool
         },
       ];
 
-  const quarterlyMilestones = [
-    'Month 1: Diagnostic Clean-up — Isolate and remediate top 2 conceptual vulnerabilities identified in this report.',
-    'Month 2: Fluency & Heuristic Building — Complete 30 non-routine international problems (SASMO / AMC / Bebras) under un-timed exploratory conditions.',
-    'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure delta in latent ability theta and international percentile rank.',
-  ];
+  const quarterlyMilestones = isEnglish
+    ? [
+        'Month 1: Diagnostic Clean-up — Remediate textual comprehension and vocabulary vulnerabilities identified in this report.',
+        'Month 2: Fluency & Synthesis — Read 10 challenging non-fiction articles and complete annotated comparative tables.',
+        'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure growth in critical reading percentiles.',
+      ]
+    : [
+        'Month 1: Diagnostic Clean-up — Isolate and remediate top 2 conceptual vulnerabilities identified in this report.',
+        'Month 2: Fluency & Heuristic Building — Complete 30 non-routine international problems (SASMO / AMC / Bebras) under un-timed exploratory conditions.',
+        'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure delta in latent ability theta and international percentile rank.',
+      ];
 
   const indianRecommendedCurricula = isEnglish
     ? [

@@ -35,11 +35,27 @@ export const TextMatrixDecode = memo(function TextMatrixDecode({
   const [isScrambling, setIsScrambling] = useState(false);
   const containerRef = useRef<HTMLSpanElement>(null);
   const hasAnimatedRef = useRef(false);
+  const animFrameIdRef = useRef<number | null>(null);
+  const timeoutIdRef = useRef<number | null>(null);
+  const prevChildrenRef = useRef(children);
+
+  const cancelScheduled = () => {
+    if (timeoutIdRef.current !== null) {
+      window.clearTimeout(timeoutIdRef.current);
+      timeoutIdRef.current = null;
+    }
+    if (animFrameIdRef.current !== null) {
+      window.cancelAnimationFrame(animFrameIdRef.current);
+      animFrameIdRef.current = null;
+    }
+  };
 
   const startScramble = () => {
+    cancelScheduled();
     // Respect user's motion preference
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
       setDisplayText(children);
+      setIsScrambling(false);
       return;
     }
 
@@ -71,29 +87,38 @@ export const TextMatrixDecode = memo(function TextMatrixDecode({
       setDisplayText(scrambled);
 
       if (progress < 1.0) {
-        requestAnimationFrame(tick);
+        animFrameIdRef.current = requestAnimationFrame(tick);
       } else {
         setDisplayText(target);
         setIsScrambling(false);
+        animFrameIdRef.current = null;
       }
     };
 
     if (delay > 0) {
-      setTimeout(() => requestAnimationFrame(tick), delay * 1000);
+      timeoutIdRef.current = window.setTimeout(() => {
+        animFrameIdRef.current = requestAnimationFrame(tick);
+      }, delay * 1000);
     } else {
-      requestAnimationFrame(tick);
+      animFrameIdRef.current = requestAnimationFrame(tick);
     }
   };
 
   useEffect(() => {
+    if (prevChildrenRef.current !== children) {
+      prevChildrenRef.current = children;
+      hasAnimatedRef.current = false;
+      setDisplayText(children);
+    }
+
     if (trigger === 'mount') {
       startScramble();
-      return;
+      return () => cancelScheduled();
     }
 
     if (trigger === 'in-view') {
       const el = containerRef.current;
-      if (!el) return;
+      if (!el) return () => cancelScheduled();
 
       const observer = new IntersectionObserver(
         ([entry]) => {
@@ -106,8 +131,13 @@ export const TextMatrixDecode = memo(function TextMatrixDecode({
       );
 
       observer.observe(el);
-      return () => observer.disconnect();
+      return () => {
+        observer.disconnect();
+        cancelScheduled();
+      };
     }
+
+    return () => cancelScheduled();
   }, [children, trigger, duration, delay]);
 
   const handleMouseEnter = () => {
