@@ -484,41 +484,61 @@ export function computeInternationalBenchmark(
     boardGradeBand = {
       grade: 'A1',
       band: 'Outstanding Conceptual Mastery',
-      descriptor: 'Top 10% national tier; capable of solving high-order Olympiad and JEE/NEET foundation questions with independent first-principles reasoning.',
+      descriptor: isEnglish
+        ? 'Top 10% national tier; capable of solving high-order IEO and critical comprehension questions with independent analytical reasoning.'
+        : 'Top 10% national tier; capable of solving high-order Olympiad and JEE/NEET foundation questions with independent first-principles reasoning.',
       percentileEquivalent: 'Top 10% Nationally (90th–99th Percentile)',
-      schoolMarksCorrelation: 'Equivalent to 95–100% in CBSE/ICSE with high competitive Olympiad aptitude',
+      schoolMarksCorrelation: isEnglish
+        ? 'Equivalent to 95–100% in CBSE/ICSE English with high competitive IEO/critical reading aptitude'
+        : 'Equivalent to 95–100% in CBSE/ICSE with high competitive Olympiad aptitude',
     };
   } else if (indiaNationalPercentile >= 75) {
     boardGradeBand = {
       grade: 'A2',
       band: 'Excellent / High Foundation',
-      descriptor: 'Solid conceptual clarity across foundational syllabus; ready to tackle non-routine multi-step challenges with structured guidance.',
+      descriptor: isEnglish
+        ? 'Solid linguistic clarity across foundational grammar and comprehension; ready to tackle complex non-routine texts with structured guidance.'
+        : 'Solid conceptual clarity across foundational syllabus; ready to tackle non-routine multi-step challenges with structured guidance.',
       percentileEquivalent: 'Top 25% Nationally (75th–89th Percentile)',
-      schoolMarksCorrelation: 'Equivalent to 85–94% in CBSE/ICSE; strong textbook grasp, developing Olympiad speed',
+      schoolMarksCorrelation: isEnglish
+        ? 'Equivalent to 85–94% in CBSE/ICSE English; strong textbook grasp, developing analytical reading stamina'
+        : 'Equivalent to 85–94% in CBSE/ICSE; strong textbook grasp, developing Olympiad speed',
     };
   } else if (indiaNationalPercentile >= 55) {
     boardGradeBand = {
       grade: 'B1',
       band: 'Proficient Foundation',
-      descriptor: 'Reliable recall and routine formula application; occasionally susceptible to non-standard distractor options and multi-step word problems.',
+      descriptor: isEnglish
+        ? 'Reliable recall and routine grammar application; occasionally susceptible to non-standard distractor options and dense cross-text questions.'
+        : 'Reliable recall and routine formula application; occasionally susceptible to non-standard distractor options and multi-step word problems.',
       percentileEquivalent: 'National Median to Top 45% (55th–74th Percentile)',
-      schoolMarksCorrelation: 'Equivalent to 75–84% in CBSE/ICSE; good classroom performance, needs Olympiad exposure',
+      schoolMarksCorrelation: isEnglish
+        ? 'Equivalent to 75–84% in CBSE/ICSE English; good classroom performance, needs deeper non-fiction reading exposure'
+        : 'Equivalent to 75–84% in CBSE/ICSE; good classroom performance, needs Olympiad exposure',
     };
   } else if (indiaNationalPercentile >= 40) {
     boardGradeBand = {
       grade: 'B2',
       band: 'Developing Competency',
-      descriptor: 'Understands core syllabus concepts but relies heavily on practiced textbook questions; needs deliberate practice on unfamiliar variations.',
+      descriptor: isEnglish
+        ? 'Understands core syllabus concepts but relies heavily on practiced textbook questions; needs deliberate practice on unseen reading passages and vocabulary in context.'
+        : 'Understands core syllabus concepts but relies heavily on practiced textbook questions; needs deliberate practice on unfamiliar variations.',
       percentileEquivalent: 'Mid-Tier Nationally (40th–54th Percentile)',
-      schoolMarksCorrelation: 'Equivalent to 65–74% in CBSE/ICSE; prone to formula confusion under time pressure',
+      schoolMarksCorrelation: isEnglish
+        ? 'Equivalent to 65–74% in CBSE/ICSE English; prone to misinterpreting nuanced questions under time pressure'
+        : 'Equivalent to 65–74% in CBSE/ICSE; prone to formula confusion under time pressure',
     };
   } else {
     boardGradeBand = {
       grade: 'C1',
       band: 'Foundational Support Needed',
-      descriptor: 'Conceptual gaps in core definitions; requires rebuilding basics through concrete examples and visual diagrams before competitive drills.',
+      descriptor: isEnglish
+        ? 'Linguistic gaps in core vocabulary and syntax; requires rebuilding reading stamina and basic sentence structure before advanced reading drills.'
+        : 'Conceptual gaps in core definitions; requires rebuilding basics through concrete examples and visual diagrams before competitive drills.',
       percentileEquivalent: 'Foundational Tier (Below 40th Percentile)',
-      schoolMarksCorrelation: 'Requires targeted revision of NCERT foundational chapters',
+      schoolMarksCorrelation: isEnglish
+        ? 'Requires targeted revision of NCERT English readers and grammar fundamentals'
+        : 'Requires targeted revision of NCERT foundational chapters',
     };
   }
 
@@ -564,20 +584,38 @@ export function computeInternationalBenchmark(
   let competitiveRecommendation: string;
 
   if (indiaNationalPercentile >= 85) {
-    competitiveTier = 'National Olympiad & Advanced Foundation Tier';
+    competitiveTier = isEnglish
+      ? 'National English Olympiad (IEO) & Advanced Critical Reading Tier'
+      : 'National Olympiad & Advanced Foundation Tier';
     competitiveBadge = 'Podium Contender';
-    competitiveDescription = 'Demonstrates the analytical depth required for top ranks in SOF IMO/NSO, SilverZone, and early JEE/NEET Advanced foundation problem solving.';
-    competitiveRecommendation = 'Advance to NCERT Exemplar Achievers section and Level-2 Olympiad papers (Class 8/9 bridge level).';
+    competitiveDescription = isEnglish
+      ? 'Demonstrates the analytical depth required for top ranks in SOF IEO, SilverZone English, and early debater/rhetoric competitions.'
+      : 'Demonstrates the analytical depth required for top ranks in SOF IMO/NSO, SilverZone, and early JEE/NEET Advanced foundation problem solving.';
+    competitiveRecommendation = isEnglish
+      ? 'Advance to high-lexile non-fiction editorial analysis and Level-2 IEO Olympiad papers.'
+      : 'Advance to NCERT Exemplar Achievers section and Level-2 Olympiad papers (Class 8/9 bridge level).';
   } else if (indiaNationalPercentile >= 65) {
-    competitiveTier = 'Zonal & State Olympiad Contender Tier';
+    competitiveTier = isEnglish
+      ? 'Zonal & State English Olympiad Contender Tier'
+      : 'Zonal & State Olympiad Contender Tier';
     competitiveBadge = 'High Potential';
-    competitiveDescription = 'Well above average in school curriculum; with consistent weekly practice on non-routine questions, capable of securing top 5% zonal ranks.';
-    competitiveRecommendation = 'Focus on eliminating calculation rush errors and practice multi-variable constraint problems.';
+    competitiveDescription = isEnglish
+      ? 'Well above average in school curriculum; with consistent weekly reading of non-routine articles, capable of securing top 5% zonal IEO ranks.'
+      : 'Well above average in school curriculum; with consistent weekly practice on non-routine questions, capable of securing top 5% zonal ranks.';
+    competitiveRecommendation = isEnglish
+      ? 'Focus on eliminating distractor traps in inference questions and expand Tier-2/Tier-3 academic vocabulary.'
+      : 'Focus on eliminating calculation rush errors and practice multi-variable constraint problems.';
   } else {
-    competitiveTier = 'Strong Board Foundation & School Exam Tier';
+    competitiveTier = isEnglish
+      ? 'Strong Board English Foundation & School Exam Tier'
+      : 'Strong Board Foundation & School Exam Tier';
     competitiveBadge = 'Foundational Track';
-    competitiveDescription = 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to competitive problem patterns to build higher-order agility.';
-    competitiveRecommendation = 'Strengthen NCERT core concepts first, then attempt Level-1 Olympiad worksheets.';
+    competitiveDescription = isEnglish
+      ? 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to unseen passage patterns to build reading agility.'
+      : 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to competitive problem patterns to build higher-order agility.';
+    competitiveRecommendation = isEnglish
+      ? 'Strengthen NCERT English reader comprehension and grammar rules first, then attempt Level-1 IEO worksheets.'
+      : 'Strengthen NCERT core concepts first, then attempt Level-1 Olympiad worksheets.';
   }
 
   const indianCompetitiveFoundation = {
@@ -952,41 +990,129 @@ function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: bool
       ];
 
   const indianRecommendedCurricula = isEnglish
+    ? isElementary
+      ? [
+          {
+            name: 'NCERT English Marigold / Raindrops (Class 3–5)',
+            category: 'Core Curriculum & Literature Comprehension',
+            urlDescription: 'ncert.nic.in / Primary English readers',
+            purpose: 'Builds foundational reading vocabulary, sentence construction, and literal comprehension.',
+          },
+          {
+            name: 'Wren & Martin Elementary English Grammar',
+            category: 'Syntactic & Grammar Rigor',
+            urlDescription: 'Foundational parts of speech, punctuation, and usage',
+            purpose: 'Establishes rock-solid grammar foundations and sentence formation patterns early.',
+          },
+          {
+            name: 'National Geographic Kids India / Chandamama Heritage Stories',
+            category: 'Curiosity & Long-Form Reading',
+            urlDescription: 'Illustrated non-fiction and cultural narratives',
+            purpose: 'Encourages joyful continuous reading habits and context-based word inference.',
+          },
+          {
+            name: 'MTG International English Olympiad (IEO) Workbooks (Class 3–5)',
+            category: 'Competitive Analytical Reading',
+            urlDescription: 'mtg.in / SOF IEO Primary section',
+            purpose: 'Develops timed passage extraction and distractor elimination skills for elementary learners.',
+          },
+        ]
+      : isMiddle
+      ? [
+          {
+            name: 'NCERT English Honeydew & It So Happened (Class 8) / Honeycomb (Class 7)',
+            category: 'Core Curriculum & Literature Comprehension',
+            urlDescription: 'ncert.nic.in / Textual analysis & themes',
+            purpose: 'Foundational reading comprehension, vocabulary in context, and answering with textual evidence.',
+          },
+          {
+            name: 'Wren & Martin High School English Grammar & Composition',
+            category: 'Syntactic & Grammar Rigor',
+            urlDescription: 'Classical grammar rules and sentence synthesis',
+            purpose: 'Deconstructs sentence structures, active/passive nuances, and precise clause relationships.',
+          },
+          {
+            name: 'The Hindu Young World / Editorial Analysis',
+            category: 'Contemporary Non-Fiction & Opinion Pieces',
+            urlDescription: 'Daily analytical reading and vocabulary expansion',
+            purpose: 'Exposes student to diverse editorial viewpoints, distinguishing opinion from factual reporting.',
+          },
+          {
+            name: 'MTG International English Olympiad (IEO) Workbooks (Class 6–8)',
+            category: 'Competitive Analytical Reading',
+            urlDescription: 'mtg.in / SOF IEO Achievers section',
+            purpose: 'Timed passage inference, idioms, and multi-paragraph coherence tests.',
+          },
+        ]
+      : [
+          {
+            name: 'NCERT First Flight & Footprints Without Feet (Class 10) / Hornbill (Class 11)',
+            category: 'Advanced Textual Analysis & Literary Criticism',
+            urlDescription: 'ncert.nic.in / Senior Secondary English',
+            purpose: 'Trains thematic synthesis, stylistic critique, and nuanced character and authorial perspective analysis.',
+          },
+          {
+            name: 'Wren & Martin Advanced English Composition & Rhetoric',
+            category: 'Discursive & Argumentative Writing',
+            urlDescription: 'Advanced rhetorical structures and debate arguments',
+            purpose: 'Teaches persuasive thesis construction, counter-argument refutation, and precise lexical control.',
+          },
+          {
+            name: 'The Hindu / Indian Express Editorial & Op-Ed Deep Reads',
+            category: 'Contemporary Policy & Analytical Discourse',
+            urlDescription: 'National newspaper editorial and op-ed pages',
+            purpose: 'Cultivates high-order critical analysis of public policy, social debates, and global affairs.',
+          },
+          {
+            name: 'Cambridge IGCSE / CBSE Class 9–12 Board Analytical Reading & Debate Portfolio',
+            category: 'College-Ready Discourse & Critical Reading',
+            urlDescription: 'Advanced reading comprehension and debate standards',
+            purpose: 'Prepares students for university-level reading, legal reasoning (CLAT), and international standardized exams.',
+          },
+        ]
+    : isElementary
     ? [
         {
-          name: 'NCERT English Honeydew & It So Happened (Class 8)',
-          category: 'Core Curriculum & Literature Comprehension',
-          urlDescription: 'ncert.nic.in / Textual analysis & themes',
-          purpose: 'Foundational reading comprehension, vocabulary in context, and answering with textual evidence.',
+          name: 'NCERT Math-Magic & Environmental Studies (Class 3–5)',
+          category: 'Government Standard Foundational Benchmark',
+          urlDescription: 'ncert.nic.in / Primary School Portal',
+          purpose: 'Establishes concrete real-world intuition for numbers, shapes, measurement, and ecological observation.',
         },
         {
-          name: 'Wren & Martin High School English Grammar & Composition',
-          category: 'Syntactic & Grammar Rigor',
-          urlDescription: 'Classical grammar rules and sentence synthesis',
-          purpose: 'Deconstructs sentence structures, active/passive nuances, and precise clause relationships.',
+          name: 'RS Aggarwal Primary Mathematics (Class 3–5)',
+          category: 'Procedural Drill & Arithmetic Fluency',
+          urlDescription: 'Standard Indian reference books for systematic practice',
+          purpose: 'Builds calculation speed and accuracy across addition, multiplication tables, fractions, and units.',
         },
         {
-          name: 'The Hindu Young World / Editorial Analysis',
-          category: 'Contemporary Non-Fiction & Opinion Pieces',
-          urlDescription: 'Daily analytical reading and vocabulary expansion',
-          purpose: 'Exposes student to diverse editorial viewpoints, distinguishing opinion from factual reporting.',
+          name: 'Primary Science Explorers (Macmillan / Vikas)',
+          category: 'Hands-on Experimental Discovery',
+          urlDescription: 'Activity-based elementary science curriculum',
+          purpose: 'Eliminates rote learning by encouraging simple home experiments and systematic observation.',
         },
         {
-          name: 'MTG International English Olympiad (IEO) Workbooks',
-          category: 'Competitive Analytical Reading',
-          urlDescription: 'mtg.in / SOF IEO Achievers section',
-          purpose: 'Timed passage inference, idioms, and multi-paragraph coherence tests.',
+          name: 'MTG National Science & Math Olympiad (SOF NSO & IMO) Primary Workbooks',
+          category: 'Competitive Olympiad Calibration',
+          urlDescription: 'mtg.in / Primary Olympiad section',
+          purpose: 'Introduces pattern recognition, logical deduction, and non-routine math puzzles at an early age.',
+        },
+        {
+          name: 'Khan Academy India Early Math & Science',
+          category: 'Interactive Visual Learning',
+          urlDescription: 'khanacademy.org / Hindi & English video lessons',
+          purpose: 'Self-paced gamified conceptual learning with immediate feedback on elementary topics.',
         },
       ]
-    : [
+    : isMiddle
+    ? [
         {
-          name: 'NCERT Exemplar Problems (Class 8 Mathematics & Science)',
+          name: 'NCERT Exemplar Problems (Class 6–8 Mathematics & Science)',
           category: 'Government Standard HOTS Benchmark',
           urlDescription: 'ncert.nic.in / Exemplar Problems Portal',
           purpose: 'Contains authentic Higher Order Thinking Skills (HOTS) questions that bridge school syllabus with competitive exam logic.',
         },
         {
-          name: 'RD Sharma / RS Aggarwal Mathematics (Class 8)',
+          name: 'RD Sharma / RS Aggarwal Mathematics (Class 6–8)',
           category: 'Step-by-Step Foundational Rigor',
           urlDescription: 'Standard Indian reference books for systematic practice',
           purpose: 'Builds procedural calculation stamina across linear equations, rational numbers, quadrilaterals, and mensuration.',
@@ -1004,26 +1130,66 @@ function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: bool
           purpose: 'Trains the student in eliminating distractors and solving multi-concept questions under timed conditions.',
         },
         {
-          name: 'Khan Academy India (CBSE Class 8)',
+          name: 'Khan Academy India (CBSE Class 6–8)',
           category: 'Self-Paced Mastery & Simulations',
           urlDescription: 'khanacademy.org / Free CBSE-mapped practice',
           purpose: 'Provides instant mastery feedback and targeted video explanations when a child is stuck on a specific chapter.',
         },
+      ]
+    : [
+        {
+          name: 'NCERT Exemplar Problems (Class 9–12 Mathematics & Science / PCM)',
+          category: 'National Rigor & HOTS Benchmark',
+          urlDescription: 'ncert.nic.in / Senior Secondary Exemplar Portal',
+          purpose: 'Provides multi-concept questions essential for high board percentiles and competitive foundation.',
+        },
+        {
+          name: 'HC Verma Concepts of Physics (Vol 1 & 2) & RD Sharma Senior Math',
+          category: 'First-Principles Analytical Rigor',
+          urlDescription: 'Gold-standard Indian theoretical reference series',
+          purpose: 'Transforms algorithmic formula usage into rigorous physical intuition and deductive mathematical proof.',
+        },
+        {
+          name: 'MTG JEE / NEET Foundation & IOQM / Olympiad Workbooks',
+          category: 'National Competitive Calibration',
+          urlDescription: 'mtg.in / Advanced competitive section',
+          purpose: 'Trains rapid problem classification, multi-step deduction, and time optimization under intense pressure.',
+        },
+        {
+          name: 'Khan Academy India Senior Secondary & PhET Simulations',
+          category: 'Applied Physics & Calculus Mastery',
+          urlDescription: 'khanacademy.org & phet.colorado.edu',
+          purpose: 'Visualizes vector spaces, electromagnetism, and calculus fundamentals through interactive models.',
+        },
       ];
 
-  const indianHomeRoutines = [
-    '45-Minute Daily Evening Study Session: 15 mins reviewing core theory from NCERT, 20 mins solving 3–5 challenging non-routine problems, and 10 mins self-correcting mistakes.',
-    'The "Why" Rule (Overcoming Ratta): When reviewing your child\'s homework, do not just check if the answer is right. Ask: "Can you explain the formula in your own words, and why this method works?"',
-    'Weekly Error Autopsy (Sunday 30 mins): Have your child maintain a dedicated "Mistake Notebook". Categorize each error: (1) Calculation slip, (2) Misread question, or (3) Conceptual gap.',
-    'Timed No-Calculator Drills (Twice Weekly): Indian board and competitive exams require rapid mental arithmetic and algebraic manipulation without calculator reliance.',
-  ];
+  const indianHomeRoutines = isEnglish
+    ? [
+        '45-Minute Daily Evening Reading Session: 20 mins reading high-quality non-fiction articles or classic literature, 15 mins writing a 3-sentence summary, and 10 mins vocabulary logging.',
+        'The "Evidence" Rule (Overcoming Superficial Skimming): When reviewing comprehension answers, do not just check if it is right. Ask: "Point to the exact sentence or clause in the passage that proves this."',
+        'Weekly Error Autopsy (Sunday 30 mins): Maintain a dedicated "Reading & Grammar Mistake Notebook". Categorize each error: (1) Misread passage nuance, (2) Vocabulary blindspot, or (3) Distractor trap.',
+        'Timed Unseen Comprehension Drills (Twice Weekly): Practice reading unseen multi-paragraph texts and answering inference questions under timed conditions without re-reading multiple times.',
+      ]
+    : [
+        '45-Minute Daily Evening Study Session: 15 mins reviewing core theory from NCERT, 20 mins solving 3–5 challenging non-routine problems, and 10 mins self-correcting mistakes.',
+        'The "Why" Rule (Overcoming Ratta): When reviewing your child\'s homework, do not just check if the answer is right. Ask: "Can you explain the formula in your own words, and why this method works?"',
+        'Weekly Error Autopsy (Sunday 30 mins): Have your child maintain a dedicated "Mistake Notebook". Categorize each error: (1) Calculation slip, (2) Misread question, or (3) Conceptual gap.',
+        'Timed No-Calculator Drills (Twice Weekly): Indian board and competitive exams require rapid mental arithmetic and algebraic manipulation without calculator reliance.',
+      ];
 
-  const ptmDiscussionGuide = [
-    'Question 1: "Is my child applying first principles to unfamiliar questions, or are they relying primarily on memorized textbook exercise steps?"',
-    'Question 2: "How does my child perform on Higher Order Thinking Skills (HOTS) and application questions compared to straightforward recall questions?"',
-    'Question 3: "Are marks lost due to calculation rush or misreading the question, and what strategies does the school suggest to build exam calmness?"',
-    'Question 4: "Does the school offer Olympiad / competitive problem-solving clubs or supplementary challenge sheets for students ready for extra rigor?"',
-  ];
+  const ptmDiscussionGuide = isEnglish
+    ? [
+        'Question 1: "Is my child able to infer authorial intent and evaluate arguments in unfamiliar texts, or are they relying primarily on memorized textbook question-answers?"',
+        'Question 2: "How does my child perform on unseen reading comprehension and creative synthesis compared to routine grammar recall?"',
+        'Question 3: "Are marks lost due to rushing through passages or misreading question constraints, and what strategies does the teacher suggest for close analytical reading?"',
+        'Question 4: "Does the school provide literary clubs, debate societies, or Olympiad (IEO) challenge materials for students ready for higher linguistic rigor?"',
+      ]
+    : [
+        'Question 1: "Is my child applying first principles to unfamiliar questions, or are they relying primarily on memorized textbook exercise steps?"',
+        'Question 2: "How does my child perform on Higher Order Thinking Skills (HOTS) and application questions compared to straightforward recall questions?"',
+        'Question 3: "Are marks lost due to calculation rush or misreading the question, and what strategies does the school suggest to build exam calmness?"',
+        'Question 4: "Does the school offer Olympiad / competitive problem-solving clubs or supplementary challenge sheets for students ready for extra rigor?"',
+      ];
 
   const streamOrientation = isEnglish
     ? {

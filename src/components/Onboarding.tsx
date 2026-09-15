@@ -217,7 +217,7 @@ export function Onboarding() {
 
   useEffect(() => {
     const handlePopState = () => {
-      if (typeof window !== 'undefined' && window.location.search) {
+      if (typeof window !== 'undefined') {
         const p = new URLSearchParams(window.location.search);
         if (p.has('login')) setMode('login');
         else if (p.has('register')) setMode('register');

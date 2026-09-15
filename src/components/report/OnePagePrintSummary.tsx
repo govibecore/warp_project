@@ -75,6 +75,8 @@ export function OnePagePrintSummary({
 
   const parakh = benchmark.parakhHolisticPillars;
   const indiaPercentile = benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68;
+  const isEnglish = (benchmark?.subject || '').toLowerCase().includes('english');
+  const subjectDisplay = isEnglish ? 'English Literacy' : (benchmark?.subject || 'STEM');
 
   return (
     <div className="one-page-summary border border-neutral-300 bg-white text-neutral-900 p-6 font-sans text-xs leading-tight print:p-4 print:border-none">
@@ -87,7 +89,7 @@ export function OnePagePrintSummary({
               Official Executive Diagnostic Brief
             </span>
             <h1 className="text-base font-bold font-display uppercase tracking-tight text-neutral-900">
-              WARP Global STEM Benchmark (NEP 2020 / PARAKH)
+              WARP Global {subjectDisplay} Benchmark (NEP 2020 / PARAKH)
             </h1>
           </div>
         </div>
@@ -97,7 +99,9 @@ export function OnePagePrintSummary({
             1-Page Joint Executive Dossier
           </span>
           <p className="text-[9px] text-neutral-500 mt-0.5">
-            Calibrated vs Singapore SASMO, US AMC & India CBSE
+            {isEnglish
+              ? 'Calibrated vs Singapore EL, UK GCSE & India CBSE'
+              : 'Calibrated vs Singapore SASMO, US AMC & India CBSE'}
           </p>
         </div>
       </div>

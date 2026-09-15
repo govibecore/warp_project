@@ -212,6 +212,12 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         }
       }
 
+      if (count === 0 && Object.keys(theta).length > 0) {
+        console.error('Competency scoring failed: no competencies could be scored');
+        set({ status: 'error', loading: false, errorMessage: 'Failed to calculate competency scores' });
+        return;
+      }
+
       // Only persist global_score when competency scoring succeeded; do not fabricate median score
       const global_score = count > 0 ? Math.max(100, Math.min(900, Math.round(total_scaled / count))) : undefined;
 
@@ -227,6 +233,8 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
       const { error: updateError } = await supabase.from('assessments').update(assessmentUpdate as any).eq('id', assessmentId);
       if (updateError) {
         console.error('Failed to update assessment completion:', updateError);
+        set({ status: 'error', loading: false, errorMessage: 'Failed to save assessment completion' });
+        return;
       }
 
       // Auto-generate and save comprehensive dual-audience report immediately

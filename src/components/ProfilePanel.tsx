@@ -104,20 +104,36 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
   // ── Persistent Student Preferences ──────────────────────────────────────────
   const [preferences, setPreferences] = useState<StudentPreferences>(() => {
     try {
-      const stored = localStorage.getItem('warp_student_preferences');
+      const userKey = user?.id ? `warp_student_preferences_${user.id}` : null;
+      const stored = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('warp_student_preferences');
       if (stored) return { ...DEFAULT_STUDENT_PREFERENCES, ...JSON.parse(stored) };
     } catch {}
     return DEFAULT_STUDENT_PREFERENCES;
   });
 
+  // Reload preferences when user id changes
+  useEffect(() => {
+    try {
+      const userKey = user?.id ? `warp_student_preferences_${user.id}` : null;
+      const stored = (userKey && localStorage.getItem(userKey)) || localStorage.getItem('warp_student_preferences');
+      if (stored) {
+        setPreferences({ ...DEFAULT_STUDENT_PREFERENCES, ...JSON.parse(stored) });
+      } else {
+        setPreferences(DEFAULT_STUDENT_PREFERENCES);
+      }
+    } catch {}
+  }, [user?.id]);
+
+  // Persist preferences keyed by user id
+  useEffect(() => {
+    try {
+      const userKey = user?.id ? `warp_student_preferences_${user.id}` : 'warp_student_preferences';
+      localStorage.setItem(userKey, JSON.stringify(preferences));
+    } catch {}
+  }, [preferences, user?.id]);
+
   const updatePreference = (key: keyof StudentPreferences, val: boolean) => {
-    setPreferences(prev => {
-      const next = { ...prev, [key]: val };
-      try {
-        localStorage.setItem('warp_student_preferences', JSON.stringify(next));
-      } catch {}
-      return next;
-    });
+    setPreferences(prev => ({ ...prev, [key]: val }));
   };
 
   // ── Listen for custom open events from User Dropdown & URL params ─────────
@@ -557,7 +573,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/jpeg,image/png,image/webp"
+                  accept="image/jpeg,image/png,image/webp,image/gif"
                   className="hidden"
                   onChange={handleAvatarUpload}
                 />

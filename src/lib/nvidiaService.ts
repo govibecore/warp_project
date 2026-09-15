@@ -67,13 +67,16 @@ export async function askNemotronSocraticTutor(
     messages.push({ role: 'user', content: studentQuestion });
   }
 
+  const boundedMessages = (messages || []).slice(-10);
+
   // ── Tier 1: Local Dev Server Proxy (/api/socratic-tutor) ──
   try {
     const localRes = await fetch('/api/socratic-tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
-        messages,
+        messages: boundedMessages,
         studentQuestion,
         scenarioContext,
         classLevel,
@@ -86,7 +89,7 @@ export async function askNemotronSocraticTutor(
       if (data.reply) return data.reply;
     }
   } catch {
-    // Local endpoint not running or network error, proceed to Tier 2
+    // Local endpoint not running, timed out, or network error, proceed to Tier 2
   }
 
   // ── Tier 2: Supabase Edge Function (Production) ──
@@ -96,7 +99,6 @@ export async function askNemotronSocraticTutor(
     const token = session?.access_token;
 
     if (token) {
-      const boundedMessages = (messages || []).slice(-10);
       const response = await fetch(`${supabaseUrl}/functions/v1/ai-socratic-tutor`, {
         method: 'POST',
         headers: {
@@ -104,6 +106,7 @@ export async function askNemotronSocraticTutor(
           'Authorization': `Bearer ${token}`,
           'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
         },
+        signal: AbortSignal.timeout(15000),
         body: JSON.stringify({
           messages: boundedMessages,
           scenarioContext,
@@ -139,6 +142,7 @@ export async function getNemotronSocraticHint(
     const localRes = await fetch('/api/socratic-tutor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      signal: AbortSignal.timeout(15000),
       body: JSON.stringify({
         mode: 'hint',
         studentQuestion: 'Give me a brief 1-2 sentence Socratic hint to isolate the invariant in this problem.',
@@ -169,6 +173,7 @@ export async function getNemotronSocraticHint(
           'Authorization': `Bearer ${token}`,
           'apikey': import.meta.env?.VITE_SUPABASE_ANON_KEY || '',
         },
+        signal: AbortSignal.timeout(15000),
         body: JSON.stringify({
           mode: 'hint',
           studentQuestion: 'Give me a brief 1-2 sentence Socratic hint to isolate the invariant in this problem.',

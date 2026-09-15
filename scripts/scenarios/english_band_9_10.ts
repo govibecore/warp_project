@@ -716,7 +716,7 @@ export const englishBand9_10: ScenarioDef[] = [
     competency: 'evaluatingReflecting',
     developmental_band: '9-10',
     difficulty: 'olympiad',
-    prompt: '"The historian asserts: \'To label the 19th-century treaty a \'voluntary commercial partnership\' is an insult to language itself; the ink was scarcely dry before naval gunboats were positioned in the harbor to enforce compliance.\' What argument does this caustic metaphor solidify?',
+    prompt: '"The historian asserts: \'To label the 19th-century treaty a \'voluntary commercial partnership\' is an insult to language itself; the ink was scarcely dry before naval gunboats were positioned in the harbor to enforce compliance.\'" What argument does this caustic metaphor solidify?',
     options: makeOptions('evaluatingReflecting',
       'The treaty was an act of coercive imperial subjugation under threat of violent bombardment, completely void of genuine mutual consent.',
       ['The naval gunboats were sent to protect merchant ships from local pirates.', 'The treaty negotiations were conducted under international maritime admiralty law.', 'The treaty expired naturally because paper and ink decayed in tropical humidity.']

@@ -142,7 +142,7 @@ const regionalChartConfig: ChartConfig = {
     color: 'var(--color-primary)',
   },
   olympiadThreshold: {
-    label: 'Olympiad Threshold (75th)',
+    label: 'Olympiad Baseline (~75th)',
     color: 'var(--foreground-muted)',
   },
 } satisfies ChartConfig;
@@ -251,7 +251,7 @@ export function RegionalBenchmarkBarChart({ regionalPercentiles }: { regionalPer
           strokeDasharray="5 3"
           strokeOpacity={0.5}
           label={{
-            value: 'Olympiad Zone',
+            value: 'Olympiad Baseline (~75th)',
             position: 'insideTopRight',
             fontSize: 9,
             fill: 'var(--foreground-muted)',
@@ -300,7 +300,7 @@ export function BenchmarkLegend() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[10px] text-foreground-muted mt-2">
       <span className="flex items-center gap-1">
         <span className="inline-block w-6 h-0.5 opacity-50" style={{ borderTop: '1px dashed var(--foreground-muted)' }} />
-        Olympiad Threshold (~75th %ile)
+        Olympiad Baseline (~75th %ile)
       </span>
       <span className="flex items-center gap-1">
         <span className="inline-block w-6 h-0.5 opacity-30" style={{ borderTop: '1px dotted var(--foreground-muted)' }} />

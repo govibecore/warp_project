@@ -151,7 +151,7 @@ export function ReportDetail() {
                   const match = scenarioMap.get(r.scenario_id);
                   return {
                     ...r,
-                    prompt: match?.prompt || r.option?.text || 'STEM Benchmark Scenario',
+                    prompt: match?.prompt || r.option?.text || ((assessment as any).subject?.toLowerCase().includes('english') ? 'English Literacy Benchmark Scenario' : 'STEM Benchmark Scenario'),
                     competency: match?.competency || 'General Competency',
                     benchmarkStandard: match?.international_benchmark || 'International Benchmark',
                     userSelectedOption: r.userSelectedOption || r.option?.text,
@@ -271,6 +271,8 @@ export function ReportDetail() {
   const parakh = benchmark.parakhHolisticPillars;
   const homeRoutines = parentVariant?.indianHomeRoutines || parentVariant?.immediateHomeRoutines || benchmark.parentActionBlueprint?.indianHomeRoutines || [];
   const indiaPercentile = benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68;
+  const isEnglish = (assessmentData.subject || benchmark.subject || '').toLowerCase().includes('english');
+  const subjectDisplay = isEnglish ? 'English Literacy' : (assessmentData.subject || benchmark.subject || 'STEM');
   const responses = assessmentData.responses || [];
   const correctCount = responses.filter((r: any) => r.correct === true).length;
   const totalCount = responses.length || 6;
@@ -301,7 +303,7 @@ export function ReportDetail() {
       suffix: '%',
       band: parakh?.applicationAndProblemSolving?.level || 'Proficient',
       delta: (parakh?.applicationAndProblemSolving?.score ?? 56) - 50,
-      observation: parakh?.applicationAndProblemSolving?.description || 'Applies foundational theorems to novel STEM challenge contexts.',
+      observation: parakh?.applicationAndProblemSolving?.description || (isEnglish ? 'Applies linguistic analysis to novel textual contexts.' : 'Applies foundational theorems to novel STEM challenge contexts.'),
     },
     {
       domain: 'Metacognitive',
@@ -354,7 +356,7 @@ export function ReportDetail() {
               style={{ animation: 'slideUp 350ms 100ms cubic-bezier(.2,.7,.2,1) both' }}
             >
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-                WARP Global STEM Benchmark
+                WARP Global {subjectDisplay} Benchmark
               </p>
               <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
                 Diagnostic Executive Summary
