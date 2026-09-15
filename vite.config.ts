@@ -36,7 +36,7 @@ export default defineConfig({
         name: 'STEM Benchmark',
         short_name: 'STEM',
         description: 'Adaptive STEM Assessment Platform',
-        theme_color: '#ffffff',
+        theme_color: '#1B212D',
         icons: [
           {
             src: '/icon-192x192.png',

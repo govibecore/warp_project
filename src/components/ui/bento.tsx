@@ -14,7 +14,7 @@ export type ResponsiveValue<T> =
 
 const BREAKPOINTS: Breakpoint[] = ['base', 'sm', 'md', 'lg', 'xl', '2xl'];
 
-export const RESPONSIVE_GRID_COLS = {
+const RESPONSIVE_GRID_COLS = {
   base: {
     1: 'grid-cols-1',
     2: 'grid-cols-2',
@@ -83,7 +83,7 @@ export const RESPONSIVE_GRID_COLS = {
   },
 } as const;
 
-export const RESPONSIVE_COL_SPAN = {
+const RESPONSIVE_COL_SPAN = {
   base: {
     1: 'col-span-1',
     2: 'col-span-2',
@@ -140,7 +140,7 @@ export const RESPONSIVE_COL_SPAN = {
   },
 } as const;
 
-export const RESPONSIVE_ROW_SPAN = {
+const RESPONSIVE_ROW_SPAN = {
   base: {
     1: 'row-span-1',
     2: 'row-span-2',
