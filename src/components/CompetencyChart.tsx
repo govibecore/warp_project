@@ -75,8 +75,8 @@ export function CompetencyRadarChart({
       : buildFallbackRadarData(competencyBreakdown);
 
   return (
-    <div className="w-full h-72 relative z-10">
-      <ResponsiveContainer width="100%" height="100%">
+    <div className="w-full h-72 relative z-10 min-w-0 min-h-0">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
         <RadarChart cx="50%" cy="45%" outerRadius="62%" data={chartData}>
           <PolarGrid stroke="var(--border)" strokeOpacity={0.6} />
           <PolarAngleAxis

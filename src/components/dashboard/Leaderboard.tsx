@@ -51,23 +51,34 @@ export function Leaderboard() {
         return;
       }
 
-      const mapped = data
-        .filter(a => typeof a.global_score === 'number' && a.global_score > 0)
-        .map(a => {
-          const s = Array.isArray(a.students) ? a.students[0] : a.students;
-          const parts = s?.full_name?.split(' ') || ['Learner'];
-          const studentName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
-          return {
+      // Group by learner so each student appears only once at their peak score
+      const studentMap = new Map<string, LeaderboardRow>();
+      for (const a of data) {
+        if (typeof a.global_score !== 'number' || a.global_score <= 0) continue;
+        const s = Array.isArray(a.students) ? a.students[0] : a.students;
+        const parts = s?.full_name?.split(' ') || ['Learner'];
+        const studentName = parts.length > 1 ? `${parts[0]} ${parts[1][0]}.` : parts[0];
+        const studentId = s?.id || studentName;
+        const score = a.global_score ?? 0;
+        const existing = studentMap.get(studentId);
+
+        if (!existing || score > existing.overallScore) {
+          studentMap.set(studentId, {
             id: a.id,
             studentName,
             classLevel: a.class_level,
             difficulty: a.difficulty,
-            overallScore: a.global_score ?? 0,
+            overallScore: score,
             isCurrentUser: s?.id === user?.id,
-          };
-        });
+          });
+        }
+      }
 
-      setRows(mapped);
+      const deduplicated = Array.from(studentMap.values())
+        .sort((a, b) => b.overallScore - a.overallScore)
+        .slice(0, 50);
+
+      setRows(deduplicated);
     }
     
     fetchLeaderboard();
@@ -76,7 +87,10 @@ export function Leaderboard() {
   return (
     <Card>
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-4">
-        <h3 className="font-display text-lg font-bold">Global leaderboard</h3>
+        <div>
+          <h3 className="font-display text-lg font-bold tracking-tight text-foreground">Global leaderboard</h3>
+          <p className="text-xs text-foreground-secondary mt-0.5">Top calibrated percentile rankings by unique candidate</p>
+        </div>
         <Select
           compact
           value={difficulty}
@@ -117,37 +131,39 @@ export function Leaderboard() {
                 <tr
                   key={entry.id}
                   className={
-                    'transition-colors hover:bg-accent/40 ' +
-                    (entry.isCurrentUser ? 'bg-primary-subtle' : '')
+                    'transition-colors hover:bg-surface/60 ' +
+                    (entry.isCurrentUser ? 'bg-primary/5 font-medium' : '')
                   }
                 >
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-6 py-3.5 text-center">
                     <span
                       className={
-                        'inline-flex size-6 items-center justify-center text-xs font-bold tabular ' +
-                        (i < 3
-                          ? 'bg-primary-subtle text-primary'
+                        'inline-flex size-6 items-center justify-center text-xs font-mono font-bold tabular ' +
+                        (i === 0
+                          ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30'
+                          : i < 3
+                          ? 'bg-primary/15 text-primary border border-primary/30'
                           : 'text-foreground-secondary')
                       }
                     >
                       {i + 1}
                     </span>
                   </td>
-                  <td className="px-6 py-4 font-medium">
-                    {entry.studentName}
+                  <td className="px-6 py-3.5 font-medium">
+                    <span className="text-foreground">{entry.studentName}</span>
                     {entry.isCurrentUser && (
-                      <span className="ml-2 text-[10px] font-bold uppercase tracking-wider text-primary">
+                      <span className="ml-2 inline-flex items-center px-1.5 py-0.2 text-[10px] font-mono font-bold uppercase tracking-wider bg-primary/15 text-primary border border-primary/30">
                         You
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4 font-mono tabular text-foreground-secondary">
-                    {entry.classLevel}
+                  <td className="px-6 py-3.5 font-mono tabular text-foreground-secondary">
+                    Class {entry.classLevel}
                   </td>
-                  <td className="px-6 py-4 text-xs text-foreground-secondary">
+                  <td className="px-6 py-3.5 text-xs font-mono text-foreground-secondary">
                     {entry.difficulty}
                   </td>
-                  <td className="px-6 py-4 text-right font-mono font-bold tabular">
+                  <td className="px-6 py-3.5 text-right font-mono font-bold tabular text-foreground">
                     {entry.overallScore}
                   </td>
                 </tr>

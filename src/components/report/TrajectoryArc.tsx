@@ -128,8 +128,8 @@ export function TrajectoryArc({
       {hasMultiple ? (
         <div className="space-y-6">
           {/* Recharts longitudinal line */}
-          <div className="h-56 w-full pt-2">
-            <ResponsiveContainer width="100%" height="100%">
+          <div className="h-56 w-full pt-2 min-w-0 min-h-0">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
               <LineChart data={history} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
                 <XAxis

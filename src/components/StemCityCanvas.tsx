@@ -5,14 +5,14 @@ import { DISTRICTS, CITY_COLORS } from '../city/core';
 import type { ScoreMap } from '../city/world';
 
 /**
- * STEM City — "Where you sit", in three dimensions.
+ * STEM City - "Where you sit", in three dimensions.
  *
  * Five districts, one per competency. In each, a score column rises to the
  * learner's result and a cohort ring marks the global reference on that same
  * column: green above the ring, amber below it. The gap is the product.
  *
  * Illustrative sample values stand in until an assessment produces real ones.
- * Everything is procedural — no textures, models or fonts are ever fetched.
+ * Everything is procedural - no textures, models or fonts are ever fetched.
  */
 
 /** Sample profile: the same numbers the old 2D journey chart used. */
@@ -156,8 +156,8 @@ export default function StemCityCanvas({
                     {d.label}
                   </div>
                   <div className="font-mono text-[11px] font-bold tabular text-foreground">
-                    {entry?.you ?? '—'}
-                    <span className="text-foreground-secondary">/{entry?.ref ?? '—'}</span>
+                    {entry?.you ?? '-'}
+                    <span className="text-foreground-secondary">/{entry?.ref ?? '-'}</span>
                   </div>
                 </div>
                 <div
@@ -196,11 +196,11 @@ export default function StemCityCanvas({
           </li>
           <li className="flex items-center gap-2">
             <span className="inline-block size-2.5" style={{ background: CITY_COLORS.ahead }} />
-            Above the ring — ahead
+            Above the ring - ahead
           </li>
           <li className="flex items-center gap-2">
             <span className="inline-block size-2.5" style={{ background: CITY_COLORS.behind }} />
-            Below the ring — the gap
+            Below the ring - the gap
           </li>
         </ul>
       </div>

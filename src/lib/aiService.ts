@@ -72,7 +72,7 @@ export async function createAndSaveReport(
   _responses: any[],
   subject: string = 'STEM'
 ): Promise<GeneratedReport> {
-  // Step 1: Client-side psychometric benchmark (always runs — zero latency)
+  // Step 1: Client-side psychometric benchmark (always runs - zero latency)
   const benchmark = computeInternationalBenchmark(thetaMap, classLevel, subject);
   const deterministicReport = buildDeterministicReport(studentName, classLevel, benchmark, subject);
 
@@ -89,6 +89,16 @@ export async function createAndSaveReport(
     classLevel,
     subject,
   };
+
+  // Guard: If assessment has fewer than 5 responses or no assessed data, do not persist incomplete report
+  if ((_responses?.length || 0) < 5 || !benchmark.hasSufficientData) {
+    console.warn(`Assessment ${assessmentId} has insufficient responses (${_responses?.length || 0}/5). Skipping report persistence.`);
+    return {
+      student_variant: studentVariantWithMeta,
+      parent_variant: parentVariantWithMeta,
+      benchmark,
+    };
+  }
 
   // Step 2: Try the server-side Edge Function (keys stay in Supabase Vault)
   try {
@@ -173,28 +183,63 @@ function buildDeterministicReport(
   subject: string = 'STEM'
 ): GeneratedReport {
   const isEnglish = subject.toLowerCase().includes('english');
-  const { realityCheck, cognitiveArchetype, studentChallengeSprint, parentActionBlueprint, competencyBreakdown } = benchmark;
+  const { realityCheck, cognitiveArchetype, studentChallengeSprint, parentActionBlueprint, competencyBreakdown, hasSufficientData } = benchmark;
 
-  const entries = Object.entries(competencyBreakdown) as [string, { scaledScore: number; globalPercentile?: number }][];
-  const topCompetency = entries.length > 0
-    ? entries.sort((a, b) => b[1].scaledScore - a[1].scaledScore)[0]
-    : [isEnglish ? 'understanding' : 'scientificInquiry', { scaledScore: 500, globalPercentile: 50 }] as const;
-  const lowestCompetency = entries.length > 0
-    ? entries.sort((a, b) => a[1].scaledScore - b[1].scaledScore)[0]
-    : [isEnglish ? 'synthesis' : 'mathematicalReasoning', { scaledScore: 500, globalPercentile: 50 }] as const;
+  const entries = Object.entries(competencyBreakdown) as [string, { scaledScore: number; globalPercentile?: number; isAssessed?: boolean }][];
+  const assessedEntries = entries.filter(([_, d]) => d.isAssessed !== false && d.scaledScore > 0);
+  const topCompetency = assessedEntries.length > 0
+    ? assessedEntries.sort((a, b) => b[1].scaledScore - a[1].scaledScore)[0]
+    : [isEnglish ? 'understanding' : 'scientificInquiry', { scaledScore: 0, globalPercentile: 0 }] as const;
+  const lowestCompetency = assessedEntries.length > 0
+    ? assessedEntries.sort((a, b) => a[1].scaledScore - b[1].scaledScore)[0]
+    : [isEnglish ? 'synthesis' : 'mathematicalReasoning', { scaledScore: 0, globalPercentile: 0 }] as const;
 
   const topLabel = COMPETENCY_LABELS[topCompetency[0] as CompetencyKey] || topCompetency[0];
   const lowestLabel = COMPETENCY_LABELS[lowestCompetency[0] as CompetencyKey] || lowestCompetency[0];
-  const topScore = (topCompetency[1] as any)?.scaledScore || 500;
-  const topGlobalPct = (topCompetency[1] as any)?.globalPercentile || 50;
+  const topScore = (topCompetency[1] as any)?.scaledScore || 0;
+  const topGlobalPct = (topCompetency[1] as any)?.globalPercentile || 0;
+
+  if (!hasSufficientData) {
+    const studentSummary = `Hello ${studentName}! Your assessment is currently incomplete. Please complete at least 5 benchmark scenarios so the psychometric engine can calibrate your latent ability parameters.`;
+    const parentAssessment = `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nStatus: Assessment Incomplete (Fewer than 5 responses recorded).\n\nPlease have the student complete the full assessment to project verified national and global standings.`;
+
+    return {
+      student_variant: {
+        archetypeTitle: cognitiveArchetype.title,
+        archetypeTagline: cognitiveArchetype.tagline,
+        summary: studentSummary,
+        keyStrengths: ['Assessment pending completion'],
+        blindspots: ['Assessment pending completion'],
+        nextMission: 'Resume and complete at least 5 assessment scenarios.',
+        sprint: studentChallengeSprint,
+      },
+      parent_variant: {
+        overallAssessment: parentAssessment,
+        realityCheckSummary: realityCheck.honestSummary,
+        internationalGapSummary: realityCheck.internationalGapSummary,
+        gradeInflationWarning: realityCheck.gradeInflationWarning,
+        keyStrengths: ['Pending verified assessment data'],
+        growthAreas: ['Pending verified assessment data'],
+        actionPlan: [],
+        recommendedCurricula: parentActionBlueprint.recommendedCurricula,
+        immediateHomeRoutines: parentActionBlueprint.immediateHomeRoutines,
+        indianRecommendedCurricula: parentActionBlueprint.indianRecommendedCurricula,
+        indianHomeRoutines: parentActionBlueprint.indianHomeRoutines,
+        ptmDiscussionGuide: parentActionBlueprint.ptmDiscussionGuide,
+        streamOrientation: parentActionBlueprint.streamOrientation,
+        parentGuidance: 'Please have the candidate complete at least 5 questions to generate an authoritative evaluation.',
+      },
+      benchmark,
+    };
+  }
 
   const studentSummary = isEnglish
     ? `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nIn India, your performance places you in the ${benchmark.indiaNationalPercentile}th percentile nationally (Projected Board Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}), and in the ${benchmark.globalPercentile}th percentile globally. When benchmarked against Singapore MOE and Cambridge English standards, your relative standing is ${benchmark.regionalPercentiles.Singapore}th percentile. Your strongest execution is in ${topLabel}, while your biggest growth opportunity is in ${lowestLabel}.\n\nTo excel against top students in India and internationally (Singapore, US, and Europe), focus on deep rhetorical evaluation and evidence synthesis rather than passive reading.`
     : `Hello ${studentName}! Your assessment places you as an "${cognitiveArchetype.title}".\n${cognitiveArchetype.description}\n\nIn India, your analytical performance ranks in the ${benchmark.indiaNationalPercentile}th percentile nationally (Projected Board Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}), and in the ${benchmark.globalPercentile}th percentile globally. Benchmarked against Singapore SASMO standards, your relative percentile is ${benchmark.regionalPercentiles.Singapore}th. Your greatest analytical leverage comes from ${topLabel}, while your biggest vulnerability to trap options is in ${lowestLabel}.\n\nTo compete with top STEM minds across India (Olympiads/JEE Foundation) and globally (Singapore, US, China), you need to transition from "calculating textbook answers" to "modeling first principles."`;
 
   const parentAssessment = isEnglish
-    ? `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} — ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child demonstrates strong reading potential, but currently leans on superficial keyword matching on complex multi-text tasks. Standard Indian school examinations reward rote recall of prescribed book questions; competitive benchmarks (such as PISA Reading Literacy, Cambridge, and Olympiads) test whether a student can synthesize conflicting perspectives and deconstruct authorial bias. Follow the actionable blueprint below to cultivate globally competitive critical literacy.`
-    : `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} — ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child has demonstrated unmistakable potential, but currently leans on familiar textbook formulas rather than first-principles reasoning. In standard classroom examinations, this approach often yields 90%+ marks. In national Olympiads (SOF IMO/NSO) and international competitions (such as AMC 8/10 or SASMO), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, competitive mathematical and scientific reasoning.`;
+    ? `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child demonstrates strong reading potential, but currently leans on superficial keyword matching on complex multi-text tasks. Standard Indian school examinations reward rote recall of prescribed book questions; competitive benchmarks (such as PISA Reading Literacy, Cambridge, and Olympiads) test whether a student can synthesize conflicting perspectives and deconstruct authorial bias. Follow the actionable blueprint below to cultivate globally competitive critical literacy.`
+    : `Diagnostic Executive Evaluation for Parents of ${studentName} (Class ${classLevel})\nNational Standing: ${benchmark.indiaNationalPercentile}th Percentile across Indian Schools (CBSE/ICSE Grade: ${benchmark.boardGradeBand.grade} - ${benchmark.boardGradeBand.band}) | Global Scaled Score: ${benchmark.aggregateScaledScore}/900\n\n${realityCheck.honestSummary}\n\n${realityCheck.internationalGapSummary}\n\n${realityCheck.gradeInflationWarning}\n\nCore Takeaway for Parents:\nYour child has demonstrated unmistakable potential, but currently leans on familiar textbook formulas rather than first-principles reasoning. In standard classroom examinations, this approach often yields 90%+ marks. In national Olympiads (SOF IMO/NSO) and international competitions (such as AMC 8/10 or SASMO), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, competitive mathematical and scientific reasoning.`;
 
   return {
     student_variant: {

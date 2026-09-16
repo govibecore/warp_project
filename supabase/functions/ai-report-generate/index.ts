@@ -1,6 +1,6 @@
 // supabase/functions/ai-report-generate/index.ts
-// Server-side AI report generation — API keys NEVER reach the browser.
-// Implements the v2.0 3-tier cascade: NVIDIA Nemotron → OpenRouter → Deterministic fallback.
+// Server-side AI report generation - API keys NEVER reach the browser.
+// Implements the v2.0 3-tier cascade: WARP AI → OpenRouter → Deterministic fallback.
 
 import { serve } from "@std/http/server";
 import { createClient } from "@supabase/supabase-js";
@@ -52,7 +52,7 @@ const AI_MODEL_CASCADE = [
   { id: 'mistralai/mistral-7b-instruct:free', provider: 'openrouter', label: 'mistral-7b-openrouter' },
 ];
 
-// ── Deterministic fallback (Tier 3 — never fails) ─────────────────────
+// ── Deterministic fallback (Tier 3 - never fails) ─────────────────────
 function deterministicReport(
   assessment: Record<string, unknown>,
   student: Record<string, unknown>,
@@ -318,7 +318,7 @@ serve(async (req: Request) => {
     try {
       await supabase.channel(`report:${assessmentId}`).send({
         type: 'broadcast', event: 'section',
-        payload: { section: 'status', text: 'Analyzing competency trajectory with NVIDIA Nemotron...' }
+        payload: { section: 'status', text: 'Analyzing competency trajectory with WARP AI...' }
       });
     } catch { /* non-fatal */ }
 
@@ -347,7 +347,7 @@ serve(async (req: Request) => {
       }
     }
 
-    // 6. Deterministic fallback — never fails
+    // 6. Deterministic fallback - never fails
     if (!reportData) {
       reportData = deterministicReport(assessment, student || {}, history || []);
     }

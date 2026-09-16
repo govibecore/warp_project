@@ -91,9 +91,9 @@ export function blueprint(
  * Compresses distractor earned-weights upward based on difficulty, making wrong
  * answers less penalising (and therefore harder to distinguish from the optimal choice).
  *
- * Standard:  weights unchanged      — e.g. [0, 2, 4, 10]
- * Advanced:  floor raised to 3      — e.g. [3, 4, 5, 10]
- * Olympiad:  floor raised to 6      — e.g. [6, 7, 8, 10]
+ * Standard:  weights unchanged      - e.g. [0, 2, 4, 10]
+ * Advanced:  floor raised to 3      - e.g. [3, 4, 5, 10]
+ * Olympiad:  floor raised to 6      - e.g. [6, 7, 8, 10]
  */
 export function scaleDifficulty(earned: number, available: number, difficulty: Difficulty): number {
   if (difficulty === 'Standard') return earned;

@@ -1,5 +1,5 @@
 /**
- * ParallaxStackDeck — Scroll-driven stacking card parallax adapted from
+ * ParallaxStackDeck - Scroll-driven stacking card parallax adapted from
  * Pixel Perfect (scroll/stacking-cards-parallax.tsx).
  *
  * Cards stick and stack as the user scrolls, creating a tactile physical deck

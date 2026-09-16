@@ -176,7 +176,7 @@ export const englishBand3_4: ScenarioDef[] = [
       ['It was used for repairing broken wooden chairs and tools.', 'It was an untidy and hazardous factory environment.', 'It was strictly reserved for professional cooks.']
     ),
     learning_objective: 'Interpreting metaphorical language and connotative meaning.',
-    hint: 'Think about what happens in a workshop—things are made with care and effort.',
+    hint: 'Think about what happens in a workshop-things are made with care and effort.',
     irt_a: 1.45,
     irt_b: -0.3,
     irt_c: 0.25,
@@ -352,7 +352,7 @@ export const englishBand3_4: ScenarioDef[] = [
     competency: 'locatingInformation',
     developmental_band: '3-4',
     difficulty: 'olympiad',
-    prompt: 'Wildlife Bulletin: "The Arctic tern migrates from Greenland to Antarctica and back each year, covering nearly 71,000 kilometers annually—the longest recorded journey of any animal on Earth." Between which two geographic regions does this bird travel?',
+    prompt: 'Wildlife Bulletin: "The Arctic tern migrates from Greenland to Antarctica and back each year, covering nearly 71,000 kilometers annually-the longest recorded journey of any animal on Earth." Between which two geographic regions does this bird travel?',
     options: makeOptions('locatingInformation',
       'Greenland and Antarctica',
       ['Canada and Australia', 'Alaska and South America', 'Norway and South Africa']

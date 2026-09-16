@@ -20,11 +20,11 @@ import type { ScoreMap } from './world';
 import { glowTexture, waterTexture } from './textures';
 
 /**
- * STEM City — scene assembly, sky, lighting, camera and the frame loop.
+ * STEM City - scene assembly, sky, lighting, camera and the frame loop.
  *
  * The whole city is one floating island read as a chart: five districts, five
  * competency scores, and a cohort ring on every score column. Everything here
- * is procedural and headless-safe — no asset ever crosses the network.
+ * is procedural and headless-safe - no asset ever crosses the network.
  */
 
 export interface LabelPos {

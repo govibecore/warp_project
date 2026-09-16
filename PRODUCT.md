@@ -16,7 +16,7 @@ Students in Classes 3–12 taking a STEM competency assessment, and their parent
 
 ## Product Purpose
 
-WARP is a STEM competency assessment that uses linked, fictional systems scenarios to generate a projected benchmark across five competencies — scientific inquiry, computational thinking, engineering design, mathematical reasoning, and systems thinking. Each of the 30 items is band-differentiated across five developmental bands (Classes 3–4, 5–6, 7–8, 9–10, 11–12), so a Class 3 learner and a Class 12 learner never see the same question text. Distractors are designed to diagnose canonical misconceptions, and every item is tagged with NGSS Science & Engineering Practices, PISA 2025 competencies, and NCF 2023 stage alignment.
+WARP is a STEM competency assessment that uses linked, fictional systems scenarios to generate a projected benchmark across five competencies - scientific inquiry, computational thinking, engineering design, mathematical reasoning, and systems thinking. Each of the 30 items is band-differentiated across five developmental bands (Classes 3–4, 5–6, 7–8, 9–10, 11–12), so a Class 3 learner and a Class 12 learner never see the same question text. Distractors are designed to diagnose canonical misconceptions, and every item is tagged with NGSS Science & Engineering Practices, PISA 2025 competencies, and NCF 2023 stage alignment.
 
 ## Positioning
 
@@ -33,7 +33,7 @@ Used by students (Classes 3–12) directly in the browser. Guest mode stores pro
 
 ## Brand Commitments
 
-Uses the Nordic Lagom Design System — a restrained, light-first system with one accent colour (Fjord), warm-paper neutrals, OKLCH tokens for light and dark themes, and a single hairline for elevation. No glassmorphism, no stacked shadows, no decorative motion. Documented in `DESIGN.md`.
+Uses the Nordic Lagom Design System - a restrained, light-first system with one accent colour (Fjord), warm-paper neutrals, OKLCH tokens for light and dark themes, and a single hairline for elevation. No glassmorphism, no stacked shadows, no decorative motion. Documented in `DESIGN.md`.
 
 ## Evidence on Hand
 
@@ -43,6 +43,6 @@ The assessment uses provisional expert-authored reference distributions for scor
 
 1. **Measurement over motivation.** No streaks, no badges, no confetti. A score, an explanation, and a next step.
 2. **Age-appropriate rigour.** A Class 3 student sees language and numeracy calibrated to their band; a Class 12 student sees the same competency assessed at Olympiad depth. Same instrument, different floor.
-3. **Formative, not just summative.** Every designed-wrong answer carries a misconception tag that surfaces in the report, so the student learns what tripped them up — not just that they missed it.
+3. **Formative, not just summative.** Every designed-wrong answer carries a misconception tag that surfaces in the report, so the student learns what tripped them up - not just that they missed it.
 4. **Standards-grounded.** Every item carries NGSS SEP and PISA 2025 competency tags, auditable in the data-quality test suite.
 5. **Privacy is real.** Assessment data is encrypted in transit and at rest. Account and history can be deleted permanently from the dashboard. Guest mode never leaves the device.

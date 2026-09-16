@@ -5,12 +5,12 @@
 @import "@fontsource-variable/manrope";
 
 /* ══════════════════════════════════════════════════════════════════════════
-   NORDIC LAGOM — DESIGN SYSTEM
+   NORDIC LAGOM - DESIGN SYSTEM
    "Lagom": not too much, not too little. The right amount.
 
    Light is the default. The scene is a student at a desk in daytime, a parent
    reading a printed report, a classroom projector. Dark is a complete second
-   theme for evening and low-glare use — not an afterthought override.
+   theme for evening and low-glare use - not an afterthought override.
 
    Colour strategy: Restrained. Warm paper neutrals carry the surface; one
    accent (Fjord) marks action. Moss, Terracotta and Amber are semantics with
@@ -149,20 +149,20 @@
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
 
-  /* Radius — zero. The system is sharp: the warp grid is angular, so every
+  /* Radius - zero. The system is sharp: the warp grid is angular, so every
      surface, tag, meter and control meets at a corner, not a curve. The one
      organic form in the brand language is the logo's sphere. */
   --radius-control: 0;
   --radius-card: 0;
   --radius-pill: 0;
 
-  /* Type — two families, one mono for measurement */
+  /* Type - two families, one mono for measurement */
   --font-display: 'Space Grotesk Variable', 'Space Grotesk', sans-serif;
   --font-sans: 'Inter Variable', sans-serif;
   --font-mono: 'JetBrains Mono Variable', 'JetBrains Mono', ui-monospace,
     'SFMono-Regular', 'Menlo', monospace;
 
-  /* Motion — calm, short, single-purpose */
+  /* Motion - calm, short, single-purpose */
   --ease-lagom: cubic-bezier(0.2, 0, 0, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --font-heading: 'Manrope Variable', sans-serif;
@@ -287,12 +287,18 @@
   }
 
   /* Reports are printed: flatten to paper, drop chrome.
-     The app is dark-only on screen, so printing needs its own palette —
+     The app is dark-only on screen, so printing needs its own palette -
      overriding the tokens (rather than each component) repaints cards,
      tables, icons and the recharts SVG in one move. */
   @media print {
     @page {
-      margin: 14mm;
+      size: A4 portrait;
+      margin: 8mm 10mm;
+    }
+
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
     }
 
     /* Unclip: the shell is a fixed-height flex column with its own scroller,
@@ -302,6 +308,8 @@
     #root {
       height: auto !important;
       overflow: visible !important;
+      background: #ffffff !important;
+      color: #111827 !important;
     }
     .overflow-y-auto,
     .overflow-auto,
@@ -323,13 +331,38 @@
     }
 
     body {
-      background: #fff;
-      color: #000;
+      background: #ffffff !important;
+      color: #111827 !important;
     }
     .print-surface {
       border: 0 !important;
       box-shadow: none !important;
     }
+    /* Strictly managed A4 page container */
+    .print-page {
+      width: 100% !important;
+      max-width: 190mm !important;
+      height: 275mm !important;
+      max-height: 275mm !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+      box-sizing: border-box !important;
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+      page-break-after: always !important;
+      break-after: page !important;
+      position: relative !important;
+      background: #ffffff !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    .print-page:last-child {
+      page-break-after: auto !important;
+      break-after: auto !important;
+    }
+
     /* A card split across a page break reads as two broken cards. */
     .print-keep,
     .card {
@@ -379,7 +412,7 @@
     --input: #e5e7eb;
     --accent: #f3f4f6;
 
-    /* Ink-safe chart hues — readable on white, no glow */
+    /* Ink-safe chart hues - readable on white, no glow */
     --chart-1: #0e7490;
     --chart-2: #15803d;
     --chart-3: #b45309;
@@ -390,6 +423,15 @@
 
 /* ── html2pdf Rendering Mode Styling ───────────────────────────────────── */
 .pdf-rendering-mode {
+  display: block !important;
+  visibility: visible !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  width: 100% !important;
+  max-width: 210mm !important;
+  margin: 0 auto !important;
+  z-index: 9999 !important;
   background-color: #ffffff !important;
   color: #111827 !important;
 
@@ -467,7 +509,7 @@
     border-radius: var(--radius-card);
   }
 
-  /* Shown only on paper — e.g. the light-ink wordmark on a printed report. */
+  /* Shown only on paper - e.g. the light-ink wordmark on a printed report. */
   .print-only {
     display: none;
   }
@@ -497,7 +539,7 @@
   }
 
   /* Angular spinner: no arcs in this system. A square outline whose bright
-     edge ticks around in 90° steps — a loading state with the same geometry
+     edge ticks around in 90° steps - a loading state with the same geometry
      as everything else. */
   .spinner-square {
     border: 2px solid var(--foreground-muted);
@@ -512,7 +554,7 @@
 
   /* ── Warp-grid motifs ──────────────────────────────────────────────────
      The logo's spacetime grid, translated to UI: blueprint hairlines,
-     registration marks, ruler ticks. Decoration with a job — measurement. */
+     registration marks, ruler ticks. Decoration with a job - measurement. */
 
   /* Blueprint hairline grid for section backdrops. Faint on purpose. */
   .bg-warp-grid {
@@ -548,7 +590,7 @@
     border-left: 0;
   }
 
-  /* Ruler ticks — a measuring strip used as a section divider. */
+  /* Ruler ticks - a measuring strip used as a section divider. */
   .ruler-x {
     height: 0.5rem;
     background-image: repeating-linear-gradient(
@@ -588,7 +630,7 @@ body.isChromatic *, body.isChromatic *::before, body.isChromatic *::after {
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
-   REPORT AWARD-WINNING DESIGN — STAGGER ANIMATION SYSTEM
+   REPORT AWARD-WINNING DESIGN - STAGGER ANIMATION SYSTEM
    Lagom easing: cubic-bezier(.2,.7,.2,1)  |  All gated by prefers-reduced-motion
    ══════════════════════════════════════════════════════════════════════════ */
 
@@ -602,7 +644,7 @@ body.isChromatic *, body.isChromatic *::before, body.isChromatic *::after {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Hub card stagger — each card appears 75ms after the previous */
+/* Hub card stagger - each card appears 75ms after the previous */
 .hub-card-1 {
   animation: slideUp 300ms 150ms cubic-bezier(.2,.7,.2,1) both;
 }

@@ -1,10 +1,10 @@
 /**
- * weapons.ts — auto-firing arsenal and passives.
+ * weapons.ts - auto-firing arsenal and passives.
  *
  * Four weapons (seeking bolt, damage aura, orbiting orbs, expanding nova)
  * fire on cooldown with zero input. Six passives (damage, move speed,
  * cooldown, pickup radius, max health, regeneration) stack quietly.
- * On level-up the AI auto-picks one upgrade — new weapons are slightly
+ * On level-up the AI auto-picks one upgrade - new weapons are slightly
  * favoured so the build grows visible variety early.
  */
 

@@ -87,7 +87,7 @@ async def run_test():
         elem = page.get_by_role("button", name="Begin Assessment")
         await elem.click(timeout=10000)
         
-        # --> Test passed — verified by AI agent
+        # --> Test passed - verified by AI agent
         frame = context.pages[-1]
         current_url = await frame.evaluate("() => window.location.href")
         assert current_url is not None, "Test completed successfully"

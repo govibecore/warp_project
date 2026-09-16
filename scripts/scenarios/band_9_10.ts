@@ -3,7 +3,7 @@ import type { ScenarioRecord } from './types';
 export function getBand9_10Scenarios(): ScenarioRecord[] {
   return [
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 9 (Grade 9 · Developmental Band 9-10) — 30 Unique Questions
+    // CLASS 9 (Grade 9 · Developmental Band 9-10) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -617,7 +617,7 @@ export function getBand9_10Scenarios(): ScenarioRecord[] {
     },
 
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 10 (Grade 10 · Developmental Band 9-10) — 30 Unique Questions
+    // CLASS 10 (Grade 10 · Developmental Band 9-10) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -899,7 +899,7 @@ export function getBand9_10Scenarios(): ScenarioRecord[] {
         { text: 'Nanoparticles dissolve instantly when exposed to uniform magnetic fields.', correct: false },
       ],
       learning_objective: 'Electromagnetic force on magnetic dipoles (F = (m·∇)B), uniform vs. gradient fields, biomedical nanotechnology, and targeted drug delivery mechanics.',
-      hint: 'In a uniform magnetic field, the north pole is pulled right and the south pole is pulled left with equal force—net force is zero! You need a gradient so one side is pulled harder than the other.',
+      hint: 'In a uniform magnetic field, the north pole is pulled right and the south pole is pulled left with equal force-net force is zero! You need a gradient so one side is pulled harder than the other.',
       irt_a: 1.4,
       irt_b: 0.7,
       irt_c: 0.25,
@@ -1215,7 +1215,7 @@ export function getBand9_10Scenarios(): ScenarioRecord[] {
       developmental_band: '9-10',
       competency: 'systemsThinking',
       difficulty: 'olympiad',
-      prompt: 'In game theory and evolutionary systems, the Iterated Prisoner’s Dilemma examines the evolution of cooperation in competitive environments. In Axelrod’s famous computer tournaments, the simplest strategy—"Tit-for-Tat" (cooperate on round 1, then simply copy whatever the opponent did in the previous round)—consistently defeated complex predatory strategies. What four structural systems properties explain Tit-for-Tat’s evolutionary dominance?',
+      prompt: 'In game theory and evolutionary systems, the Iterated Prisoner’s Dilemma examines the evolution of cooperation in competitive environments. In Axelrod’s famous computer tournaments, the simplest strategy-"Tit-for-Tat" (cooperate on round 1, then simply copy whatever the opponent did in the previous round)-consistently defeated complex predatory strategies. What four structural systems properties explain Tit-for-Tat’s evolutionary dominance?',
       options: [
         { text: 'It is Nice (never the first to defect), Retaliatory (punishes defection immediately), Forgiving (returns to cooperation as soon as the opponent cooperates), and Clear (transparent and easily recognized by opponents).', correct: true },
         { text: 'It is Deceptive (always promises to cooperate but always defects at the end).', correct: false },

@@ -5,7 +5,7 @@ import { cn } from '../../lib/utils';
  * different border width and at least one with a garbled `border-primary4`
  * class that rendered no ring at all.
  *
- * Now angular: `.spinner-square` ticks a square edge around in 90° steps —
+ * Now angular: `.spinner-square` ticks a square edge around in 90° steps -
  * the system has no arcs, so neither does its loading state.
  */
 

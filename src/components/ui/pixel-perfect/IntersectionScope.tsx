@@ -1,5 +1,5 @@
 /**
- * IntersectionScope — Technical blueprint border and crosshair intersection system
+ * IntersectionScope - Technical blueprint border and crosshair intersection system
  * adapted from Pixel Perfect (borders/intersection2.tsx & borders/star-border.tsx).
  *
  * Adds authentic scientific instrument markers (+ crosshairs, corner brackets,

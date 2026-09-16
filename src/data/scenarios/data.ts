@@ -15,7 +15,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'Think about what a stranger could do if they simply picked it up.',
         [
           o('dat-0-a', 'Write it in a code only classmates know, so finding it is not the same as reading it.', 'computationalThinking', 'systemsThinking', 10),
-          o('dat-0-b', 'Hide it under the teacher\'s desk — hiding is the same as protecting.', 'computationalThinking', 'systemsThinking', 3, 'hiding is the same as protecting'),
+          o('dat-0-b', 'Hide it under the teacher\'s desk - hiding is the same as protecting.', 'computationalThinking', 'systemsThinking', 3, 'hiding is the same as protecting'),
           o('dat-0-c', 'Leave it open but ask everyone nicely not to peek.', 'computationalThinking', 'systemsThinking', 1, 'rules work without enforcement'),
           o('dat-0-d', 'Use one easy password like "1234" for everything in class.', 'computationalThinking', 'systemsThinking', 2, 'one weak lock protects everything'),
         ],
@@ -23,7 +23,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
       '5-6': variant(
         'A club stores its members\' phone numbers in a shared online document. What is the safest setup?',
         'The link to the document sometimes gets forwarded to people outside the club.',
-        'Ask what happens the moment the link leaks — is the content still protected?',
+        'Ask what happens the moment the link leaks - is the content still protected?',
         [
           o('dat-0-a', 'Protect it with a strong password and give access only to members who need it, so a leaked link opens nothing.', 'computationalThinking', 'systemsThinking', 10),
           o('dat-0-b', 'Keep the link secret and hope nobody forwards it.', 'computationalThinking', 'systemsThinking', 3, 'hiding is the same as protecting'),
@@ -34,9 +34,9 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
       '7-8': variant(
         'A school app stores students\' medical notes. What does "protecting the data" actually require?',
         'The app sits behind the school firewall. Backups are copied to a second server.',
-        'Follow the data everywhere it lives — not just the front door.',
+        'Follow the data everywhere it lives - not just the front door.',
         [
-          o('dat-0-a', 'Encrypt the notes in storage and in transit, and limit who can decrypt them — the firewall alone guards only the perimeter.', 'computationalThinking', 'systemsThinking', 10),
+          o('dat-0-a', 'Encrypt the notes in storage and in transit, and limit who can decrypt them - the firewall alone guards only the perimeter.', 'computationalThinking', 'systemsThinking', 10),
           o('dat-0-b', 'Rely on the school firewall; inside it, everything is safe.', 'computationalThinking', 'systemsThinking', 3, 'a perimeter wall protects everything inside'),
           o('dat-0-c', 'Remove student names from the notes, so the data is anonymised.', 'computationalThinking', 'systemsThinking', 5, 'removing names makes data anonymous'),
           o('dat-0-d', 'Set one strong admin password shared by the whole office.', 'computationalThinking', 'systemsThinking', 2, 'one weak lock protects everything'),
@@ -58,10 +58,10 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'Perimeter breaches are a matter of when. Insiders and subpoenas are in scope too.',
         'Make the data useless to whoever holds it without authorisation.',
         [
-          o('dat-0-a', 'Field-level encryption with per-record keys, access via tokenisation or zero-knowledge proofs, and audited key custody — defense in depth assumes the breach.', 'computationalThinking', 'systemsThinking', 10),
-          o('dat-0-b', 'A hardened perimeter with intrusion detection — keep the adversary out.', 'computationalThinking', 'systemsThinking', 3, 'a perimeter wall protects everything inside'),
+          o('dat-0-a', 'Field-level encryption with per-record keys, access via tokenisation or zero-knowledge proofs, and audited key custody - defense in depth assumes the breach.', 'computationalThinking', 'systemsThinking', 10),
+          o('dat-0-b', 'A hardened perimeter with intrusion detection - keep the adversary out.', 'computationalThinking', 'systemsThinking', 3, 'a perimeter wall protects everything inside'),
           o('dat-0-c', 'Pseudonymised columns with the mapping table on the same server.', 'computationalThinking', 'systemsThinking', 5, 'removing names makes data anonymous'),
-          o('dat-0-d', 'Obscure schema and port numbers — attackers cannot attack what they cannot map.', 'computationalThinking', 'systemsThinking', 1, 'hiding is the same as protecting'),
+          o('dat-0-d', 'Obscure schema and port numbers - attackers cannot attack what they cannot map.', 'computationalThinking', 'systemsThinking', 1, 'hiding is the same as protecting'),
         ],
       ),
     },
@@ -78,10 +78,10 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'The one rainy day is the day everyone needed the forecast for.',
         'Being right often is not the same as being useful.',
         [
-          o('dat-1-a', 'No — I just say the same thing every day and never catch the rare rainy days.', 'mathematicalReasoning', 'computationalThinking', 10),
-          o('dat-1-b', 'Yes — 99 out of 100 is a top score.', 'mathematicalReasoning', 'computationalThinking', 1, 'a high score always means a good method'),
-          o('dat-1-c', 'Yes — deserts are easy places to forecast.', 'mathematicalReasoning', 'computationalThinking', 3, 'an easy setting makes any method good'),
-          o('dat-1-d', 'No — because 99 is not 100.', 'mathematicalReasoning', 'computationalThinking', 2, 'only a perfect score has any value'),
+          o('dat-1-a', 'No - I just say the same thing every day and never catch the rare rainy days.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('dat-1-b', 'Yes - 99 out of 100 is a top score.', 'mathematicalReasoning', 'computationalThinking', 1, 'a high score always means a good method'),
+          o('dat-1-c', 'Yes - deserts are easy places to forecast.', 'mathematicalReasoning', 'computationalThinking', 3, 'an easy setting makes any method good'),
+          o('dat-1-d', 'No - because 99 is not 100.', 'mathematicalReasoning', 'computationalThinking', 2, 'only a perfect score has any value'),
         ],
       ),
       '5-6': variant(
@@ -89,10 +89,10 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'The robot\'s job was to find the white ones.',
         'How many white marbles did it actually find?',
         [
-          o('dat-1-a', 'No — it found zero white marbles; always guessing the common kind just copies the bag.', 'mathematicalReasoning', 'computationalThinking', 10),
-          o('dat-1-b', 'Yes — 99.7% is nearly perfect.', 'mathematicalReasoning', 'computationalThinking', 1, 'a high score always means a good method'),
-          o('dat-1-c', 'Yes — it is fast, and speed is what matters.', 'mathematicalReasoning', 'computationalThinking', 2, 'speed is the goal of detection'),
-          o('dat-1-d', 'No — because 3 white marbles is too few to matter.', 'mathematicalReasoning', 'computationalThinking', 3, 'rare things are not worth finding'),
+          o('dat-1-a', 'No - it found zero white marbles; always guessing the common kind just copies the bag.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('dat-1-b', 'Yes - 99.7% is nearly perfect.', 'mathematicalReasoning', 'computationalThinking', 1, 'a high score always means a good method'),
+          o('dat-1-c', 'Yes - it is fast, and speed is what matters.', 'mathematicalReasoning', 'computationalThinking', 2, 'speed is the goal of detection'),
+          o('dat-1-d', 'No - because 3 white marbles is too few to matter.', 'mathematicalReasoning', 'computationalThinking', 3, 'rare things are not worth finding'),
         ],
       ),
       '7-8': variant(
@@ -100,7 +100,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'Only 1 transaction in 1000 is fraudulent.',
         'Accuracy counts the huge pile of honest transactions too.',
         [
-          o('dat-1-a', 'Labelling everything "honest" already scores 99.9% — accuracy hides the rare cases the app was built to catch.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('dat-1-a', 'Labelling everything "honest" already scores 99.9% - accuracy hides the rare cases the app was built to catch.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('dat-1-b', 'The app is nearly perfect; half the fraud was probably miscounted.', 'mathematicalReasoning', 'computationalThinking', 1, 'a high score always means a good method'),
           o('dat-1-c', 'The app needs a faster computer to reach 100%.', 'mathematicalReasoning', 'computationalThinking', 2, 'more compute fixes the wrong metric'),
           o('dat-1-d', 'Fraud is impossible to detect, so the score is meaningless either way.', 'mathematicalReasoning', 'computationalThinking', 3, 'rare things are not worth finding'),
@@ -122,7 +122,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'Prevalence is 0.1%. The business cost of a missed fraud is 100× a false alarm.',
         'Choose the metric that prices the mistake the business actually fears.',
         [
-          o('dat-1-a', 'Report recall and precision (or PR-AUC) at the operating threshold, and tune the threshold for the asymmetric cost — accuracy at 0.1% prevalence is dominated by true negatives.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('dat-1-a', 'Report recall and precision (or PR-AUC) at the operating threshold, and tune the threshold for the asymmetric cost - accuracy at 0.1% prevalence is dominated by true negatives.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('dat-1-b', 'Cross-validate accuracy more carefully with more folds.', 'mathematicalReasoning', 'computationalThinking', 3, 'averaging the wrong metric more carefully fixes it'),
           o('dat-1-c', 'Train longer until accuracy reaches 99.9%.', 'mathematicalReasoning', 'computationalThinking', 4, 'more training fixes the wrong objective'),
           o('dat-1-d', 'Collect only fraudulent examples so the model sees more of them.', 'mathematicalReasoning', 'computationalThinking', 2, 'removing the majority class balances the data'),
@@ -156,13 +156,13 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
           o('dat-2-a', 'Note the times and take photos of the pop-ups, then disconnect it from the network and tell the teacher.', 'systemsThinking', 'engineeringDesign', 10),
           o('dat-2-b', 'Delete every file that looks odd and reinstall everything.', 'systemsThinking', 'engineeringDesign', 2, 'wiping removes the problem and the evidence'),
           o('dat-2-c', 'Click a pop-up to see where it leads.', 'systemsThinking', 'engineeringDesign', 1, 'exploring the threat is safe'),
-          o('dat-2-d', 'Ignore it — pop-ups are normal on old computers.', 'systemsThinking', 'engineeringDesign', 3, 'familiar-looking noise is harmless'),
+          o('dat-2-d', 'Ignore it - pop-ups are normal on old computers.', 'systemsThinking', 'engineeringDesign', 3, 'familiar-looking noise is harmless'),
         ],
       ),
       '7-8': variant(
         'You suspect a server is compromised because of unusually high outbound traffic at 3 AM. What is your first forensic step?',
         'The server is currently running critical but non-life-saving tasks.',
-        'Evidence is volatile — some of it vanishes when you pull the plug.',
+        'Evidence is volatile - some of it vanishes when you pull the plug.',
         [
           o('dat-2-a', 'Capture the network traffic (PCAP) and isolate the server from the internet.', 'systemsThinking', 'engineeringDesign', 10),
           o('dat-2-b', 'Immediately format the hard drive and reinstall the OS.', 'systemsThinking', 'engineeringDesign', 2, 'wiping removes the problem and the evidence'),
@@ -173,9 +173,9 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
       '9-10': variant(
         'Order the first moves of an incident responder who finds a server beaconing to an unknown host at 3 AM.',
         'The box runs critical batch jobs; RAM holds the live connections.',
-        'Volatile evidence first, containment fast — but never destroy what you must later explain.',
+        'Volatile evidence first, containment fast - but never destroy what you must later explain.',
         [
-          o('dat-2-a', 'Isolate the host, capture volatile evidence (RAM, connections), then image the disk — preserving the chain of custody.', 'systemsThinking', 'engineeringDesign', 10),
+          o('dat-2-a', 'Isolate the host, capture volatile evidence (RAM, connections), then image the disk - preserving the chain of custody.', 'systemsThinking', 'engineeringDesign', 10),
           o('dat-2-b', 'Power it off instantly to stop the leak, whatever is lost.', 'systemsThinking', 'engineeringDesign', 4, 'pulling the plug preserves evidence'),
           o('dat-2-c', 'Reimage from a clean backup before touching anything else.', 'systemsThinking', 'engineeringDesign', 2, 'wiping removes the problem and the evidence'),
           o('dat-2-d', 'Watch it for a month to map the attacker\'s whole network first.', 'systemsThinking', 'engineeringDesign', 3, 'more observation is always worth the exposure'),
@@ -184,9 +184,9 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
       '11-12': variant(
         'What does a defensible incident-response runbook optimise for in the first hour of a confirmed breach?',
         'Legal discovery is likely; the business wants servers back; the attacker may still be inside.',
-        'Every action trades evidence integrity against service continuity — write down who decides.',
+        'Every action trades evidence integrity against service continuity - write down who decides.',
         [
-          o('dat-2-a', 'A pre-agreed authority chain: isolate, preserve volatile evidence, snapshot, then analyse — each trade-off between continuity and evidence logged as it is made.', 'systemsThinking', 'engineeringDesign', 10),
+          o('dat-2-a', 'A pre-agreed authority chain: isolate, preserve volatile evidence, snapshot, then analyse - each trade-off between continuity and evidence logged as it is made.', 'systemsThinking', 'engineeringDesign', 10),
           o('dat-2-b', 'Speed of recovery above all; forensics can work from backups later.', 'systemsThinking', 'engineeringDesign', 3, 'recovery speed outranks attribution'),
           o('dat-2-c', 'Immediate public disclosure to warn customers.', 'systemsThinking', 'engineeringDesign', 2, 'disclosure first is always the honest move'),
           o('dat-2-d', 'Counter-attacking the source to deter a second attempt.', 'systemsThinking', 'engineeringDesign', 0, 'striking back is lawful and useful'),
@@ -204,18 +204,18 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
       '3-4': variant(
         'What is the clever way to solve a maze?',
         'You can mark paths you have already tried with chalk.',
-        'Heading toward the exit beats wandering — and chalk stops you repeating yourself.',
+        'Heading toward the exit beats wandering - and chalk stops you repeating yourself.',
         [
           o('dat-3-a', 'Head toward the exit and mark the paths you already tried so you never repeat them.', 'computationalThinking', 'mathematicalReasoning', 10),
           o('dat-3-b', 'Close your eyes and walk; you will get lucky eventually.', 'computationalThinking', 'mathematicalReasoning', 0, 'random wandering is a strategy'),
-          o('dat-3-c', 'Try the same wrong turn again and again — it might open next time.', 'computationalThinking', 'mathematicalReasoning', 1, 'repeating a failed try will work'),
+          o('dat-3-c', 'Try the same wrong turn again and again - it might open next time.', 'computationalThinking', 'mathematicalReasoning', 1, 'repeating a failed try will work'),
           o('dat-3-d', 'Knock down the walls and walk straight.', 'computationalThinking', 'mathematicalReasoning', 0, 'breaking the puzzle solves it'),
         ],
       ),
       '5-6': variant(
         'A delivery robot must cross a grid of streets, avoiding closed roads. Which rule gets it there quickly?',
         'The robot knows the map and can see its goal\'s direction.',
-        'Explore the promising streets first — the ones that shrink the remaining distance.',
+        'Explore the promising streets first - the ones that shrink the remaining distance.',
         [
           o('dat-3-a', 'Always expand the route that looks shortest so far plus straight-line distance to the goal.', 'computationalThinking', 'mathematicalReasoning', 10),
           o('dat-3-b', 'Explore every street one by one until the goal appears.', 'computationalThinking', 'mathematicalReasoning', 3, 'checking everything is thorough and therefore fast'),
@@ -235,7 +235,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         ],
       ),
       '9-10': variant(
-        'Why does A* outperform plain Dijkstra on a city grid — and when must you fall back to Dijkstra?',
+        'Why does A* outperform plain Dijkstra on a city grid - and when must you fall back to Dijkstra?',
         'Edge weights are travel times; the straight-line distance to the goal is known.',
         'The heuristic must never overestimate the true remaining cost.',
         [
@@ -270,8 +270,8 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         'The scoreboard hangs in the hallway where anyone can read it.',
         'What could a stranger do with a list of real names?',
         [
-          o('dat-4-a', 'So strangers who read the board cannot learn who we are — nicknames are our code.', 'engineeringDesign', 'computationalThinking', 10),
-          o('dat-4-b', 'Real names are fine — everyone at school is honest.', 'engineeringDesign', 'computationalThinking', 1, 'no one misuses information'),
+          o('dat-4-a', 'So strangers who read the board cannot learn who we are - nicknames are our code.', 'engineeringDesign', 'computationalThinking', 10),
+          o('dat-4-b', 'Real names are fine - everyone at school is honest.', 'engineeringDesign', 'computationalThinking', 1, 'no one misuses information'),
           o('dat-4-c', 'We write names backwards; nobody could ever undo that.', 'engineeringDesign', 'computationalThinking', 2, 'simple tricks are unbreakable'),
           o('dat-4-d', 'We should never keep score at all.', 'engineeringDesign', 'computationalThinking', 3),
         ],
@@ -299,11 +299,11 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         ],
       ),
       '9-10': variant(
-        'Why are bcrypt and Argon2 preferred over SHA-256 for password storage — isn\'t SHA-256 a strong hash?',
+        'Why are bcrypt and Argon2 preferred over SHA-256 for password storage - isn\'t SHA-256 a strong hash?',
         'Attackers with the database try billions of guesses per second on GPUs.',
-        'Strong and fast are two different properties — which one helps the attacker?',
+        'Strong and fast are two different properties - which one helps the attacker?',
         [
-          o('dat-4-a', 'Password hashing must be slow and memory-hungry to throttle guessing; SHA-256 is cryptographically strong but deliberately fast — the wrong property here.', 'engineeringDesign', 'computationalThinking', 10),
+          o('dat-4-a', 'Password hashing must be slow and memory-hungry to throttle guessing; SHA-256 is cryptographically strong but deliberately fast - the wrong property here.', 'engineeringDesign', 'computationalThinking', 10),
           o('dat-4-b', 'SHA-256 has been broken, so anything else is safer.', 'engineeringDesign', 'computationalThinking', 3, 'a famous hash must be broken'),
           o('dat-4-c', 'bcrypt encrypts the password, and encryption beats hashing.', 'engineeringDesign', 'computationalThinking', 4, 'encryption and hashing are interchangeable'),
           o('dat-4-d', 'Salting is impossible with SHA-256 but built into bcrypt.', 'engineeringDesign', 'computationalThinking', 2, 'salts require special algorithms'),
@@ -316,7 +316,7 @@ export const dataBlueprints: readonly ItemBlueprint[] = [
         [
           o('dat-4-a', 'Argon2id with per-user salt and memory-hard parameters, plus a server-side pepper in an HSM and login rate-limiting.', 'engineeringDesign', 'computationalThinking', 10),
           o('dat-4-b', 'AES-256 encryption with the key in an environment variable on the same host.', 'engineeringDesign', 'computationalThinking', 4, 'encryption and hashing are interchangeable'),
-          o('dat-4-c', 'Double SHA-256 — two rounds of a strong hash is slow enough.', 'engineeringDesign', 'computationalThinking', 3, 'fast hashing is good for passwords'),
+          o('dat-4-c', 'Double SHA-256 - two rounds of a strong hash is slow enough.', 'engineeringDesign', 'computationalThinking', 3, 'fast hashing is good for passwords'),
           o('dat-4-d', 'Base64 with a proprietary prefix, rotated monthly.', 'engineeringDesign', 'computationalThinking', 0, 'encoding is encryption'),
         ],
       ),

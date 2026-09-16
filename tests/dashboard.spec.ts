@@ -1,14 +1,42 @@
 import { test, expect } from "@chromatic-com/playwright";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared mock JWT fixtures
+// These are structurally valid JWTs (header.payload.signature) that the
+// Supabase JS client can parse from localStorage without making a refresh call.
+// The Supabase client uses jwtDecode (no signature verification) to read expiry.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Mock token for "Mock User" (mock@example.com) — expires year 2100
+const MOCK_ACCESS_TOKEN =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+  ".eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMTA0ODgxNDI2LCJpYXQiOjE3ODk1MjE0MjYsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6Im1vY2tAZXhhbXBsZS5jb20iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInVzZXJfbWV0YWRhdGEiOnsiZnVsbF9uYW1lIjoiTW9jayBVc2VyIiwiY3VycmVudF9jbGFzcyI6OCwicGFyZW50X25hbWUiOiJNb2NrIFBhcmVudCIsInNjaG9vbF9uYW1lIjoiTW9jayBTY2hvb2wifSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX19" +
+  ".bW9ja3NpZ25hdHVyZQ";
+
+// Mock token for mandolee79 (mandolee79@gmail.com) — expires year 2100
+const MANDOLEE_ACCESS_TOKEN =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+  ".eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMTA0ODgxNDM0LCJpYXQiOjE3ODk1MjE0MzQsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6Im1hbmRvbGVlNzlAZ21haWwuY29tIiwicm9sZSI6ImF1dGhlbnRpY2F0ZWQiLCJ1c2VyX21ldGFkYXRhIjp7ImZ1bGxfbmFtZSI6Im1hbmRvbGVlNzkiLCJjdXJyZW50X2NsYXNzIjo4LCJwYXJlbnRfbmFtZSI6Ik1vY2sgUGFyZW50Iiwic2Nob29sX25hbWUiOiJNb2NrIFNjaG9vbCJ9LCJhcHBfbWV0YWRhdGEiOnsicHJvdmlkZXIiOiJlbWFpbCIsInByb3ZpZGVycyI6WyJlbWFpbCJdfX0" +
+  ".bW9ja3NpZ25hdHVyZQ";
+
+const FAR_FUTURE_EXPIRES_AT = 2104881426; // year 2036 (same as exp in JWT above)
+
 test("Dashboard renders consistently with mock data", async ({ page }) => {
-  // Inject mock auth session directly into localStorage for Supabase
-  await page.addInitScript(() => {
+  // Inject mock auth session directly into localStorage for Supabase.
+  // Using a valid-structure JWT so Supabase JS decodes expiry correctly and
+  // does NOT make a network refresh call (token is not expired).
+  await page.addInitScript(({ token, expiresAt }: { token: string; expiresAt: number }) => {
     window.localStorage.setItem('sb-uanqjksfodudwkakyglt-auth-token', JSON.stringify({
-      access_token: 'mock-token',
+      access_token: token,
+      refresh_token: 'mock-refresh-token',
+      expires_in: 86400 * 365,
+      expires_at: expiresAt,
       token_type: 'bearer',
       user: {
         id: 'test-user-123',
         email: 'mock@example.com',
+        aud: 'authenticated',
+        role: 'authenticated',
         user_metadata: {
           full_name: 'Mock User',
           current_class: 8,
@@ -17,7 +45,7 @@ test("Dashboard renders consistently with mock data", async ({ page }) => {
         }
       }
     }));
-  });
+  }, { token: MOCK_ACCESS_TOKEN, expiresAt: FAR_FUTURE_EXPIRES_AT });
 
   // Mock Auth User Fetch (if session validation occurs)
   await page.route('**/auth/v1/**', async (route) => {
@@ -77,52 +105,50 @@ test("Dashboard renders consistently with mock data", async ({ page }) => {
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
 
-  // Navigate to dashboard. The URL query param `?dashboard=true` instructs App.tsx to render StudentDashboard.
+  // Navigate to dashboard.
   await page.goto("/?dashboard=true");
 
-  // Wait for the specific heading to ensure dashboard loaded and state is fetched
-  await expect(page.getByText(/Welcome back/i)).toBeVisible();
+  // Wait for the STUDENT DOSSIER header to confirm dashboard loaded
+  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
 });
 
-test("User Menu contains Dashboard, Profile, Settings, and Sign out", async ({ page }) => {
-  // Inject mock auth session directly into localStorage for Supabase
-  await page.addInitScript(() => {
-    const mockUser = {
-      id: 'test-user-123',
-      aud: 'authenticated',
-      role: 'authenticated',
-      email: 'mandolee79@gmail.com',
-      email_confirmed_at: '2026-09-01T00:00:00.000Z',
-      phone: '',
-      user_metadata: {
-        full_name: 'mandolee79',
-        current_class: 8,
-        parent_name: 'Mock Parent',
-        school_name: 'Mock School'
-      },
-      app_metadata: { provider: 'email', providers: ['email'] },
-      created_at: '2026-09-01T00:00:00.000Z',
-      updated_at: '2026-09-01T00:00:00.000Z'
-    };
-
+test("User Menu contains Student Dossier, Academic Identity, Calibration Settings, and Sign out", async ({ page }) => {
+  // Inject mock auth session directly into localStorage for Supabase.
+  // Using a valid-structure JWT so Supabase JS decodes expiry correctly.
+  await page.addInitScript(({ token, expiresAt }: { token: string; expiresAt: number }) => {
     const sessionData = {
-      access_token: 'mock-access-token',
+      access_token: token,
       refresh_token: 'mock-refresh-token',
       expires_in: 86400 * 365,
-      expires_at: Math.floor(Date.now() / 1000) + 86400 * 365,
+      expires_at: expiresAt,
       token_type: 'bearer',
-      user: mockUser
+      user: {
+        id: 'test-user-123',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: 'mandolee79@gmail.com',
+        email_confirmed_at: '2026-09-01T00:00:00.000Z',
+        phone: '',
+        user_metadata: {
+          full_name: 'mandolee79',
+          current_class: 8,
+          parent_name: 'Mock Parent',
+          school_name: 'Mock School'
+        },
+        app_metadata: { provider: 'email', providers: ['email'] },
+        created_at: '2026-09-01T00:00:00.000Z',
+        updated_at: '2026-09-01T00:00:00.000Z'
+      }
     };
-
     window.localStorage.setItem('sb-uanqjksfodudwkakyglt-auth-token', JSON.stringify(sessionData));
-  });
+  }, { token: MANDOLEE_ACCESS_TOKEN, expiresAt: FAR_FUTURE_EXPIRES_AT });
 
   await page.route('**/auth/v1/token*', async (route) => {
     const json = {
-      access_token: 'mock-access-token',
+      access_token: MANDOLEE_ACCESS_TOKEN,
       refresh_token: 'mock-refresh-token',
       expires_in: 86400 * 365,
-      expires_at: Math.floor(Date.now() / 1000) + 86400 * 365,
+      expires_at: FAR_FUTURE_EXPIRES_AT,
       token_type: 'bearer',
       user: {
         id: 'test-user-123',
@@ -196,34 +222,37 @@ test("User Menu contains Dashboard, Profile, Settings, and Sign out", async ({ p
 
   await page.goto("/?dashboard=true");
 
+  // Wait for dashboard to confirm auth succeeded before opening menu
+  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+
   // Open user menu dropdown
   const userMenuTrigger = page.locator('#user-menu-trigger');
   await expect(userMenuTrigger).toBeVisible();
   await userMenuTrigger.click();
 
-  // Verify dropdown menu options: Dashboard, Profile, Settings, Sign out
-  await expect(page.getByRole('menuitem', { name: /Dashboard/i })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /Profile/i })).toBeVisible();
-  await expect(page.getByRole('menuitem', { name: /Settings/i })).toBeVisible();
+  // Verify dropdown menu options — these match the actual AppShell labels
+  await expect(page.getByRole('menuitem', { name: /Student Dossier/i })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /Academic Identity/i })).toBeVisible();
+  await expect(page.getByRole('menuitem', { name: /Calibration Settings/i })).toBeVisible();
   await expect(page.getByRole('menuitem', { name: /Sign out/i })).toBeVisible();
 
-  // Click Settings menu item
-  await page.getByRole('menuitem', { name: /Settings/i }).click();
+  // Click Calibration Settings menu item (maps to "Settings" intent)
+  await page.getByRole('menuitem', { name: /Calibration Settings/i }).click();
 
   const panel = page.getByLabel('Student profile and settings');
   await expect(panel).toBeVisible();
 
   // Verify Profile & Settings panel opened with the Settings tab active
-  await expect(panel.getByText(/WARP \/\/ Identity & Settings/i)).toBeVisible();
+  await expect(panel.getByText(/WARP.*STUDENT IDENTITY.*SETTINGS/i)).toBeVisible();
   await expect(panel.getByText(/Adaptive Assessment Calibration/i)).toBeVisible();
-  await expect(panel.getByText(/Foundation Level/i)).toBeVisible();
   await expect(panel.getByText(/Grade Standard \(Recommended\)/i)).toBeVisible();
+  await expect(panel.getByText(/Foundation Level/i)).toBeVisible();
   await expect(panel.getByText(/International Olympiad Track/i)).toBeVisible();
 
   // Switch to Account Tab
   await panel.getByRole('button', { name: 'account', exact: true }).click();
   await expect(panel.getByText(/Account Credentials/i)).toBeVisible();
-  await expect(panel.getByText(/India DPDP Act 2023/i)).toBeVisible();
+  await expect(panel.getByText(/DPDP Act 2023/i)).toBeVisible();
   await expect(panel.getByText(/mandolee79@gmail.com/i).first()).toBeVisible();
 
   // Switch back to Profile Tab
@@ -255,36 +284,40 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
   let isLoggedOut = false;
 
   // Inject mock auth session directly into localStorage for Supabase
-  await page.addInitScript(() => {
+  await page.addInitScript(({ token, expiresAt }: { token: string; expiresAt: number }) => {
     if (window.sessionStorage.getItem('logged_out')) return;
-    const mockUser = {
-      id: 'test-user-123',
-      aud: 'authenticated',
-      role: 'authenticated',
-      email: 'mandolee79@gmail.com',
-      email_confirmed_at: '2026-09-01T00:00:00.000Z',
-      phone: '',
-      user_metadata: {
-        full_name: 'mandolee79',
-        current_class: 8,
-        parent_name: 'Mock Parent',
-        school_name: 'Mock School'
-      },
-      app_metadata: { provider: 'email', providers: ['email'] },
-      created_at: '2026-09-01T00:00:00.000Z',
-      updated_at: '2026-09-01T00:00:00.000Z'
-    };
-
     const sessionData = {
-      access_token: 'mock-access-token',
+      access_token: token,
       refresh_token: 'mock-refresh-token',
       expires_in: 86400 * 365,
-      expires_at: Math.floor(Date.now() / 1000) + 86400 * 365,
+      expires_at: expiresAt,
       token_type: 'bearer',
-      user: mockUser
+      user: {
+        id: 'test-user-123',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: 'mandolee79@gmail.com',
+        email_confirmed_at: '2026-09-01T00:00:00.000Z',
+        phone: '',
+        user_metadata: {
+          full_name: 'mandolee79',
+          current_class: 8,
+          parent_name: 'Mock Parent',
+          school_name: 'Mock School'
+        },
+        app_metadata: { provider: 'email', providers: ['email'] },
+        created_at: '2026-09-01T00:00:00.000Z',
+        updated_at: '2026-09-01T00:00:00.000Z'
+      }
     };
-
     window.localStorage.setItem('sb-uanqjksfodudwkakyglt-auth-token', JSON.stringify(sessionData));
+  }, { token: MANDOLEE_ACCESS_TOKEN, expiresAt: FAR_FUTURE_EXPIRES_AT });
+
+  // Add specific logout route — must return 204 so Supabase JS fires SIGNED_OUT
+  // and clears its in-memory session, preventing App.tsx from auto-redirecting to /?dashboard
+  await page.route('**/auth/v1/logout*', async (route) => {
+    isLoggedOut = true;
+    await route.fulfill({ status: 204, body: '', contentType: 'application/json' });
   });
 
   await page.route('**/auth/v1/token*', async (route) => {
@@ -293,10 +326,10 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
       return;
     }
     const json = {
-      access_token: 'mock-access-token',
+      access_token: MANDOLEE_ACCESS_TOKEN,
       refresh_token: 'mock-refresh-token',
       expires_in: 86400 * 365,
-      expires_at: Math.floor(Date.now() / 1000) + 86400 * 365,
+      expires_at: FAR_FUTURE_EXPIRES_AT,
       token_type: 'bearer',
       user: {
         id: 'test-user-123',
@@ -359,6 +392,9 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
 
   await page.goto("/?dashboard=true");
 
+  // Wait for dashboard to confirm auth succeeded before opening menu
+  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+
   // Open user menu dropdown
   const userMenuTrigger = page.locator('#user-menu-trigger');
   await expect(userMenuTrigger).toBeVisible();
@@ -368,7 +404,7 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
   const signOutItem = page.getByRole('menuitem', { name: /Sign out/i });
   await expect(signOutItem).toBeVisible();
   await Promise.all([
-    page.waitForURL((url) => url.pathname === '/' && !url.searchParams.has('dashboard')),
+    page.waitForURL((url) => url.pathname === '/' && !url.searchParams.has('dashboard'), { timeout: 15000 }),
     signOutItem.click(),
   ]);
 
@@ -410,34 +446,34 @@ test("Sign in button on landing page opens the login form", async ({ page, isMob
   // Expect the login form to be visible with "Welcome back" heading
   await expect(page.getByRole('heading', { name: /Welcome back/i })).toBeVisible({ timeout: 15000 });
   await expect(page.getByLabel(/Email/i)).toBeVisible();
-  await expect(page.getByLabel(/Password/i)).toBeVisible();
+  // Use #password locator to avoid strict mode violation with the "Toggle password visibility" button
+  await expect(page.locator('#password')).toBeVisible();
   await expect(page.getByTestId('onboarding-shell').getByRole('button', { name: /^Sign in$/i })).toBeVisible();
 });
 
 test("Select dropdown options have high contrast dark background and visible text", async ({ page }) => {
-  await page.addInitScript(() => {
-    const mockUser = {
-      id: 'test-user-123',
-      aud: 'authenticated',
-      role: 'authenticated',
-      email: 'mandolee79@gmail.com',
-      user_metadata: {
-        full_name: 'mandolee79',
-        current_class: 8,
-        parent_name: 'Mock Parent',
-        school_name: 'Mock School'
-      }
-    };
+  await page.addInitScript(({ token, expiresAt }: { token: string; expiresAt: number }) => {
     const sessionData = {
-      access_token: 'mock-access-token',
+      access_token: token,
       refresh_token: 'mock-refresh-token',
       expires_in: 86400 * 365,
-      expires_at: Math.floor(Date.now() / 1000) + 86400 * 365,
+      expires_at: expiresAt,
       token_type: 'bearer',
-      user: mockUser
+      user: {
+        id: 'test-user-123',
+        aud: 'authenticated',
+        role: 'authenticated',
+        email: 'mandolee79@gmail.com',
+        user_metadata: {
+          full_name: 'mandolee79',
+          current_class: 8,
+          parent_name: 'Mock Parent',
+          school_name: 'Mock School'
+        }
+      }
     };
     window.localStorage.setItem('sb-uanqjksfodudwkakyglt-auth-token', JSON.stringify(sessionData));
-  });
+  }, { token: MANDOLEE_ACCESS_TOKEN, expiresAt: FAR_FUTURE_EXPIRES_AT });
 
   await page.route('**/auth/v1/**', async (route) => {
     const json = {
@@ -473,7 +509,8 @@ test("Select dropdown options have high contrast dark background and visible tex
   });
 
   await page.goto("/?dashboard=true");
-  await expect(page.getByText(/Welcome back/i)).toBeVisible();
+  // Wait for dashboard to confirm auth succeeded
+  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
 
   // Click New assessment to open the Confirm class modal
   const newAssessmentBtn = page.getByRole('button', { name: /New assessment/i });

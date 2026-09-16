@@ -5,7 +5,7 @@ import { WarpLogo } from './WarpLogo';
 import { Spinner } from './ui/spinner';
 
 /**
- * SharedReport — Surface #8 from PRODUCT-REDESIGN.md
+ * SharedReport - Surface #8 from PRODUCT-REDESIGN.md
  * 
  * Read-only render of the parent variant inside landing page chrome.
  * Uses the get_shared_report RPC instead of direct SELECT.
@@ -52,7 +52,7 @@ export function SharedReport({ token }: { token: string }) {
     );
   }
 
-  // ── Expired / not found — calm mono notice ──
+  // ── Expired / not found - calm mono notice ──
   if (expired || !report) {
     return (
       <SharedChrome>
@@ -71,7 +71,7 @@ export function SharedReport({ token }: { token: string }) {
     );
   }
 
-  // ── Derive benchmark — prefer parent_variant, fall back to student_variant ──
+  // ── Derive benchmark - prefer parent_variant, fall back to student_variant ──
   const derivedBenchmark =
     report.parent_variant?.benchmark ||
     report.student_variant?.benchmark ||

@@ -52,7 +52,7 @@ export function AssessmentTutorial({ onStart }: AssessmentTutorialProps) {
               <h2 className="font-bold text-sm uppercase tracking-wider">Time Assigned</h2>
             </div>
             <p className="text-sm text-foreground-secondary leading-relaxed">
-              Expect to spend 45–60 minutes. There is no rigid countdown timer—we value accuracy and deep thinking over speed.
+              Expect to spend 45–60 minutes. There is no rigid countdown timer-we value accuracy and deep thinking over speed.
             </p>
           </div>
         </div>

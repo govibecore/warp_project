@@ -1,5 +1,5 @@
 /**
- * CinematicHero — GSAP + motion-powered hero background overlay.
+ * CinematicHero - GSAP + motion-powered hero background overlay.
  *
  * Renders animated gradient orbs, floating particles, and a subtle
  * aurora effect behind the hero text. All colours are derived from
@@ -116,7 +116,7 @@ export function CinematicHero({ className }: CinematicHeroProps) {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_20%_80%,oklch(0.35_0.08_230/0.45),transparent_60%)]" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_60%_at_80%_30%,oklch(0.32_0.06_260/0.35),transparent_50%)]" />
 
-      {/* Animated orbs — soft blurred gradient spheres complementing the shader */}
+      {/* Animated orbs - soft blurred gradient spheres complementing the shader */}
       <div
         ref={(el) => { if (el) orbsRef.current[0] = el; }}
         className="absolute -left-20 top-1/4 size-80 rounded-full bg-[radial-gradient(circle,oklch(0.45_0.10_230/0.35),transparent_70%)] blur-3xl"
@@ -141,7 +141,7 @@ export function CinematicHero({ className }: CinematicHeroProps) {
         }}
       />
 
-      {/* Edge blending — gently blends into the mineral slate background */}
+      {/* Edge blending - gently blends into the mineral slate background */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_65%_at_50%_45%,transparent_40%,var(--color-background)_100%)]" />
     </div>
   );

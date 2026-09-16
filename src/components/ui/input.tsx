@@ -58,7 +58,7 @@ Textarea.displayName = 'Textarea';
 
 /**
  * A native select. The previous Radix/base-ui composite existed because it was
- * copied, not because anything needed it — the app only ever renders 2–10
+ * copied, not because anything needed it - the app only ever renders 2–10
  * short options in a filter bar.
  */
 export interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {

@@ -1,5 +1,5 @@
 /**
- * TextMatrixDecode — Sci-fi cryptographic telemetry text reveal adapted from
+ * TextMatrixDecode - Sci-fi cryptographic telemetry text reveal adapted from
  * Pixel Perfect (text/text-matrix-rain.tsx and text/text-reveal2.tsx).
  *
  * Scrambles numbers, badges, and technical labels through psychometric

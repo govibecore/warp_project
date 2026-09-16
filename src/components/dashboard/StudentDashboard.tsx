@@ -13,7 +13,6 @@ import { Badge } from '../ui/badge';
 import { Card, EmptyState } from '../ui/card';
 import { SpinnerBlock } from '../ui/spinner';
 import { CounterNumber } from '../ui/aliimam/CounterNumber';
-import { BorderGlow } from '../ui/aliimam/BorderGlow';
 import { Gauge } from '../ui/aliimam/Gauge';
 import { OutcomeBadge } from '../ui/OutcomeBadge';
 import { Delta, DeltaIcon, DeltaValue } from '../efferd/delta';
@@ -33,7 +32,6 @@ function timeGreeting(): string {
   return 'Good evening';
 }
 
-
 const dateFmt = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
   month: 'short',
@@ -45,15 +43,15 @@ interface HistoryRow {
   completedAt: string;
   classLevel: number;
   difficulty: string;
-  score: number;
-  globalPct: number;
+  score: number | null;
+  globalPct: number | null;
   subject?: string;
 }
 
 const EMPTY_SUMMARY = {
   latestScore: null as number | null,
   scoreDelta: null as number | null,
-  bestGlobalPct: 0,
+  bestGlobalPct: null as number | null,
   totalAssessments: 0,
   recentAssessments: [] as HistoryRow[],
   latestAbilityTheta: null as Record<string, number> | null,
@@ -65,14 +63,12 @@ const EMPTY_SUMMARY = {
 
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <BorderGlow className="h-full">
-      <div className="corner-marks relative h-full flex flex-col justify-center px-6 py-5">
-        <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-foreground-secondary">
-          {label}
-        </p>
-        <div className="mt-2 flex items-center justify-between gap-3 w-full">{children}</div>
-      </div>
-    </BorderGlow>
+    <div className="relative h-full flex flex-col justify-between p-5 bg-card border border-border/50 rounded-none transition-colors hover:border-border">
+      <p className="text-[10px] font-mono font-semibold uppercase tracking-[0.18em] text-foreground-muted">
+        {label}
+      </p>
+      <div className="mt-3 flex items-center justify-between gap-3 w-full">{children}</div>
+    </div>
   );
 }
 
@@ -97,6 +93,12 @@ export function StudentDashboard() {
     }
 
     if (isGuest || !user?.id) {
+      if (!isGuest) {
+        // Not a guest and no user ID => force login overlay/redirect unless currently logging out
+        if (typeof window !== 'undefined' && !window.sessionStorage.getItem('logged_out')) {
+          window.location.search = '?login';
+        }
+      }
       setIsLoading(false);
       return;
     }
@@ -122,26 +124,49 @@ export function StudentDashboard() {
 
         if (assessments && assessments.length > 0) {
           const totalAssessments = assessments.length;
-          const recentAssessments = assessments.map(a => ({
-            id: a.id,
-            completedAt: a.completed_at || new Date().toISOString(),
-            classLevel: a.class_level,
-            difficulty: a.difficulty,
-            score: a.global_score || (a as any).result?.overallScore || 0,
-            globalPct: (a.percentiles as any)?.global || (a.percentiles as any)?.Global || (a as any).result?.regionalPercentiles?.['Global'] || 0,
-            subject: (a as any).subject || 'STEM',
-          }));
+          const recentAssessments: HistoryRow[] = assessments.map(a => {
+            const score = typeof a.global_score === 'number'
+              ? a.global_score
+              : typeof (a as any).result?.overallScore === 'number'
+              ? (a as any).result.overallScore
+              : null;
+            const rawPct = (a.percentiles as any)?.global ?? (a.percentiles as any)?.Global ?? (a as any).result?.regionalPercentiles?.['Global'] ?? null;
+            const globalPct = typeof rawPct === 'number' && rawPct > 0 ? rawPct : null;
 
-          const latestScore = recentAssessments[0].score;
-          const scoreDelta = recentAssessments.length > 1 ? latestScore - recentAssessments[1].score : null;
-          const bestGlobalPct = Math.max(...recentAssessments.map(a => a.globalPct));
-          const latestAbilityTheta = 
-            (assessments[0].ability_theta as Record<string, number> | null) ||
-            (assessments[0] as any).result?.abilityTheta ||
-            (assessments[0] as any).result?.theta ||
-            null;
-          const latestClassLevel = assessments[0].class_level || 8;
-          const latestSubject = (assessments[0] as any).subject || 'STEM';
+            return {
+              id: a.id,
+              completedAt: a.completed_at || new Date().toISOString(),
+              classLevel: a.class_level || 8,
+              difficulty: a.difficulty || 'Standard',
+              score,
+              globalPct,
+              subject: (a as any).subject || 'STEM',
+            };
+          });
+
+          const calibratedAssessments = recentAssessments.filter(
+            (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
+          );
+          const latestCalibratedRecord = calibratedAssessments.length > 0
+            ? assessments.find(a => a.id === calibratedAssessments[0].id)
+            : null;
+
+          const latestScore = calibratedAssessments.length > 0 ? calibratedAssessments[0].score : null;
+          const scoreDelta = calibratedAssessments.length > 1
+            ? calibratedAssessments[0].score - calibratedAssessments[1].score
+            : null;
+          const calibratedPcts = recentAssessments
+            .map(a => a.globalPct)
+            .filter((pct): pct is number => typeof pct === 'number');
+          const bestGlobalPct = calibratedPcts.length > 0 ? Math.max(...calibratedPcts) : null;
+          const latestAbilityTheta = latestCalibratedRecord
+            ? (latestCalibratedRecord.ability_theta as Record<string, number> | null) ||
+              (latestCalibratedRecord as any).result?.abilityTheta ||
+              (latestCalibratedRecord as any).result?.theta ||
+              null
+            : null;
+          const latestClassLevel = latestCalibratedRecord?.class_level ?? 8;
+          const latestSubject = (latestCalibratedRecord as any)?.subject || 'STEM';
           const firstAssessmentAt = assessments[assessments.length - 1].completed_at || null;
 
           setSummary({
@@ -176,10 +201,6 @@ export function StudentDashboard() {
     if (!user) return;
     setDeleting(true);
     try {
-      // In Supabase, deleting the auth user requires an Edge Function or admin API,
-      // or RPC. For now, we will delete the public.users record which cascades to
-      // assessments/reports, but auth user remains unless we call an RPC.
-      // Assuming RPC 'delete_user' exists or we just rely on signOut.
       const { data: userData } = await supabase.from('students').select('id').eq('id', user.id).single();
       if (userData) {
         await supabase.from('students').delete().eq('id', userData.id);
@@ -191,7 +212,7 @@ export function StudentDashboard() {
     }
   };
 
-  // Derived display name — prefer DB full_name over email prefix
+  // Derived display name - prefer DB full_name over email prefix
   const displayName =
     summary.latestFullName ||
     user?.user_metadata?.full_name ||
@@ -212,13 +233,12 @@ export function StudentDashboard() {
   if (isGuest) {
     return (
       <main className="flex flex-1 flex-col items-center justify-center p-6 text-center sm:p-12">
-        <div className="card flex w-full max-w-lg flex-col items-center gap-4 p-8">
-          <TriangleAlert className="size-8 text-warning" aria-hidden="true" />
-          <h2 className="font-display text-2xl font-bold">Guest mode active</h2>
-          <p className="text-balance text-sm text-foreground-secondary">
-            You completed the assessment as a guest. Your provisional score is saved on this
-            device. Create an account to generate your written report and unlock the full
-            dashboard.
+        <div className="card flex w-full max-w-lg flex-col items-center gap-4 p-8 border border-border bg-card">
+          <TriangleAlert className="size-8 text-amber-500" aria-hidden="true" />
+          <h2 className="font-display text-2xl font-bold tracking-tight">Guest session active</h2>
+          <p className="text-balance text-sm text-foreground-secondary leading-relaxed">
+            You completed the assessment as a guest. Your provisional score is saved in your local session.
+            Create an account to preserve your longitudinal curve and unlock the continuous calibration dossier.
           </p>
           <Button className="mt-4" onClick={handleLogout}>
             Create an account
@@ -228,29 +248,53 @@ export function StudentDashboard() {
     );
   }
 
+  // Deduplicate and format dates for Longitudinal Performance Arc to prevent axis collision
+  const calibratedHistory = summary.recentAssessments.filter(
+    (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
+  );
+  const chartPoints = [...calibratedHistory].reverse().map((a, index, arr) => {
+    const rawDate = dateFmt.format(new Date(a.completedAt));
+    const sameDateMatches = arr.filter(item => dateFmt.format(new Date(item.completedAt)) === rawDate);
+    let displayDate = rawDate;
+    if (sameDateMatches.length > 1) {
+      const occurrenceIndex = arr.slice(0, index + 1).filter(item => dateFmt.format(new Date(item.completedAt)) === rawDate).length;
+      displayDate = `${rawDate} · #${occurrenceIndex}`;
+    }
+    return {
+      date: displayDate,
+      score: a.score,
+      globalPct: a.globalPct,
+      classLevel: a.classLevel,
+    };
+  });
+
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-y-auto p-4 sm:p-8 md:p-12">
-      <header className="mb-10 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-y-auto p-4 sm:p-8 md:p-10">
+      {/* ── Dossier Header (Nordic Lagom: Restrained, Precise) ── */}
+      <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end border-b border-border pb-6">
         <div>
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
-            Student dashboard
-          </p>
-          <div className="flex items-center gap-2 mb-1 text-xs font-mono">
-            <Badge variant="outline" className="text-[10px] font-mono tracking-widest uppercase border-primary/30 text-primary bg-primary/5 py-0.5 px-2">
-              {timeGreeting()}
-            </Badge>
-            <span className="text-foreground-muted">· Welcome back</span>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground-muted">
+              STUDENT DOSSIER / CLASS {summary.latestClassLevel} · {summary.latestSubject}
+            </span>
           </div>
-          <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground drop-shadow-xs">
-            {displayName}
-          </h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="text-2xl font-medium tracking-tight text-foreground">
+              {displayName}
+            </h1>
+            <span className="text-[10px] font-mono uppercase tracking-wider text-primary border border-primary/20 bg-primary/5 px-2 py-0.5 rounded-none">
+              {timeGreeting()}
+            </span>
+          </div>
+          <p className="text-xs text-foreground-secondary mt-1">
+            Continuous adaptive psychometric calibration under 3PL IRT protocol
+          </p>
         </div>
         <div className="flex gap-3">
-          <Button onClick={async () => {
+          <Button className="rounded-none border-primary/50 text-xs font-mono font-semibold" onClick={async () => {
             if (user) {
               const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
               if (!userData?.full_name || !userData?.current_class || !userData?.parent_name || !userData?.school_name) {
-                // Missing metadata, force profile setup by navigating to onboarding
                 enterApp();
                 setTimeout(() => {
                   window.location.search = '';
@@ -263,30 +307,31 @@ export function StudentDashboard() {
               window.location.search = '';
             }
           }}>
-            <Plus className="size-4" />
+            <Plus className="size-3 mr-1" />
             New assessment
           </Button>
         </div>
       </header>
 
       {(!isLoaded || isLoading) ? (
-        <SpinnerBlock label="Loading your dashboard" />
+        <SpinnerBlock label="Loading calibrated dossier" />
       ) : (
         <div className="flex flex-col gap-8">
+          {/* ── Metric Stat Tiles (1px Hairline, Corner Marks, Tabular Numerals) ── */}
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Stat label="Latest score">
+            <Stat label="Latest Scaled Score">
               {summary.latestScore !== null ? (
                 <div className="flex items-center justify-between w-full">
                   <div>
                     <div className="flex items-baseline gap-1.5">
-                      <span className="font-mono text-4xl sm:text-5xl font-extrabold tabular tracking-tight text-foreground">
+                      <span className="font-mono text-3xl sm:text-4xl font-bold tabular tracking-tight text-foreground">
                         {summary.latestScore}
                       </span>
                       <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                     </div>
                     <div className="mt-1 flex items-center gap-2 flex-wrap">
-                      {summary.recentAssessments[0]?.globalPct > 0 && (
-                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-bold bg-primary/10 text-primary border border-primary/30">
+                      {summary.recentAssessments[0]?.globalPct !== null && summary.recentAssessments[0]?.globalPct !== undefined && summary.recentAssessments[0].globalPct > 0 && (
+                        <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold bg-primary/10 text-primary border border-primary/25 rounded-none">
                           {ordinal(summary.recentAssessments[0].globalPct)} Pct
                         </span>
                       )}
@@ -300,27 +345,27 @@ export function StudentDashboard() {
                   </div>
                   <Gauge 
                     value={summary.latestScore} 
-                    min={100}
+                    min={100} 
                     max={900} 
                     gaugePrimaryColor="var(--primary)" 
                     gaugeSecondaryColor="var(--border)" 
-                    className="h-16 w-16 shrink-0"
+                    className="h-14 w-14 shrink-0"
                     showValue={false}
                   />
                 </div>
               ) : (
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-mono text-4xl font-bold tabular text-foreground-muted">—</span>
+                  <span className="font-mono text-3xl font-bold tabular text-foreground-muted">-</span>
                   <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                 </div>
               )}
             </Stat>
 
-            <Stat label="Best global rank">
-              {summary.bestGlobalPct > 0 ? (
+            <Stat label="Reference Global Norm">
+              {summary.bestGlobalPct !== null && summary.bestGlobalPct > 0 ? (
                 <div className="flex items-center justify-between w-full">
                   <div>
-                    <span className="font-mono text-4xl sm:text-5xl font-extrabold tabular tracking-tight text-foreground">
+                    <span className="font-mono text-3xl sm:text-4xl font-bold tabular tracking-tight text-foreground">
                       {ordinal(summary.bestGlobalPct)}
                     </span>
                     <p className="text-[11px] font-mono text-foreground-secondary mt-0.5">
@@ -328,37 +373,40 @@ export function StudentDashboard() {
                     </p>
                   </div>
                   <div className="shrink-0 flex flex-col items-end gap-1">
-                    <OutcomeBadge percentile={summary.bestGlobalPct} size="md" className="shadow-xs" />
+                    <OutcomeBadge percentile={summary.bestGlobalPct} size="md" />
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-between w-full">
-                  <span className="font-mono text-4xl font-bold tabular text-foreground-muted">—</span>
+                  <div>
+                    <span className="font-mono text-2xl font-bold tabular text-foreground-muted">Calibrating</span>
+                    <p className="text-[10px] font-mono text-foreground-muted mt-0.5">Awaiting benchmark</p>
+                  </div>
                   <Trophy className="size-5 text-foreground-muted" aria-hidden="true" />
                 </div>
               )}
             </Stat>
 
-            <Stat label="Assessments taken">
+            <Stat label="Calibrated Sessions">
               <div className="flex items-center justify-between w-full">
                 <div>
                   <CounterNumber 
                     value={summary.totalAssessments} 
-                    className="font-mono text-4xl sm:text-5xl font-extrabold tabular tracking-tight text-foreground" 
+                    className="font-mono text-3xl sm:text-4xl font-bold tabular tracking-tight text-foreground" 
                   />
                   <p className="text-[11px] font-mono text-foreground-secondary mt-0.5">
-                    {summary.totalAssessments === 1 ? '1 baseline milestone' : `${summary.totalAssessments} calibrated sessions`}
+                    {summary.totalAssessments === 1 ? '1 baseline milestone' : `${summary.totalAssessments} checkpoints calibrated`}
                   </p>
                 </div>
-                <div className="p-2.5 bg-surface border border-border text-foreground-muted">
+                <div className="p-2 bg-surface border border-border text-foreground-muted rounded-none">
                   <Sparkles className="size-4" />
                 </div>
               </div>
             </Stat>
           </div>
 
-          {/* ── Efferd Quick Actions Grid ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* ── Quick Actions (Sharp 0px geometry) ── */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
             <button
               onClick={async () => {
                 if (user) {
@@ -374,26 +422,20 @@ export function StudentDashboard() {
                   window.location.search = '';
                 }
               }}
-              className="group relative p-4 border border-primary/50 bg-linear-to-br from-primary/10 via-card to-card text-left hover:border-primary hover:shadow-[0_0_15px_rgba(143,207,232,0.15)] transition-all flex flex-col justify-between"
+              className="relative overflow-hidden border border-primary/30 bg-primary/5 p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-primary/50 text-left group"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-primary text-primary-foreground shadow-xs">
-                  <Play className="size-4 fill-current" />
+              <div className="flex items-center justify-between w-full">
+                <div className="size-8 bg-primary/20 flex items-center justify-center text-primary rounded-none">
+                  <Play className="size-4 ml-0.5" fill="currentColor" />
                 </div>
-                <Badge className="bg-primary/20 text-primary border-primary/40 text-[10px] font-mono font-bold">
+                <span className="text-[9px] font-mono px-2 py-0.5 uppercase tracking-wider bg-primary/10 text-primary border border-primary/20 rounded-none">
                   Class {selectedClass}
-                </Badge>
+                </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
                   <span>Start Assessment</span>
-                  <motion.span
-                    className="inline-flex items-center text-primary"
-                    animate={{ x: [0, 4, 0] }}
-                    transition={{ repeat: Infinity, duration: 1.6, ease: [0.2, 0.7, 0.2, 1] }}
-                  >
-                    <ArrowRight className="size-3.5" />
-                  </motion.span>
+                  <ArrowRight className="size-3 text-primary transition-transform group-hover:translate-x-0.5" />
                 </p>
                 <p className="text-[11px] text-foreground-secondary mt-0.5">Adaptive CAT calibration</p>
               </div>
@@ -406,16 +448,18 @@ export function StudentDashboard() {
                 }
               }}
               disabled={summary.recentAssessments.length === 0}
-              className="group p-4 border border-border bg-card text-left hover:border-primary/60 transition-all flex flex-col justify-between disabled:opacity-50"
+              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-primary/10 text-primary">
+              <div className="flex items-center justify-between w-full">
+                <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">
                   <FileText className="size-4" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">Official</Badge>
+                <span className="text-[9px] font-mono px-2 py-0.5 uppercase tracking-wider bg-surface border border-border text-foreground-muted rounded-none">
+                  Official
+                </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
                   <span>Latest Report</span>
                   <ArrowRight className="size-3 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-transform" />
                 </p>
@@ -430,16 +474,18 @@ export function StudentDashboard() {
                 }
               }}
               disabled={summary.recentAssessments.length === 0}
-              className="group p-4 border border-border bg-card text-left hover:border-primary/60 transition-all flex flex-col justify-between disabled:opacity-50"
+              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-primary/10 text-primary">
+              <div className="flex items-center justify-between w-full">
+                <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">
                   <Sparkles className="size-4" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">AI Tutor</Badge>
+                <span className="text-[9px] font-mono px-2 py-0.5 uppercase tracking-wider bg-surface border border-border text-foreground-muted rounded-none">
+                  AI Tutor
+                </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
                   <span>Socratic Guidance</span>
                   <ArrowRight className="size-3 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-transform" />
                 </p>
@@ -452,16 +498,18 @@ export function StudentDashboard() {
                 const arcEl = document.getElementById('longitudinal-arc-card');
                 if (arcEl) arcEl.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="group p-4 border border-border bg-card text-left hover:border-primary/60 transition-all flex flex-col justify-between"
+              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-primary/10 text-primary">
+              <div className="flex items-center justify-between w-full">
+                <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">
                   <TrendingUp className="size-4" />
                 </div>
-                <Badge variant="outline" className="text-[10px] font-mono">{summary.totalAssessments} checks</Badge>
+                <span className="text-[9px] font-mono px-2 py-0.5 uppercase tracking-wider bg-surface border border-border text-foreground-muted rounded-none">
+                  {summary.totalAssessments} checks
+                </span>
               </div>
               <div>
-                <p className="text-xs font-bold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
+                <p className="text-xs font-semibold text-foreground group-hover:text-primary transition-colors flex items-center justify-between">
                   <span>Performance Arc</span>
                   <ArrowRight className="size-3 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-transform" />
                 </p>
@@ -470,20 +518,20 @@ export function StudentDashboard() {
             </button>
           </div>
 
-          {/* ── Competency Breakdown (Vitals Grid Pattern) ── */}
+          {/* ── Competency Breakdown (Nordic Lagom: Hairline Cards) ── */}
           {summary.recentAssessments.length > 0 && (() => {
-            const effectiveTheta = summary.latestAbilityTheta || {
-              c1: ((summary.latestScore || 500) - 500) / 120,
-              c2: ((summary.latestScore || 500) - 500) / 120,
-              c3: ((summary.latestScore || 500) - 500) / 120,
-              c4: ((summary.latestScore || 500) - 500) / 120,
-              c5: ((summary.latestScore || 500) - 500) / 120,
-            };
-            const breakdown = computeInternationalBenchmark(effectiveTheta, summary.latestClassLevel, summary.latestSubject);
+            const effectiveTheta = summary.latestAbilityTheta || (summary.latestScore !== null ? {
+              c1: (summary.latestScore - 500) / 120,
+              c2: (summary.latestScore - 500) / 120,
+              c3: (summary.latestScore - 500) / 120,
+              c4: (summary.latestScore - 500) / 120,
+              c5: (summary.latestScore - 500) / 120,
+            } : null);
+            const breakdown = computeInternationalBenchmark(effectiveTheta || {}, summary.latestClassLevel, summary.latestSubject);
             const isEnglish = (summary.latestSubject || '').toLowerCase().includes('english');
             const competencyKeys = isEnglish ? ENGLISH_COMPETENCIES : STEM_COMPETENCIES;
             return (
-              <Card className="p-6">
+              <Card className="p-6 rounded-none border border-border bg-card">
                 <div className="flex items-center justify-between border-b border-border pb-4 mb-5">
                   <div className="flex items-center gap-2">
                     <Brain className="size-4 text-primary" />
@@ -492,7 +540,7 @@ export function StudentDashboard() {
                     </h3>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs font-mono">
+                    <Badge variant="outline" className="text-xs font-mono rounded-none">
                       {summary.latestSubject || 'STEM'}
                     </Badge>
                     <span className="text-[11px] text-foreground-muted hidden sm:inline">
@@ -504,69 +552,87 @@ export function StudentDashboard() {
                   {competencyKeys.map((key, idx) => {
                     const item = breakdown.competencyBreakdown[key];
                     if (!item) return null;
-                    const pct = item.globalPercentile;
+                    const isAssessed = item.isAssessed !== false && item.scaledScore > 0;
+                    const pct = item.globalPercentile || 0;
                     const barWidth = Math.max(4, pct);
                     const deltaScore = item.scaledScore - 500;
-                    const status = pct >= 75 ? 'Exceeding' : pct >= 50 ? 'Proficient' : 'Developing';
-                    const statusAccent = 
-                      status === 'Exceeding' 
-                        ? 'border-l-4 border-l-emerald-500' 
-                        : status === 'Proficient' 
-                        ? 'border-l-4 border-l-primary' 
-                        : 'border-l-4 border-l-amber-500';
+                    const status = !isAssessed
+                      ? 'Not Assessed'
+                      : pct >= 75
+                      ? 'Exceeding'
+                      : pct >= 45
+                      ? 'Proficient'
+                      : 'Developing';
 
                     return (
-                      <div key={key} className={`flex flex-col justify-between p-3.5 rounded-none border border-border bg-surface/50 hover:border-border-strong transition-colors ${statusAccent}`}>
+                      <div 
+                        key={key} 
+                        className="flex flex-col justify-between p-4 rounded-none border border-border bg-card hover:border-border-strong transition-colors"
+                      >
                         <div>
-                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                          <div className="flex items-center justify-between gap-2 mb-2">
                             <p className="text-[11px] font-bold uppercase tracking-[0.12em] text-foreground-secondary truncate">
                               {COMPETENCY_LABELS[key]}
                             </p>
-                            <span className={`text-[10px] px-1.5 py-0.5 font-mono font-medium ${
-                              status === 'Exceeding' 
-                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                            <span className={`text-[10px] px-2 py-0.5 font-mono font-medium border rounded-none ${
+                              status === 'Not Assessed'
+                                ? 'bg-surface text-foreground-muted border-border'
+                                : status === 'Exceeding' 
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
                                 : status === 'Proficient'
-                                ? 'bg-primary/10 text-primary'
-                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                                ? 'bg-primary/10 text-primary border-primary/25'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
                             }`}>
                               {status}
                             </span>
                           </div>
-                          <div className="flex items-baseline justify-between mb-2">
+                          <div className="flex items-baseline justify-between mb-3">
                             <div className="flex items-baseline gap-1.5">
                               <span className="font-mono text-2xl font-bold tabular text-foreground">
-                                {item.scaledScore}
+                                {isAssessed ? item.scaledScore : '—'}
                               </span>
-                              <span className="text-xs text-foreground-muted">/ 900</span>
+                              <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                             </div>
-                            <Delta value={deltaScore} variant="badge">
-                              <DeltaIcon variant="trend" />
-                              <DeltaValue precision={0} suffix=" vs median" showPlus />
-                            </Delta>
+                            {isAssessed ? (
+                              <Delta value={deltaScore} variant="badge">
+                                <DeltaIcon variant="trend" />
+                                <DeltaValue precision={0} suffix=" vs median" showPlus />
+                              </Delta>
+                            ) : (
+                              <span className="text-xs font-mono text-foreground-muted">—</span>
+                            )}
                           </div>
                         </div>
 
-                        <div className="space-y-1.5 pt-1">
-                          <div className="relative h-1.5 w-full bg-border overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${barWidth}%` }}
-                              transition={{ duration: 0.7, delay: idx * 0.08, ease: [0.2, 0.7, 0.2, 1] }}
-                              className={`h-full ${
-                                status === 'Exceeding' 
-                                  ? 'bg-emerald-500' 
-                                  : status === 'Proficient' 
-                                  ? 'bg-primary' 
-                                  : 'bg-amber-500'
-                              }`}
-                            />
-                            {/* Median benchmark marker at 50% */}
-                            <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-foreground/40" title="50th Percentile Benchmark" />
-                          </div>
-                          <div className="flex items-center justify-between text-[10px] text-foreground-muted">
-                            <span>{ordinal(pct)} percentile globally</span>
-                            <span>Cohort median: 500</span>
-                          </div>
+                        <div className="space-y-1.5 pt-2 border-t border-border/40">
+                          {isAssessed ? (
+                            <>
+                              <div className="relative h-1.5 w-full bg-surface border border-border/50 overflow-hidden rounded-none">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${barWidth}%` }}
+                                  transition={{ duration: 0.6, delay: idx * 0.06, ease: [0.2, 0.7, 0.2, 1] }}
+                                  className={`h-full ${
+                                    status === 'Exceeding' 
+                                      ? 'bg-emerald-500' 
+                                      : status === 'Proficient' 
+                                      ? 'bg-primary' 
+                                      : 'bg-amber-500'
+                                  }`}
+                                />
+                                {/* Median benchmark marker at 50% */}
+                                <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-foreground/30 z-10" title="50th Percentile Benchmark" />
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-foreground-muted font-mono">
+                                <span>{ordinal(pct)} percentile</span>
+                                <span>Cohort median: 500</span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="py-1 text-[10px] text-foreground-muted font-mono">
+                              Awaiting assessment for this competency
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -576,8 +642,9 @@ export function StudentDashboard() {
             );
           })()}
 
+          {/* ── Longitudinal Performance Arc (Deduplicated X-Axis Dates, Clean Fjord Area) ── */}
           {summary.recentAssessments.length > 0 && (
-            <Card className="p-6" id="longitudinal-arc-card">
+            <Card className="p-6 rounded-none border border-border bg-card" id="longitudinal-arc-card">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4 mb-4">
                 <div className="flex items-center gap-2">
                   <TrendingUp className="size-4 text-primary" />
@@ -590,7 +657,7 @@ export function StudentDashboard() {
                       <DeltaValue precision={0} suffix=" pts since last checkpoint" showPlus />
                     </Delta>
                   )}
-                  <span className="text-xs text-foreground-secondary">
+                  <span className="text-xs text-foreground-secondary font-mono">
                     {summary.recentAssessments.length === 1
                       ? 'Baseline benchmark recorded'
                       : `${summary.recentAssessments.length} checkpoints calibrated`}
@@ -598,35 +665,30 @@ export function StudentDashboard() {
                 </div>
               </div>
 
-              {summary.recentAssessments.length >= 2 ? (
+              {chartPoints.length >= 2 ? (
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
-                      data={[...summary.recentAssessments].reverse().map((a) => ({
-                        date: dateFmt.format(new Date(a.completedAt)),
-                        score: a.score,
-                        globalPct: a.globalPct,
-                        classLevel: a.classLevel,
-                      }))}
+                      data={chartPoints}
                       margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
                     >
                       <defs>
                         <linearGradient id="dashboardScoreGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.3} />
+                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.25} />
                           <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/30" />
                       <XAxis
                         dataKey="date"
                         tick={{ fontSize: 11, fill: 'currentColor' }}
-                        className="text-foreground-secondary"
+                        className="text-foreground-secondary font-mono"
                         tickLine={false}
                       />
                       <YAxis
                         domain={[200, 900]}
                         tick={{ fontSize: 11, fill: 'currentColor' }}
-                        className="text-foreground-secondary"
+                        className="text-foreground-secondary font-mono"
                         tickLine={false}
                       />
                       <Tooltip
@@ -634,11 +696,13 @@ export function StudentDashboard() {
                           if (active && payload && payload.length) {
                             const d = payload[0].payload;
                             return (
-                              <div className="rounded-none border border-border bg-background p-3 shadow-lg text-xs space-y-1">
+                              <div className="rounded-none border border-border bg-card p-3 shadow-md text-xs space-y-1">
                                 <p className="font-bold text-foreground">{d.date}</p>
                                 <p className="text-primary font-mono font-semibold">Scaled Score: {d.score} / 900</p>
-                                <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
-                                <p className="text-foreground-muted">Class {d.classLevel}</p>
+                                {d.globalPct !== null && d.globalPct !== undefined && (
+                                  <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
+                                )}
+                                <p className="text-foreground-muted font-mono">Class {d.classLevel}</p>
                               </div>
                             );
                           }
@@ -651,7 +715,7 @@ export function StudentDashboard() {
                         stroke="var(--primary)"
                         strokeWidth={2}
                         fill="url(#dashboardScoreGrad)"
-                        dot={{ r: 3, fill: 'var(--primary)' }}
+                        dot={{ r: 3, fill: 'var(--primary)', strokeWidth: 1, stroke: 'var(--card)' }}
                         activeDot={{ r: 5, fill: 'var(--primary)' }}
                       />
                     </AreaChart>
@@ -661,29 +725,35 @@ export function StudentDashboard() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-none bg-surface/50 border border-border text-xs">
                   <div className="space-y-1 text-center sm:text-left">
                     <p className="font-bold text-foreground">
-                      Baseline score: {summary.latestScore} / 900 ({ordinal(summary.bestGlobalPct)} percentile)
+                      {summary.latestScore !== null 
+                        ? `Baseline score: ${summary.latestScore} / 900 ${summary.bestGlobalPct !== null ? `(${ordinal(summary.bestGlobalPct)} percentile)` : ''}`
+                        : 'Calibration pending: complete an assessment to establish baseline'}
                     </p>
                     <p className="text-foreground-secondary">
-                      Complete another assessment in 30 days to generate your comparative trajectory curve.
+                      {summary.latestScore !== null 
+                        ? 'Complete another assessment in 30 days to generate your comparative trajectory curve.'
+                        : 'Complete your first standard assessment with at least 5 questions to establish your baseline curve.'}
                     </p>
                   </div>
-                  <Badge tone="primary">Baseline Active</Badge>
+                  <Badge tone={summary.latestScore !== null ? 'primary' : 'neutral'} variant={summary.latestScore !== null ? undefined : 'outline'} className="rounded-none">
+                    {summary.latestScore !== null ? 'Baseline Active' : 'Pending Baseline'}
+                  </Badge>
                 </div>
               )}
 
               {/* ── 30-Day Checkpoint Countdown & Step Indicator ── */}
               <div className="mt-5 pt-4 border-t border-border">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
-                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-foreground-secondary">
+                  <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-foreground-secondary font-mono">
                     30-Day Calibration Rhythm
                   </span>
                   {daysUntilNextCheckpoint !== null && (
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-semibold border ${
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs font-mono font-semibold border rounded-none ${
                       daysUntilNextCheckpoint === 0
-                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 animate-pulse'
-                        : 'bg-primary/10 text-primary border-primary/30'
+                        ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                        : 'bg-primary/10 text-primary border-primary/25'
                     }`}>
-                      <span className="size-1.5 rounded-full bg-current" />
+                      <span className="size-1.5 bg-current" />
                       {daysUntilNextCheckpoint === 0
                         ? 'Calibration window open'
                         : `Next checkpoint: ${daysUntilNextCheckpoint} days remaining`}
@@ -692,10 +762,10 @@ export function StudentDashboard() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                  <div className="p-3 border border-border bg-surface/40 flex flex-col justify-between">
+                  <div className="p-3 border border-border bg-surface/40 flex flex-col justify-between rounded-none">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-mono font-bold uppercase text-foreground-muted">Checkpoint 1</span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded-none">
                         Calibrated
                       </span>
                     </div>
@@ -705,10 +775,10 @@ export function StudentDashboard() {
                     </p>
                   </div>
 
-                  <div className={`p-3 border flex flex-col justify-between ${
+                  <div className={`p-3 border flex flex-col justify-between rounded-none ${
                     summary.recentAssessments.length >= 2
                       ? 'border-border bg-surface/40'
-                      : 'border-primary/40 bg-primary/3'
+                      : 'border-primary/40 bg-primary/5'
                   }`}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[10px] font-mono font-bold uppercase text-foreground-muted">Checkpoint 2</span>
@@ -757,9 +827,10 @@ export function StudentDashboard() {
             </Card>
           )}
 
+          {/* ── Assessment History (Tabular Numbers, Calm Diagnostic Pills) ── */}
           <Card>
             <div className="border-b border-border px-6 py-4 flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold">Assessment history</h3>
+              <h3 className="font-display text-base font-bold">Assessment History</h3>
               <span className="text-xs text-foreground-muted font-mono">
                 {summary.recentAssessments.length} completed
               </span>
@@ -773,42 +844,54 @@ export function StudentDashboard() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="border-b border-border bg-surface text-[11px] uppercase tracking-wider text-foreground-secondary">
+                  <thead className="border-b border-border bg-surface text-[11px] uppercase tracking-wider text-foreground-secondary font-mono">
                     <tr>
                       <th className="px-6 py-3 font-semibold">Date</th>
                       <th className="px-6 py-3 font-semibold">Level</th>
-                      <th className="px-6 py-3 font-semibold">Score</th>
-                      <th className="px-6 py-3 font-semibold">Global rank</th>
+                      <th className="px-6 py-3 font-semibold">Scaled Score</th>
+                      <th className="px-6 py-3 font-semibold">Global Rank</th>
                       <th className="px-6 py-3 text-right font-semibold">Report</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {summary.recentAssessments.map((a) => (
-                      <tr key={a.id} className="transition-colors hover:bg-accent/40">
-                        <td className="px-6 py-4">{dateFmt.format(new Date(a.completedAt))}</td>
+                      <tr key={a.id} className="transition-colors hover:bg-surface/50">
+                        <td className="px-6 py-4 font-mono text-xs text-foreground-secondary">
+                          {dateFmt.format(new Date(a.completedAt))}
+                        </td>
                         <td className="px-6 py-4">
-                          <Badge>
+                          <Badge variant="outline" className="font-mono text-xs">
                             Class {a.classLevel} · {a.difficulty}
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 font-mono font-bold tabular text-xs px-2.5 py-1 border ${
-                            a.globalPct >= 75
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
-                              : a.globalPct >= 40
-                              ? 'bg-primary/10 text-primary border-primary/30'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30'
-                          }`}>
-                            {a.score} <span className="text-[10px] text-foreground-muted font-normal">/ 900</span>
-                          </span>
+                          {a.score !== null ? (
+                            <span className={`inline-flex items-center gap-1 font-mono font-bold tabular text-xs px-2.5 py-1 border ${
+                              (a.globalPct ?? 0) >= 75
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                                : (a.globalPct ?? 0) >= 40
+                                ? 'bg-primary/10 text-primary border-primary/25'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                            }`}>
+                              {a.score} <span className="text-[10px] text-foreground-muted font-normal">/ 900</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 font-mono text-xs px-2.5 py-1 border border-dashed border-border text-foreground-muted bg-surface/50">
+                              Uncalibrated
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono tabular text-foreground font-semibold">
-                              {ordinal(a.globalPct)}
-                            </span>
-                            <OutcomeBadge percentile={a.globalPct} size="sm" />
-                          </div>
+                          {a.globalPct !== null ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono tabular text-foreground font-semibold text-xs">
+                                {ordinal(a.globalPct)}
+                              </span>
+                              <OutcomeBadge percentile={a.globalPct} size="sm" />
+                            </div>
+                          ) : (
+                            <span className="font-mono text-xs text-foreground-muted">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <Button
@@ -829,7 +912,7 @@ export function StudentDashboard() {
             )}
           </Card>
 
-          {/* ── Efferd Activity Timeline Pattern ── */}
+          {/* ── Chronological Activity Timeline (Crisp nodes, no glow) ── */}
           {summary.recentAssessments.length > 0 && (
             <Card className="p-6">
               <div className="border-b border-border pb-4 mb-4 flex items-center justify-between">
@@ -846,28 +929,34 @@ export function StudentDashboard() {
                     {/* Diamond node */}
                     <div className={`absolute left-3 top-3.5 size-2.5 rotate-45 border-2 -translate-x-1/2 -translate-y-1/2 transition-all ${
                       idx === 0 
-                        ? 'bg-primary border-primary shadow-[0_0_8px_rgba(143,207,232,0.8)]' 
-                        : 'border-primary/60 bg-background'
+                        ? 'bg-primary border-primary ring-2 ring-primary/20' 
+                        : 'border-border bg-card'
                     }`} />
-                    <div className={`flex-1 p-3.5 border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
+                    <div className={`flex-1 p-3.5 border transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-2 ${
                       idx === 0
-                        ? 'border-primary/50 bg-primary/4 shadow-xs'
-                        : 'border-border bg-surface/40'
+                        ? 'border-primary/40 bg-primary/5'
+                        : 'border-border bg-card'
                     }`}>
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-foreground">
-                            Class {a.classLevel} {a.subject || 'STEM'} Benchmark Completed
+                            Class {a.classLevel} {a.subject || 'STEM'} Benchmark {a.score !== null ? 'Completed' : 'Recorded'}
                           </span>
                           {idx === 0 && (
-                            <span className="text-[10px] px-1.5 py-0.2 bg-primary/15 text-primary border border-primary/30 font-mono font-bold">
+                            <span className="text-[10px] px-1.5 py-0.2 bg-primary/15 text-primary border border-primary/30 font-mono font-semibold">
                               Latest
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-foreground-secondary">
-                          Calibrated score of <span className="font-mono font-bold text-foreground">{a.score}/900</span> placing at the <span className="font-semibold text-foreground">{ordinal(a.globalPct)} percentile</span> globally.
-                        </p>
+                        {a.score !== null ? (
+                          <p className="text-[11px] text-foreground-secondary">
+                            Calibrated score of <span className="font-mono font-bold text-foreground">{a.score}/900</span>{a.globalPct !== null ? <> placing at the <span className="font-semibold text-foreground">{ordinal(a.globalPct)} percentile</span> globally.</> : '.'}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-foreground-secondary">
+                            Session recorded. Calibration pending sufficient psychometric observations.
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="text-[11px] text-foreground-muted font-mono">
@@ -889,25 +978,26 @@ export function StudentDashboard() {
             </Card>
           )}
 
+          {/* ── Global Leaderboard Component ── */}
           <Leaderboard />
 
-          {/* ── Danger zone accordion ── */}
-          <div className="card border-border overflow-hidden">
+          {/* ── Discreet Danger Zone Accordion ── */}
+          <div className="border border-border bg-card overflow-hidden">
             <button
               onClick={() => {
                 if (dangerOpen) setConfirmDelete(false);
                 setDangerOpen(prev => !prev);
               }}
-              className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/50 transition-colors"
+              className="w-full flex items-center justify-between p-4 text-left hover:bg-surface/40 transition-colors"
               aria-expanded={dangerOpen}
             >
-              <div className="flex items-center gap-2 text-xs font-semibold text-foreground-secondary">
-                <TriangleAlert className="size-4 text-destructive/70" />
-                <span>Advanced account settings & danger zone</span>
+              <div className="flex items-center gap-2 text-xs font-mono text-foreground-secondary">
+                <span className="size-1.5 bg-foreground-muted" />
+                <span>System telemetry & account preferences</span>
               </div>
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px] font-mono text-destructive/80 border-destructive/30">
-                  Destructive
+                <Badge variant="outline" className="text-[10px] font-mono text-foreground-muted border-border">
+                  Configuration
                 </Badge>
                 <ChevronDown className={`size-4 text-foreground-muted transition-transform duration-200 ${dangerOpen ? 'rotate-180' : ''}`} />
               </div>
@@ -918,16 +1008,16 @@ export function StudentDashboard() {
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
-                  className="overflow-hidden border-t border-border bg-destructive/2"
+                  transition={{ duration: 0.2, ease: [0.2, 0.7, 0.2, 1] }}
+                  className="overflow-hidden border-t border-border bg-surface/30"
                 >
                   <div className="p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="font-display text-sm font-bold text-destructive">
-                        Delete account
+                      <h3 className="font-display text-sm font-bold text-foreground">
+                        Purge Student Profile
                       </h3>
-                      <p className="mt-1 text-sm text-foreground-secondary">
-                        Permanently removes your assessments, reports, and account. This cannot be undone.
+                      <p className="mt-1 text-xs text-foreground-secondary">
+                        Permanently purges student assessments, adaptive theta calibrations, and dossier history.
                       </p>
                     </div>
                     {confirmDelete ? (
@@ -942,22 +1032,24 @@ export function StudentDashboard() {
                         </Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          className="text-red-500 border-red-500/20 hover:bg-red-500/10"
                           onClick={handleDeleteAccount}
                           disabled={deleting}
                         >
                           <Trash2 className="size-4" />
-                          {deleting ? 'Deleting…' : 'Yes, delete everything'}
+                          {deleting ? 'Purging…' : 'Confirm irreversible purge'}
                         </Button>
                       </div>
                     ) : (
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="text-destructive hover:bg-destructive/10"
+                        className="text-destructive hover:bg-destructive/10 text-xs"
                         onClick={() => setConfirmDelete(true)}
                       >
-                        <Trash2 className="size-4" />
-                        Delete account
+                        <Trash2 className="size-3.5 mr-1" />
+                        Purge Profile
                       </Button>
                     )}
                   </div>
@@ -965,18 +1057,30 @@ export function StudentDashboard() {
               )}
             </AnimatePresence>
           </div>
+
+          {/* ── Nordic Lagom Psychometric Telemetry Footer ── */}
+          <footer className="mt-4 pt-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-mono text-foreground-muted">
+            <div className="flex items-center gap-2">
+              <span className="inline-block size-2 bg-emerald-500/80" />
+              <span>3PL IRT CALIBRATION PROTOCOL ACTIVE · NORDIC LAGOM</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span>LATENCY: ZERO-TRUST CACHE</span>
+              <span>CALIBRATED SESSION</span>
+            </div>
+          </footer>
         </div>
       )}
 
       {showClassConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-          <div className="card w-full max-w-sm p-6 shadow-lg corner-marks border border-border bg-background">
-            <h2 className="mb-4 font-display text-xl font-bold">Confirm your class</h2>
-            <p className="mb-6 text-sm text-foreground-secondary">
-              Please verify your current class level so we can benchmark you accurately.
+          <div className="card w-full max-w-sm p-6 shadow-lg corner-marks border border-border bg-card">
+            <h2 className="mb-2 font-display text-xl font-bold">Confirm your class</h2>
+            <p className="mb-5 text-xs text-foreground-secondary">
+              Verify your target class level to calibrate item difficulty under adaptive 3PL IRT parameters.
             </p>
             <div className="mb-6">
-              <label htmlFor="confirmClass" className="mb-2 block text-[11px] font-bold uppercase tracking-[0.15em] text-foreground-secondary">Class Level</label>
+              <label htmlFor="confirmClass" className="mb-2 block text-[10px] font-mono font-bold uppercase tracking-[0.15em] text-foreground-muted">Class Level</label>
               <div className="relative">
                 <select 
                   id="confirmClass" 
@@ -1001,7 +1105,6 @@ export function StudentDashboard() {
               <Button variant="ghost" onClick={() => setShowClassConfirm(false)} disabled={isStarting}>Cancel</Button>
               <Button disabled={isStarting} onClick={async () => {
                 setIsStarting(true);
-                // Save it back to DB
                 await supabase.from('students').update({ current_class: Number(selectedClass) }).eq('id', user!.id);
                 const { data: userData } = await supabase.from('students').select('*').eq('id', user!.id).single();
                 setProfile({

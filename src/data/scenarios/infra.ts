@@ -34,7 +34,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
       '7-8': variant(
         'Redesigning a city intersection to improve traffic flow and pedestrian safety. What is the optimal solution?',
         'Current traffic lights cause 15-minute delays.',
-        'Count where paths cross — every crossing point is a crash risk.',
+        'Count where paths cross - every crossing point is a crash risk.',
         [
           o('inf-0-a', 'Replace the intersection with a multi-lane roundabout and dedicated pedestrian underpasses.', 'systemsThinking', 'engineeringDesign', 10),
           o('inf-0-b', 'Increase the green light duration for the main avenue.', 'systemsThinking', 'engineeringDesign', 4, 'favouring one direction fixes a network'),
@@ -47,8 +47,8 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'A four-way signalised junction has 32 vehicle conflict points; a single-lane roundabout has 8. Crash angles differ too.',
         'Severity comes from the angle and speed of collisions, not just their count.',
         [
-          o('inf-0-a', 'The roundabout: fewer conflict points, lower speeds, and glancing angles instead of right-angle impacts — plus continuous flow off-peak.', 'systemsThinking', 'engineeringDesign', 10),
-          o('inf-0-b', 'Longer green phases — delay is a timing problem, not a geometry problem.', 'systemsThinking', 'engineeringDesign', 3, 'favouring one direction fixes a network'),
+          o('inf-0-a', 'The roundabout: fewer conflict points, lower speeds, and glancing angles instead of right-angle impacts - plus continuous flow off-peak.', 'systemsThinking', 'engineeringDesign', 10),
+          o('inf-0-b', 'Longer green phases - delay is a timing problem, not a geometry problem.', 'systemsThinking', 'engineeringDesign', 3, 'favouring one direction fixes a network'),
           o('inf-0-c', 'A flyover for through traffic on every arm.', 'systemsThinking', 'engineeringDesign', 5, 'the most expensive option is the most thorough'),
           o('inf-0-d', 'Stop signs on all four approaches.', 'systemsThinking', 'engineeringDesign', 2, 'more control points means more flow'),
         ],
@@ -59,8 +59,8 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Compare on measured outcomes across the whole life of the asset, not on first impressions.',
         [
           o('inf-0-a', 'Microsimulate both against measured turning counts, then weigh delay, conflict-point reduction, pedestrian level-of-service, and life-cycle cost.', 'systemsThinking', 'engineeringDesign', 10),
-          o('inf-0-b', 'Pick the roundabout — modern is always safer.', 'systemsThinking', 'engineeringDesign', 4, 'the newer design is always the better design'),
-          o('inf-0-c', 'Keep the signal and retime it — any change is riskier than no change.', 'systemsThinking', 'engineeringDesign', 3, 'doing nothing is the safe option'),
+          o('inf-0-b', 'Pick the roundabout - modern is always safer.', 'systemsThinking', 'engineeringDesign', 4, 'the newer design is always the better design'),
+          o('inf-0-c', 'Keep the signal and retime it - any change is riskier than no change.', 'systemsThinking', 'engineeringDesign', 3, 'doing nothing is the safe option'),
           o('inf-0-d', 'Choose by public vote at the next town hall.', 'systemsThinking', 'engineeringDesign', 2, 'popularity selects engineering performance'),
         ],
       ),
@@ -111,7 +111,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Incoming shortwave radiation is split among reflection (albedo), heat storage, sensible heat, and evapotranspiration.',
         'Where does absorbed sunlight go on a dark roof versus a tree?',
         [
-          o('inf-1-a', 'High albedo reflects shortwave before it becomes heat, and canopy shifts energy into evapotranspiration — both cut the sensible-heat term; outdoor AC just moves heat and adds its own.', 'engineeringDesign', 'systemsThinking', 10),
+          o('inf-1-a', 'High albedo reflects shortwave before it becomes heat, and canopy shifts energy into evapotranspiration - both cut the sensible-heat term; outdoor AC just moves heat and adds its own.', 'engineeringDesign', 'systemsThinking', 10),
           o('inf-1-b', 'White paint insulates the roof, trapping cool air inside the building.', 'engineeringDesign', 'systemsThinking', 3, 'colour works by insulating'),
           o('inf-1-c', 'Trees cool mainly by blocking the wind that carries hot air in.', 'engineeringDesign', 'systemsThinking', 4, 'wind is the enemy of cooling'),
           o('inf-1-d', 'Outdoor AC exports heat to the upper atmosphere harmlessly.', 'engineeringDesign', 'systemsThinking', 1, 'moving heat around removes it'),
@@ -125,7 +125,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
           o('inf-1-a', 'Baseline land-surface temperature from satellite retrievals plus a fixed street-level sensor network, with untreated comparison districts, re-measured each summer.', 'engineeringDesign', 'systemsThinking', 10),
           o('inf-1-b', 'Survey residents each summer on whether the city feels cooler.', 'engineeringDesign', 'systemsThinking', 3, 'perception stands in for measurement'),
           o('inf-1-c', 'Measure once, at the end of the programme, at the shadiest site.', 'engineeringDesign', 'systemsThinking', 2, 'one endpoint measurement shows the trend'),
-          o('inf-1-d', 'Count trees planted and roofs painted — outputs equal outcomes.', 'engineeringDesign', 'systemsThinking', 4, 'counting what you spent measures what you achieved'),
+          o('inf-1-d', 'Count trees planted and roofs painted - outputs equal outcomes.', 'engineeringDesign', 'systemsThinking', 4, 'counting what you spent measures what you achieved'),
         ],
       ),
     },
@@ -187,7 +187,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Match the machine to the ground mechanics, then instrument the surface you promised to protect.',
         [
           o('inf-2-a', 'EPB or slurry TBM selected by permeability tests, with real-time face-pressure control, conditioned spoil, and a building settlement monitoring array above the alignment.', 'engineeringDesign', 'scientificInquiry', 10),
-          o('inf-2-b', 'Sequential excavation (hand mining) with timber sets — flexible and proven.', 'engineeringDesign', 'scientificInquiry', 1, 'traditional methods are safest in any ground'),
+          o('inf-2-b', 'Sequential excavation (hand mining) with timber sets - flexible and proven.', 'engineeringDesign', 'scientificInquiry', 1, 'traditional methods are safest in any ground'),
           o('inf-2-c', 'Ground freezing along the full 1.2 km, then open-cut.', 'engineeringDesign', 'scientificInquiry', 3),
           o('inf-2-d', 'Immersed tube: prefabricate sections and sink them into a dredged trench.', 'engineeringDesign', 'scientificInquiry', 6),
         ],
@@ -207,7 +207,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Give the water somewhere to sit for a while, like a bath that drains slowly.',
         [
           o('inf-3-a', 'Into a big underground tank or a rain garden that empties slowly.', 'systemsThinking', 'engineeringDesign', 10),
-          o('inf-3-b', 'Nowhere — water that overflows simply disappears.', 'systemsThinking', 'engineeringDesign', 0, 'overflowing water vanishes'),
+          o('inf-3-b', 'Nowhere - water that overflows simply disappears.', 'systemsThinking', 'engineeringDesign', 0, 'overflowing water vanishes'),
           o('inf-3-c', 'Into the classrooms, where the floor is flat.', 'systemsThinking', 'engineeringDesign', 0, 'indoors is a safe place for floodwater'),
           o('inf-3-d', 'Block the drain so no more water can enter it.', 'systemsThinking', 'engineeringDesign', 1, 'blocking a drain makes the water disappear'),
         ],
@@ -240,7 +240,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Size the tank to the volume above the plant\'s capacity, over the storm\'s duration.',
         [
           o('inf-3-a', 'Offline retention sized to the excess volume (the area above the capacity line on the storm hydrograph), plus green infrastructure to shrink the peak upstream.', 'systemsThinking', 'engineeringDesign', 10),
-          o('inf-3-b', 'A tank sized to the storm\'s total rainfall — capture every drop.', 'systemsThinking', 'engineeringDesign', 4, 'storage must hold the whole storm, not the excess'),
+          o('inf-3-b', 'A tank sized to the storm\'s total rainfall - capture every drop.', 'systemsThinking', 'engineeringDesign', 4, 'storage must hold the whole storm, not the excess'),
           o('inf-3-c', 'Higher overflow weirs so the river accepts more before it counts as a spill.', 'systemsThinking', 'engineeringDesign', 1, 'raising the reporting threshold fixes the problem'),
           o('inf-3-d', 'First-flush chlorination at every outfall.', 'systemsThinking', 'engineeringDesign', 3, 'disinfecting pollution removes it'),
         ],
@@ -251,7 +251,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'A network with spare capacity in the wrong places is a control problem before it is a concrete problem.',
         [
           o('inf-3-a', 'Model the sewer as a storage network: simulate gates shifting flow to empty basins across a decade of storms, and compare overflow-frequency reduction per unit cost against the tunnel.', 'systemsThinking', 'engineeringDesign', 10),
-          o('inf-3-b', 'Build the tunnel — permanent infrastructure always beats software.', 'systemsThinking', 'engineeringDesign', 3, 'the concrete option is always the thorough option'),
+          o('inf-3-b', 'Build the tunnel - permanent infrastructure always beats software.', 'systemsThinking', 'engineeringDesign', 3, 'the concrete option is always the thorough option'),
           o('inf-3-c', 'Install RTC and declare victory; no modelling needed for valves.', 'systemsThinking', 'engineeringDesign', 2, 'control hardware guarantees control outcomes'),
           o('inf-3-d', 'Adopt whichever option the treating plant\'s operator prefers.', 'systemsThinking', 'engineeringDesign', 1, 'the operator\'s preference substitutes for analysis'),
         ],
@@ -267,11 +267,11 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
     {
       '3-4': variant(
         'Five friends stand very still on a plank bridge. Then they start jumping. When does the plank work hardest?',
-        'The same friends, the same plank — only the jumping changes.',
+        'The same friends, the same plank - only the jumping changes.',
         'Standing pushes once; jumping pushes again and again, harder each time.',
         [
-          o('inf-4-a', 'When they jump — moving weight pushes harder than standing weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
-          o('inf-4-b', 'When they stand still — still weight is heavier.', 'mathematicalReasoning', 'engineeringDesign', 2, 'still weight beats moving weight'),
+          o('inf-4-a', 'When they jump - moving weight pushes harder than standing weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
+          o('inf-4-b', 'When they stand still - still weight is heavier.', 'mathematicalReasoning', 'engineeringDesign', 2, 'still weight beats moving weight'),
           o('inf-4-c', 'It is exactly the same both times.', 'mathematicalReasoning', 'engineeringDesign', 3, 'motion does not change force'),
           o('inf-4-d', 'When they all sing loudly.', 'mathematicalReasoning', 'engineeringDesign', 0, 'sound shakes bridges apart'),
         ],
@@ -281,7 +281,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'At the bottom of the swing you are moving fastest, and the rope feels tightest there.',
         'Movement can multiply a force beyond the weight it started with.',
         [
-          o('inf-4-a', 'Swinging adds a moving-force on top of your weight — the rope must hold more than your still weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
+          o('inf-4-a', 'Swinging adds a moving-force on top of your weight - the rope must hold more than your still weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
           o('inf-4-b', 'The rope gets tired of swinging back and forth.', 'mathematicalReasoning', 'engineeringDesign', 2, 'objects tire like living things'),
           o('inf-4-c', 'You get heavier at the bottom of the swing because gravity is stronger there.', 'mathematicalReasoning', 'engineeringDesign', 1, 'gravity is stronger at the bottom of a swing'),
           o('inf-4-d', 'Air pushes the rope sideways and untwists it.', 'mathematicalReasoning', 'engineeringDesign', 3),
@@ -292,7 +292,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'The bridge was checked for a still crowd heavier than this one.',
         'Rhythmic pushes timed with a structure\'s bounce can grow each other.',
         [
-          o('inf-4-a', 'People walking in step push in rhythm with the bridge\'s own bounce, and the pushes add up — a moving, timed load, not just weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
+          o('inf-4-a', 'People walking in step push in rhythm with the bridge\'s own bounce, and the pushes add up - a moving, timed load, not just weight.', 'mathematicalReasoning', 'engineeringDesign', 10),
           o('inf-4-b', 'The crowd was simply heavier than the design allowed.', 'mathematicalReasoning', 'engineeringDesign', 3, 'only total weight matters'),
           o('inf-4-c', 'Footsteps magnetise the steel and weaken it.', 'mathematicalReasoning', 'engineeringDesign', 0, 'footsteps magnetise steel'),
           o('inf-4-d', 'Wind must have blown at exactly that moment.', 'mathematicalReasoning', 'engineeringDesign', 4, 'every unexplained failure is the weather'),
@@ -301,7 +301,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
       '9-10': variant(
         'Calculate the expected load on a suspension bridge cable. Which mathematical model is required?',
         'The bridge supports both static weight and dynamic wind forces.',
-        'Wind does not just push — it can pump energy into a structure\'s own rhythm.',
+        'Wind does not just push - it can pump energy into a structure\'s own rhythm.',
         [
           o('inf-4-a', 'Differential equations modeling both tension and aerodynamic flutter.', 'mathematicalReasoning', 'engineeringDesign', 10),
           o('inf-4-b', 'A simple algebraic sum of all the cars on the bridge.', 'mathematicalReasoning', 'engineeringDesign', 3, 'loads just add up'),
@@ -314,7 +314,7 @@ export const infraBlueprints: readonly ItemBlueprint[] = [
         'Tacoma Narrows, 1940: moderate wind, growing twist, collapse. Static factor was generous.',
         'A safety factor multiplies a number; flutter changes the physics the number came from.',
         [
-          o('inf-4-a', 'Flutter is a self-excited instability — a factor on static load says nothing about oscillation growth; modal damping and aerodynamic derivatives decide that.', 'mathematicalReasoning', 'engineeringDesign', 10),
+          o('inf-4-a', 'Flutter is a self-excited instability - a factor on static load says nothing about oscillation growth; modal damping and aerodynamic derivatives decide that.', 'mathematicalReasoning', 'engineeringDesign', 10),
           o('inf-4-b', 'It is included for legal reasons only; statically the bridge was safe.', 'mathematicalReasoning', 'engineeringDesign', 2, 'a big safety factor covers unknown physics'),
           o('inf-4-c', 'Wind loads double the static weight, so the factor must be 4.0.', 'mathematicalReasoning', 'engineeringDesign', 3, 'dynamic effects are just a bigger static number'),
           o('inf-4-d', 'The analysis replaces wind-tunnel testing, which is too expensive.', 'mathematicalReasoning', 'engineeringDesign', 1, 'simulation makes physical testing optional'),

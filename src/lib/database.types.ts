@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -263,6 +263,8 @@ export type Database = {
           options: Json
           prompt: string
           scenario_code: string
+          question_type: string
+          metadata: Json | null
           usage_count: number | null
         }
         Insert: {
@@ -283,6 +285,8 @@ export type Database = {
           options: Json
           prompt: string
           scenario_code: string
+          question_type?: string
+          metadata?: Json | null
           usage_count?: number | null
         }
         Update: {
@@ -303,6 +307,8 @@ export type Database = {
           options?: Json
           prompt?: string
           scenario_code?: string
+          question_type?: string
+          metadata?: Json | null
           usage_count?: number | null
         }
         Relationships: []
@@ -389,6 +395,8 @@ export type Database = {
           options: Json | null
           prompt: string | null
           scenario_code: string | null
+          question_type: string | null
+          metadata: Json | null
           usage_count: number | null
         }
         Insert: {
@@ -404,6 +412,8 @@ export type Database = {
           options?: Json | null
           prompt?: string | null
           scenario_code?: string | null
+          question_type?: string | null
+          metadata?: Json | null
           usage_count?: number | null
         }
         Update: {
@@ -419,6 +429,8 @@ export type Database = {
           options?: Json | null
           prompt?: string | null
           scenario_code?: string | null
+          question_type?: string | null
+          metadata?: Json | null
           usage_count?: number | null
         }
         Relationships: []
@@ -471,6 +483,16 @@ export type Database = {
           scaled_score: number
         }[]
       }
+      record_assessment_response: {
+        Args: {
+          p_assessment: string
+          p_scenario_id: string
+          p_selected_text: string
+          p_correct: boolean
+          p_option?: Json | null
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -479,6 +501,8 @@ export type Database = {
       scenario_safe: {
         id: string | null
         scenario_code: string | null
+        question_type: string | null
+        metadata: Json | null
         competency: string | null
         developmental_band: string | null
         difficulty: string | null

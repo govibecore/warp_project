@@ -9,7 +9,7 @@ import type { Biome } from './core';
  * canvas API and handed to Three.js as CanvasTextures.
  *
  * Each distinct surface is painted once and cached; buildings that need a
- * different window count clone the texture (cheap — the image is shared) so
+ * different window count clone the texture (cheap - the image is shared) so
  * they can carry their own repeat.
  */
 
@@ -36,7 +36,7 @@ function paint(key: string, size: number, repeat: number, draw: Painter): THREE.
   return t;
 }
 
-/** Speckled grit — the thing that stops flat colour from looking like plastic. */
+/** Speckled grit - the thing that stops flat colour from looking like plastic. */
 function speckle(
   ctx: CanvasRenderingContext2D,
   s: number,
@@ -118,7 +118,7 @@ export function roadTexture(): THREE.CanvasTexture {
   });
 }
 
-/** Radial brick for the reference plaza — the one "designed" surface. */
+/** Radial brick for the reference plaza - the one "designed" surface. */
 export function plazaTexture(): THREE.CanvasTexture {
   return paint('plaza', 512, 1, (ctx, s) => {
     const c = s / 2;
@@ -193,7 +193,7 @@ export function roofTexture(variant: number): THREE.CanvasTexture {
 
 /**
  * One lit window on black. Buildings clone this and set their own repeat, so a
- * three-storey townhouse gets a 3×4 grid and a hut gets 1×2 — from one texture.
+ * three-storey townhouse gets a 3×4 grid and a hut gets 1×2 - from one texture.
  */
 export function windowTexture(): THREE.CanvasTexture {
   return paint('window', 64, 1, (ctx, s) => {

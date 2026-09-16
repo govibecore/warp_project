@@ -27,7 +27,7 @@ const missionBlueprints: Record<MissionId, readonly ItemBlueprint[]> = {
  *
  * Every blueprint carries a full variant per developmental band: prompt,
  * context, hint, and four options are all rewritten for the band's reading
- * level and curriculum stage — a Class 3 learner and a Class 12 learner never
+ * level and curriculum stage - a Class 3 learner and a Class 12 learner never
  * see the same text. Distractors are tagged with the canonical misconception
  * they diagnose, and each option contributes evidence to a primary and a
  * secondary competency (10 points available each).

@@ -25,7 +25,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'The dots cover three months and hundreds of kilometres of ocean.',
         'Order matters: which dot came first, and where do dots crowd together?',
         [
-          o('eco-0-a', 'Plot the dots in date order and mark where they cluster — the path and the resting spots appear.', 'computationalThinking', 'scientificInquiry', 10),
+          o('eco-0-a', 'Plot the dots in date order and mark where they cluster - the path and the resting spots appear.', 'computationalThinking', 'scientificInquiry', 10),
           o('eco-0-b', 'Draw one straight line from the first dot to the last.', 'computationalThinking', 'scientificInquiry', 2, 'the shortest path summary is the true path'),
           o('eco-0-c', 'Average all the positions to find where the turtle lived.', 'computationalThinking', 'scientificInquiry', 4, 'an average position represents a journey'),
           o('eco-0-d', 'Count the dots; ninety dots means ninety kilometres.', 'computationalThinking', 'scientificInquiry', 1, 'count of measurements equals distance'),
@@ -33,7 +33,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
       ),
       '7-8': variant(
         'GPS collars record a deer\'s position every 4 hours. Which analysis turns the fixes into a reliable migration route?',
-        'Some fixes are faulty — a few land in the sea or inside towns.',
+        'Some fixes are faulty - a few land in the sea or inside towns.',
         'Clean first, then look for structure: stopovers and travel legs.',
         [
           o('eco-0-a', 'Filter impossible fixes, then cluster daily positions to separate stopover sites from travel legs.', 'computationalThinking', 'scientificInquiry', 10),
@@ -58,7 +58,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Consecutive fixes are autocorrelated; the goal is a model that predicts held-out seasons, not one that retraces this one.',
         'Beware treating correlated samples as independent evidence.',
         [
-          o('eco-0-a', 'Segment the trajectory with a state-space or clustering model, and validate on a held-out season — consecutive fixes are not independent samples.', 'computationalThinking', 'scientificInquiry', 10),
+          o('eco-0-a', 'Segment the trajectory with a state-space or clustering model, and validate on a held-out season - consecutive fixes are not independent samples.', 'computationalThinking', 'scientificInquiry', 10),
           o('eco-0-b', 'Fit the tightest curve through every fix; lowest error on this track is best.', 'computationalThinking', 'scientificInquiry', 3, 'fitting the past perfectly predicts the future'),
           o('eco-0-c', 'Regress position on time using all fixes as independent points.', 'computationalThinking', 'scientificInquiry', 5, 'more data points means cleaner data'),
           o('eco-0-d', 'Extrapolate the first-to-last bearing as a great-circle route.', 'computationalThinking', 'scientificInquiry', 2, 'the shortest path summary is the true path'),
@@ -79,7 +79,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Test the water before and after each place, and compare.',
         [
           o('eco-1-a', 'Collect water above and below each place and compare what is in it.', 'scientificInquiry', 'systemsThinking', 10),
-          o('eco-1-b', 'Blame the bigger building — bigger places cause bigger problems.', 'scientificInquiry', 'systemsThinking', 1, 'the bigger source is always the guilty one'),
+          o('eco-1-b', 'Blame the bigger building - bigger places cause bigger problems.', 'scientificInquiry', 'systemsThinking', 1, 'the bigger source is always the guilty one'),
           o('eco-1-c', 'Take one scoop from the greenest spot in the pond.', 'scientificInquiry', 'systemsThinking', 4, 'one sample from the middle explains the cause'),
           o('eco-1-d', 'Taste a drop of the water to check.', 'scientificInquiry', 'systemsThinking', 0, 'tasting unknown water is a safe test'),
         ],
@@ -112,7 +112,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'You need replication, a control, and the same method at every site.',
         [
           o('eco-1-a', 'Paired upstream/downstream N and P sampling at both sources across several weeks, plus a control tributary with neither source.', 'scientificInquiry', 'systemsThinking', 10),
-          o('eco-1-b', 'One well-timed sample after heavy rain — if levels spike, the cause is proven.', 'scientificInquiry', 'systemsThinking', 3, 'a single measurement establishes cause'),
+          o('eco-1-b', 'One well-timed sample after heavy rain - if levels spike, the cause is proven.', 'scientificInquiry', 'systemsThinking', 3, 'a single measurement establishes cause'),
           o('eco-1-c', 'Weekly samples at the bloom centre, where the effect is largest.', 'scientificInquiry', 'systemsThinking', 4, 'measuring the effect locates the cause'),
           o('eco-1-d', 'Compare this year\'s bloom map with last year\'s rainfall map.', 'scientificInquiry', 'systemsThinking', 5, 'correlation establishes causation'),
         ],
@@ -122,7 +122,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Farm runoff is diffuse; factory discharge is a point source. Regulators need attribution that survives challenge.',
         'Think BACI: Before/After, Control/Impact.',
         [
-          o('eco-1-a', 'A BACI design with replicated N:P ratios at impact and control sites, before and after discharge events — timing correlation alone is not causation.', 'scientificInquiry', 'systemsThinking', 10),
+          o('eco-1-a', 'A BACI design with replicated N:P ratios at impact and control sites, before and after discharge events - timing correlation alone is not causation.', 'scientificInquiry', 'systemsThinking', 10),
           o('eco-1-b', 'Show bloom timing correlates with factory shift schedules.', 'scientificInquiry', 'systemsThinking', 4, 'correlation establishes causation'),
           o('eco-1-c', 'Demonstrate high nutrients downstream of both sources once each.', 'scientificInquiry', 'systemsThinking', 5, 'a single measurement establishes cause'),
           o('eco-1-d', 'Survey residents on which source they believe is responsible.', 'scientificInquiry', 'systemsThinking', 1, 'consensus of opinion locates the cause'),
@@ -143,7 +143,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Which plants love open sun and grow the fastest?',
         [
           o('eco-2-a', 'Fast-growing grasses and weeds whose seeds love sun and ash-rich soil.', 'systemsThinking', 'scientificInquiry', 10),
-          o('eco-2-b', 'Big shady trees first — the biggest plants always win.', 'systemsThinking', 'scientificInquiry', 2, 'the biggest plants always win'),
+          o('eco-2-b', 'Big shady trees first - the biggest plants always win.', 'systemsThinking', 'scientificInquiry', 2, 'the biggest plants always win'),
           o('eco-2-c', 'Nothing, until people come and plant new seeds.', 'systemsThinking', 'scientificInquiry', 1, 'nature needs humans to recover'),
           o('eco-2-d', 'Cactuses, because fires make deserts.', 'systemsThinking', 'scientificInquiry', 0, 'fires turn land into desert'),
         ],
@@ -153,8 +153,8 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'The soil is rich in ash but there is no shade anywhere yet.',
         'Some plants are built to race into open, sunny gaps.',
         [
-          o('eco-2-a', 'Pioneer species — fast weeds and grasses that love full sun and ash nutrients.', 'systemsThinking', 'scientificInquiry', 10),
-          o('eco-2-b', 'Climax hardwood trees — the ash gives them deep food immediately.', 'systemsThinking', 'scientificInquiry', 3, 'succession starts with the final community'),
+          o('eco-2-a', 'Pioneer species - fast weeds and grasses that love full sun and ash nutrients.', 'systemsThinking', 'scientificInquiry', 10),
+          o('eco-2-b', 'Climax hardwood trees - the ash gives them deep food immediately.', 'systemsThinking', 'scientificInquiry', 3, 'succession starts with the final community'),
           o('eco-2-c', 'Nothing until rangers reseed the area by hand.', 'systemsThinking', 'scientificInquiry', 1, 'nature needs humans to recover'),
           o('eco-2-d', 'Mushrooms only, since they do not need sunlight.', 'systemsThinking', 'scientificInquiry', 4),
         ],
@@ -175,7 +175,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Ash raises available nutrients; the seed bank partly survives; there is no canopy.',
         'The first colonists change the soil the next colonists will meet.',
         [
-          o('eco-2-a', 'Ruderal pioneers first — full sun and ash nutrients — and their litter rebuilds soil organic matter for the shrubs that follow.', 'systemsThinking', 'scientificInquiry', 10),
+          o('eco-2-a', 'Ruderal pioneers first - full sun and ash nutrients - and their litter rebuilds soil organic matter for the shrubs that follow.', 'systemsThinking', 'scientificInquiry', 10),
           o('eco-2-b', 'Shade-tolerant climax trees first, because their seeds have the largest food stores.', 'systemsThinking', 'scientificInquiry', 3, 'succession starts with the final community'),
           o('eco-2-c', 'A fungal mat that keeps plants out for decades.', 'systemsThinking', 'scientificInquiry', 2, 'decomposers block plant growth'),
           o('eco-2-d', 'Bare ground for many years until birds carry in every seed.', 'systemsThinking', 'scientificInquiry', 4, 'no seed bank survives fire'),
@@ -184,9 +184,9 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
       '11-12': variant(
         'Two burnt plots, same valley: one becomes grassland, one resprouts shrubland. What does this tell a restoration ecologist about succession?',
         'Fire severity differed between plots; in one, the soil seed bank and root crowns survived.',
-        'Succession is not a fixed ladder — the starting state steers the path.',
+        'Succession is not a fixed ladder - the starting state steers the path.',
         [
-          o('eco-2-a', 'Trajectory depends on the surviving propagules and fire severity — model state-dependent pathways rather than one inevitable climax.', 'systemsThinking', 'scientificInquiry', 10),
+          o('eco-2-a', 'Trajectory depends on the surviving propagules and fire severity - model state-dependent pathways rather than one inevitable climax.', 'systemsThinking', 'scientificInquiry', 10),
           o('eco-2-b', 'The grassland plot is simply younger; both will converge on the same forest.', 'systemsThinking', 'scientificInquiry', 3, 'succession always climbs to one climax'),
           o('eco-2-c', 'The shrub plot must have been replanted by people.', 'systemsThinking', 'scientificInquiry', 1, 'nature needs humans to recover'),
           o('eco-2-d', 'Ash chemistry fully determines which plants return.', 'systemsThinking', 'scientificInquiry', 4, 'one factor determines a community'),
@@ -209,15 +209,15 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
           o('eco-3-a', 'Scoop out one small cup, count it, and use the scoop to estimate the whole jar.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('eco-3-b', 'Count only the marbles touching the glass and call that the total.', 'mathematicalReasoning', 'computationalThinking', 1, 'the visible part is the whole'),
           o('eco-3-c', 'Shake the jar and guess by the sound.', 'mathematicalReasoning', 'computationalThinking', 0, 'sound reveals quantity'),
-          o('eco-3-d', 'Guess any big number — one guess is as good as another.', 'mathematicalReasoning', 'computationalThinking', 0, 'any guess is as good as a method'),
+          o('eco-3-d', 'Guess any big number - one guess is as good as another.', 'mathematicalReasoning', 'computationalThinking', 0, 'any guess is as good as a method'),
         ],
       ),
       '5-6': variant(
         'Rangers want to know how many fish live in a pond without draining it. What is their trick?',
         'They can catch fish gently, mark them with a harmless tag, and let them go.',
-        'Catch, mark, release — then catch again and see what fraction is already marked.',
+        'Catch, mark, release - then catch again and see what fraction is already marked.',
         [
-          o('eco-3-a', 'Mark some fish, release them, then catch a second sample — the fraction of marked fish tells you the total.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('eco-3-a', 'Mark some fish, release them, then catch a second sample - the fraction of marked fish tells you the total.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('eco-3-b', 'Count the fish near the shore and multiply by the pond\'s size.', 'mathematicalReasoning', 'computationalThinking', 4, 'fish spread perfectly evenly'),
           o('eco-3-c', 'Count fish trails in the mud and divide by two.', 'mathematicalReasoning', 'computationalThinking', 1, 'every animal leaves a fixed number of countable traces'),
           o('eco-3-d', 'Watch one spot for an hour and count what swims past.', 'mathematicalReasoning', 'computationalThinking', 3, 'one spot represents the whole pond'),
@@ -226,7 +226,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
       '7-8': variant(
         'You want to estimate a deer population without counting every individual. Which mathematical method is standard?',
         'You have cameras and tagging equipment.',
-        'Mark, remix, recapture — the recapture fraction scales the estimate.',
+        'Mark, remix, recapture - the recapture fraction scales the estimate.',
         [
           o('eco-3-a', 'The Lincoln-Petersen mark-recapture estimator (N = (M*C)/R).', 'mathematicalReasoning', 'computationalThinking', 10),
           o('eco-3-b', 'Count the deer in a 1-acre square and multiply by total acres.', 'mathematicalReasoning', 'computationalThinking', 6, 'animals spread perfectly evenly'),
@@ -235,7 +235,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         ],
       ),
       '9-10': variant(
-        'A team marks 50 deer (M), later samples 80 (C) and finds 10 marked (R). Estimate N — and name one assumption the estimate rests on.',
+        'A team marks 50 deer (M), later samples 80 (C) and finds 10 marked (R). Estimate N - and name one assumption the estimate rests on.',
         'Lincoln–Petersen: N = (M × C) / R.',
         'What must be true about births, deaths, and mixing between the two samples?',
         [
@@ -250,7 +250,7 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'Lincoln–Petersen assumes equal catchability; trap-shy individuals violate it.',
         'Ask how unequal catchability affects the estimate depending on the capture mechanism.',
         [
-          o('eco-3-a', 'Report N with the Chapman correction and flag potential bias — differential catchability can skew the estimate, with its direction depending on the capture mechanism.', 'mathematicalReasoning', 'computationalThinking', 10),
+          o('eco-3-a', 'Report N with the Chapman correction and flag potential bias - differential catchability can skew the estimate, with its direction depending on the capture mechanism.', 'mathematicalReasoning', 'computationalThinking', 10),
           o('eco-3-b', 'Report 400 exactly; the formula handles behaviour automatically.', 'mathematicalReasoning', 'computationalThinking', 2, 'a formula absorbs its own violated assumptions'),
           o('eco-3-c', 'Double the estimate, since every unseen deer has a partner.', 'mathematicalReasoning', 'computationalThinking', 1, 'guessing a correction factor is rigorous'),
           o('eco-3-d', 'Switch to counting tracks and dividing by four, which avoids traps entirely.', 'mathematicalReasoning', 'computationalThinking', 3, 'every animal leaves a fixed number of countable traces'),
@@ -282,8 +282,8 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
         'If vinegar weakens chalk, what does a more acidic ocean do to a skeleton?',
         [
           o('eco-4-a', 'The coral\'s skeleton-building: more acidic water makes the building material harder to make and easier to dissolve.', 'scientificInquiry', 'systemsThinking', 10),
-          o('eco-4-b', 'The coral\'s colour only — acid bleaches it like a stain.', 'scientificInquiry', 'systemsThinking', 3, 'acidification and bleaching are the same process'),
-          o('eco-4-c', 'Nothing — the ocean is so big it cannot change.', 'scientificInquiry', 'systemsThinking', 1, 'big systems cannot be changed by people'),
+          o('eco-4-b', 'The coral\'s colour only - acid bleaches it like a stain.', 'scientificInquiry', 'systemsThinking', 3, 'acidification and bleaching are the same process'),
+          o('eco-4-c', 'Nothing - the ocean is so big it cannot change.', 'scientificInquiry', 'systemsThinking', 1, 'big systems cannot be changed by people'),
           o('eco-4-d', 'The fish, which forget how to swim in sour water.', 'scientificInquiry', 'systemsThinking', 0, 'sour water makes fish forget how to swim'),
         ],
       ),
@@ -312,12 +312,12 @@ export const ecologyBlueprints: readonly ItemBlueprint[] = [
       '11-12': variant(
         'A council asks whether "the ocean is naturally buffered, so acidification is exaggerated". What is the scientifically correct reply?',
         'Buffers resist pH change but do not prevent it; reefs sit near the aragonite saturation threshold already.',
-        'Distinguish slowing a change from stopping it — and check where coral calcification sits relative to the threshold.',
+        'Distinguish slowing a change from stopping it - and check where coral calcification sits relative to the threshold.',
         [
           o('eco-4-a', 'Buffering slows but does not stop the shift: measured pH and aragonite saturation are already falling, and calcification responds to saturation state, not to the word "buffered".', 'scientificInquiry', 'systemsThinking', 10),
-          o('eco-4-b', 'Agree — a buffered system cannot change pH at all.', 'scientificInquiry', 'systemsThinking', 1, 'buffers make chemical change impossible'),
+          o('eco-4-b', 'Agree - a buffered system cannot change pH at all.', 'scientificInquiry', 'systemsThinking', 1, 'buffers make chemical change impossible'),
           o('eco-4-c', 'Disagree only because acid burns polyps on contact.', 'scientificInquiry', 'systemsThinking', 3, 'acid always burns living things on contact'),
-          o('eco-4-d', 'Agree — but only because warming, not chemistry, matters for reefs.', 'scientificInquiry', 'systemsThinking', 2, 'acidification and warming are the same process'),
+          o('eco-4-d', 'Agree - but only because warming, not chemistry, matters for reefs.', 'scientificInquiry', 'systemsThinking', 2, 'acidification and warming are the same process'),
         ],
       ),
     },

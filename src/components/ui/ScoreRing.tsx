@@ -80,7 +80,7 @@ export function ScoreRing({
           />
         </svg>
 
-        {/* Center content — rotated back to normal */}
+        {/* Center content - rotated back to normal */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="flex items-baseline gap-0.5">
             <GsapCounter

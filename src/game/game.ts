@@ -1,5 +1,5 @@
 /**
- * game.ts — the orchestrator.
+ * game.ts - the orchestrator.
  *
  * Owns the scene, the sun, the camera, and the fixed-step simulation that
  * drives everything: spawning, kiting AI, combat, XP, level-ups, the
@@ -11,7 +11,7 @@
  * the exact same loop runs headless in a test with a stub renderer.
  *
  * The camera is deliberately boring: damped follow plus a slow azimuth drift.
- * It never shakes, never punches, never flashes — all feedback is world-space.
+ * It never shakes, never punches, never flashes - all feedback is world-space.
  */
 
 import * as THREE from 'three';
@@ -48,7 +48,7 @@ import { clamp, damp, mulberry32 } from './utils';
 
 // ── Constants ───────────────────────────────────────────────────────────
 
-/** Nordic twilight — also the fog colour, so far terrain dissolves into it. */
+/** Nordic twilight - also the fog colour, so far terrain dissolves into it. */
 export const SKY = '#1a2a3a';
 
 const FIXED_DT = 1 / 60;
@@ -67,7 +67,7 @@ const ENEMY_PALETTE: Record<EnemyKind, string> = {
 // ── Tuning (live, driven by the panel) ──────────────────────────────────
 
 export interface Tune {
-  /** Spawn interval multiplier — lower spawns faster. */
+  /** Spawn interval multiplier - lower spawns faster. */
   spawnRate: number;
   enemySpeed: number;
   playerSpeed: number;
@@ -103,7 +103,7 @@ export interface RendererLike {
 
 export interface GameOptions {
   canvas?: HTMLCanvasElement | null;
-  /** Injected renderer — when present, no WebGLRenderer is ever constructed. */
+  /** Injected renderer - when present, no WebGLRenderer is ever constructed. */
   renderer?: RendererLike | null;
   seed?: number;
   width?: number;
@@ -199,14 +199,14 @@ export function createGame(opts: GameOptions = {}): Game {
       r.setClearColor(SKY, 1);
       renderer = r;
     } catch {
-      // No WebGL (jsdom, blocked context) — the simulation still runs.
+      // No WebGL (jsdom, blocked context) - the simulation still runs.
       renderer = null;
     }
   }
 
   // ── Simulation ────────────────────────────────────────────────────────
 
-  /** XP required to reach the next level — gently steepening. */
+  /** XP required to reach the next level - gently steepening. */
   function xpForLevel(l: number): number {
     return Math.round(6 + l * 4.5);
   }
@@ -272,7 +272,7 @@ export function createGame(opts: GameOptions = {}): Game {
   }
 
   function updateCamera(dt: number): void {
-    // Damped follow — frame-rate independent, never snaps.
+    // Damped follow - frame-rate independent, never snaps.
     camFocus.x = damp(camFocus.x, wanderer.obj.position.x, 3.2, dt);
     camFocus.y = damp(camFocus.y, wanderer.obj.position.y, 3.2, dt);
     camFocus.z = damp(camFocus.z, wanderer.obj.position.z, 3.2, dt);

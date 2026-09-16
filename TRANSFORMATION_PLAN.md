@@ -27,7 +27,7 @@
 
 | # | Finding | Status | Resolution |
 |---|---|---|---|
-| 1.1 | No account/data deletion despite Landing copy claiming it | ✅ Done | Added `deleteAccount` mutation in `convex/users.ts` — cascades to `reports` and `assessments` tables, then deletes the user record. Leaderboard self-cleans because it reads from `assessments`. Wired to a confirm-dialog button in `StudentDashboard.tsx`. |
+| 1.1 | No account/data deletion despite Landing copy claiming it | ✅ Done | Added `deleteAccount` mutation in `convex/users.ts` - cascades to `reports` and `assessments` tables, then deletes the user record. Leaderboard self-cleans because it reads from `assessments`. Wired to a confirm-dialog button in `StudentDashboard.tsx`. |
 | 1.2 | Landing privacy copy said "offline-only, never transmit" while product uses Convex + Clerk | ✅ Done | `PRODUCT.md` updated to reflect the real architecture. Landing copy updated to match the 30-item instrument. |
 
 ### 2. Item Bank & Assessment Quality
@@ -38,7 +38,7 @@
 | 2.2 | No misconception diagnosis on distractors | ✅ Done | Added optional `misconception?: string` to `AssessmentOption` and `ItemResponse`. Every designed-wrong (≤2 credit) option now carries a canonical misconception tag (e.g. "heavier objects fall faster", "correlation implies causation"). Full-credit answers never carry one. |
 | 2.3 | No curriculum-standards alignment | ✅ Done | Added optional `standards?: readonly string[]` to `AssessmentItem`. Every blueprint carries NGSS SEP tags (e.g. "NGSS SEP3: Planning investigations") and PISA 2025 competency tags (e.g. "PISA 2025 C2: Enquiry & data"). `materialize` appends the NCF 2023 stage tag for the band. |
 | 2.4 | `getDevelopmentalBand(2)` returned `'5-6'` instead of throwing | ✅ Done | Replaced `<= 6` bounds with explicit `>= 5 && <= 6` ranges. Classes 1–2 and 13+ now throw with a clear error message. |
-| 2.5 | No data-quality test for the item bank | ✅ Done | Created `src/data/scenarios/scenarios.test.ts` — 14 cases enforcing: 30 items per band, `cal-sci`/`cal-comp` order, unique IDs, unique full-credit option per item, ≤2 options tagged with misconception, full-credit never tagged, all 5 competencies covered with ≥150 available weight per band, determinism, and option-order shuffle producing >1 distinct correct-answer position. |
+| 2.5 | No data-quality test for the item bank | ✅ Done | Created `src/data/scenarios/scenarios.test.ts` - 14 cases enforcing: 30 items per band, `cal-sci`/`cal-comp` order, unique IDs, unique full-credit option per item, ≤2 options tagged with misconception, full-credit never tagged, all 5 competencies covered with ≥150 available weight per band, determinism, and option-order shuffle producing >1 distinct correct-answer position. |
 | 2.6 | TS6133 unused-parameter errors on old `scenarios.ts` | ✅ Done | Old `scenarios.ts` deleted. New `scenarios/` directory with `builder.ts` helper has no such params. Typecheck clean. |
 | 2.7 | Misconception data not surfaced in reports | ✅ Done | Wired `selected.misconception` into the `lock()` callback in `Assessment.tsx` (line 69–77). `ReportDetail.tsx` response transcript now shows a warning icon + misconception text under any answer that was a designed-wrong option. |
 
@@ -54,8 +54,8 @@
 
 | # | Finding | Status | Resolution |
 |---|---|---|---|
-| 4.1 | `STATS` said `{ value: '11', label: 'Linked scenarios' }` — real instrument has 30 items | ✅ Done | Changed to `{ value: '30', label: 'Assessment items' }`. |
-| 4.2 | `STEPS[1]` said "Eleven linked STEM scenarios" | ✅ Done | Changed to "Thirty scenario items across five STEM missions — energy, ecology, space, data, and infrastructure — plus five calibration items." |
+| 4.1 | `STATS` said `{ value: '11', label: 'Linked scenarios' }` - real instrument has 30 items | ✅ Done | Changed to `{ value: '30', label: 'Assessment items' }`. |
+| 4.2 | `STEPS[1]` said "Eleven linked STEM scenarios" | ✅ Done | Changed to "Thirty scenario items across five STEM missions - energy, ecology, space, data, and infrastructure - plus five calibration items." |
 
 ### 5. Test Suite
 
@@ -78,10 +78,10 @@
 
 | # | Item | Rationale |
 |---|---|---|
-| D1 | `noUncheckedIndexedAccess` hardening pass | The compiler flag is off; enabling it would catch array-access-by-undefined risks. Worthwhile but touches many files — defer to a dedicated PR. |
+| D1 | `noUncheckedIndexedAccess` hardening pass | The compiler flag is off; enabling it would catch array-access-by-undefined risks. Worthwhile but touches many files - defer to a dedicated PR. |
 | D2 | ESLint setup | No linter configured. The typecheck (`tsc -b`) catches type errors but not style. Add `eslint` + `@typescript-eslint` in a follow-up. |
 | D3 | `convex/_generated/api` `@ts-ignore` cleanup | Three `@ts-ignore` comments on generated imports. These resolve once `convex dev` regenerates the API with the new `deleteAccount` mutation. |
-| D4 | Auth `act(...)` warning in `App.test.tsx` | React state update in a test not wrapped in `act()`. Cosmetic — test passes. Wrap in a follow-up. |
+| D4 | Auth `act(...)` warning in `App.test.tsx` | React state update in a test not wrapped in `act()`. Cosmetic - test passes. Wrap in a follow-up. |
 
 ---
 

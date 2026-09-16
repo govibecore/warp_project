@@ -3,7 +3,7 @@ import type { ScenarioRecord } from './types';
 export function getBand11_12Scenarios(): ScenarioRecord[] {
   return [
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 11 (Grade 11 · Developmental Band 11-12) — 30 Unique Questions
+    // CLASS 11 (Grade 11 · Developmental Band 11-12) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -487,7 +487,7 @@ export function getBand11_12Scenarios(): ScenarioRecord[] {
         { text: 'G cannot have an identity element.', correct: false },
       ],
       learning_objective: 'Abstract group theory, Lagrange’s subgroup order theorem, cosets [G:H], cyclic groups Z_p, and classification of groups of prime order.',
-      hint: 'Since any non-identity element generates a subgroup whose size must divide |G| = p, and p is prime, that subgroup must have size p—meaning it is the entire group! Thus G is cyclic.',
+      hint: 'Since any non-identity element generates a subgroup whose size must divide |G| = p, and p is prime, that subgroup must have size p-meaning it is the entire group! Thus G is cyclic.',
       irt_a: 1.72,
       irt_b: 1.9,
       irt_c: 0.25,
@@ -617,7 +617,7 @@ export function getBand11_12Scenarios(): ScenarioRecord[] {
     },
 
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 12 (Grade 12 · Developmental Band 11-12) — 30 Unique Questions
+    // CLASS 12 (Grade 12 · Developmental Band 11-12) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -951,7 +951,7 @@ export function getBand11_12Scenarios(): ScenarioRecord[] {
       developmental_band: '11-12',
       competency: 'engineeringDesign',
       difficulty: 'olympiad',
-      prompt: 'In designing a liquid-propellant staged-combustion rocket engine (such as the SpaceX Raptor or RD-180), the preburner combusts propellants fuel-rich or oxidizer-rich to drive the turbopump turbine at 30,000 RPM. Why is a full-flow staged combustion cycle (FFSCC)—where all fuel passes through a fuel-rich preburner and all oxidizer passes through an oxidizer-rich preburner—thermodynamically superior to an open gas-generator cycle?',
+      prompt: 'In designing a liquid-propellant staged-combustion rocket engine (such as the SpaceX Raptor or RD-180), the preburner combusts propellants fuel-rich or oxidizer-rich to drive the turbopump turbine at 30,000 RPM. Why is a full-flow staged combustion cycle (FFSCC)-where all fuel passes through a fuel-rich preburner and all oxidizer passes through an oxidizer-rich preburner-thermodynamically superior to an open gas-generator cycle?',
       options: [
         { text: 'Zero specific impulse loss (100% of propellant mass flows through the main combustion chamber at extreme chamber pressures >300 bar) combined with cooler turbine operating temperatures due to maximum mass flow through turbines.', correct: true },
         { text: 'FFSCC engines eliminate the need for fuel pumps by relying on capillary action.', correct: false },
@@ -1183,7 +1183,7 @@ export function getBand11_12Scenarios(): ScenarioRecord[] {
         { text: 'Voting theory only applies to systems with two candidates.', correct: false },
       ],
       learning_objective: 'Social choice theory, Arrow’s Impossibility Theorem, Condorcet voting paradoxes, formal mechanism design, and governance system limits.',
-      hint: 'Kenneth Arrow won the Nobel Prize for showing that no voting system can satisfy all fair requirements at once—every single voting system has unavoidable mathematical quirks.',
+      hint: 'Kenneth Arrow won the Nobel Prize for showing that no voting system can satisfy all fair requirements at once-every single voting system has unavoidable mathematical quirks.',
       irt_a: 1.65,
       irt_b: 1.85,
       irt_c: 0.25,

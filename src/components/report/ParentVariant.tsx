@@ -252,7 +252,7 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
                 />
               </div>
               {boardGradeBand && (
-                <p className="text-[10px] text-foreground-muted">Board Equiv: Grade {boardGradeBand.grade} — {boardGradeBand.band}</p>
+                <p className="text-[10px] text-foreground-muted">Board Equiv: Grade {boardGradeBand.grade} - {boardGradeBand.band}</p>
               )}
             </div>
 

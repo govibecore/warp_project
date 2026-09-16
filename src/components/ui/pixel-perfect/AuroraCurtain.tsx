@@ -1,5 +1,5 @@
 /**
- * AuroraCurtain — High-performance WebGL shader background adapted from
+ * AuroraCurtain - High-performance WebGL shader background adapted from
  * Pixel Perfect (shaders/aurora-curtain.tsx & flow-field.tsx).
  *
  * Tuned to WARP's Nordic Lagom x Sci-Fi color tokens:

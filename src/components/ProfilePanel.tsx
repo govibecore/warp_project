@@ -288,8 +288,10 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
 
   // ── Avatar URL + Initials ──────────────────────────────────────────────────
   const avatarSrc = profile.avatar_url
-    ? `${supabaseUrl}/storage/v1/object/public/avatars/${profile.avatar_url}`
-    : null;
+    ? (profile.avatar_url.startsWith('http')
+        ? profile.avatar_url
+        : `${supabaseUrl}/storage/v1/object/public/avatars/${profile.avatar_url}`)
+    : (user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null);
 
   const displayName =
     profile.full_name ||
@@ -334,13 +336,29 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
       return;
     }
 
-    await supabase.from('students').upsert(
-      { id: user.id, avatar_url: path } as any,
-      { onConflict: 'id' }
-    );
+    const { error: dbError } = await supabase
+      .from('students')
+      .update({ avatar_url: path } as any)
+      .eq('id', user.id);
+
+    if (dbError) {
+      console.warn('[ProfilePanel] Student update failed, attempting upsert with defaults:', dbError);
+      await supabase.from('students').upsert(
+        {
+          id: user.id,
+          full_name: profile.full_name || user.user_metadata?.full_name || 'Learner',
+          current_class: profile.current_class || 8,
+          avatar_url: path,
+        } as any,
+        { onConflict: 'id' }
+      );
+    }
 
     setLocalProfile(p => ({ ...p, avatar_url: path }));
     setAvatarUploading(false);
+
+    // Notify navbar (and any other listener) that the avatar has changed
+    window.dispatchEvent(new CustomEvent('warp:avatar-updated', { detail: { path } }));
   }
 
   // ── Remove avatar ──────────────────────────────────────────────────────────
@@ -349,6 +367,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
     await supabase.storage.from('avatars').remove([profile.avatar_url]);
     await supabase.from('students').update({ avatar_url: null } as any).eq('id', user.id);
     setLocalProfile(p => ({ ...p, avatar_url: null }));
+    window.dispatchEvent(new CustomEvent('warp:avatar-updated', { detail: { path: null } }));
   }
 
   // ── Save profile ───────────────────────────────────────────────────────────
@@ -507,9 +526,9 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border px-6 py-4 bg-surface/30">
               <div className="flex items-center gap-2">
-                <span className="size-2 rounded-full bg-primary" />
+                <span className="size-1.5 rounded-none bg-primary" />
                 <span id="profile-panel-title" className="text-[10px] font-bold font-mono uppercase tracking-[0.2em] text-primary">
-                  WARP // Identity & Settings
+                  WARP // STUDENT IDENTITY & SETTINGS
                 </span>
               </div>
               <div className="flex items-center gap-2">
@@ -518,7 +537,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                 </span>
                 <button
                   onClick={() => setOpen(false)}
-                  className="flex size-7 items-center justify-center text-foreground-muted hover:text-foreground hover:bg-surface transition-colors"
+                  className="flex size-7 items-center justify-center text-foreground-muted hover:text-foreground hover:bg-surface transition-colors cursor-pointer"
                   aria-label="Close panel"
                 >
                   <X className="size-4" />
@@ -531,19 +550,19 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
               {/* Corner marks styling */}
               <div className="corner-marks absolute inset-0 pointer-events-none opacity-40" />
 
-              {/* Avatar ring */}
+              {/* Avatar frame */}
               <div className="relative group">
-                <div className="size-20 overflow-hidden rounded-none border-2 border-primary/40 bg-surface flex items-center justify-center shadow-xs">
+                <div className="size-20 overflow-hidden rounded-none border border-primary/40 bg-card flex items-center justify-center">
                   {avatarSrc ? (
                     <img src={avatarSrc} alt="Profile" className="size-full object-cover" />
                   ) : user?.user_metadata?.avatar_url ? (
                     <img src={user.user_metadata.avatar_url} alt="Profile" className="size-full object-cover" referrerPolicy="no-referrer" />
                   ) : (
-                    <span className="text-2xl font-bold font-mono text-foreground-secondary">{initials}</span>
+                    <span className="text-2xl font-bold font-mono text-primary">{initials}</span>
                   )}
                   {avatarUploading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-background/80">
-                      <div className="size-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                      <div className="size-5 border-2 border-primary border-t-transparent rounded-none animate-spin" />
                     </div>
                   )}
                 </div>
@@ -553,7 +572,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex size-6.5 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/80 transition-colors shadow-xs"
+                      className="flex size-6.5 items-center justify-center bg-primary text-primary-foreground hover:bg-primary/80 transition-colors rounded-none cursor-pointer"
                       title="Upload photo"
                     >
                       <Camera className="size-3.5" />
@@ -562,7 +581,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                       <button
                         type="button"
                         onClick={handleRemoveAvatar}
-                        className="flex size-6.5 items-center justify-center bg-destructive text-white hover:bg-destructive/80 transition-colors shadow-xs"
+                        className="flex size-6.5 items-center justify-center bg-destructive text-white hover:bg-destructive/80 transition-colors rounded-none cursor-pointer"
                         title="Remove photo"
                       >
                         <Trash2 className="size-3.5" />
@@ -585,8 +604,8 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                     {displayName}
                   </h2>
                   {isSignedIn && (
-                    <Badge variant="outline" className="text-[9px] font-mono border-emerald-500/30 text-emerald-500 bg-emerald-500/5">
-                      Verified
+                    <Badge variant="outline" className="text-[9px] font-mono border-emerald-500/30 text-emerald-500 bg-emerald-500/10">
+                      Verified Learner
                     </Badge>
                   )}
                 </div>
@@ -595,7 +614,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                 )}
                 {profile.current_class > 0 && (
                   <div className="pt-1 flex items-center justify-center gap-1.5">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-surface border border-border text-[11px] font-mono font-semibold text-foreground-secondary">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-card border border-border text-[11px] font-mono font-semibold text-foreground-secondary">
                       <GraduationCap className="size-3.5 text-primary" />
                       Class {profile.current_class} · {profile.school_name || 'Academic Track'}
                     </span>
@@ -613,7 +632,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                     key={t}
                     type="button"
                     onClick={() => setTab(t)}
-                    className={`relative flex-1 flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider font-semibold transition-colors ${
+                    className={`relative flex-1 flex items-center justify-center gap-2 py-3 text-xs font-mono uppercase tracking-wider font-semibold transition-colors cursor-pointer ${
                       isActive
                         ? 'text-primary'
                         : 'text-foreground-muted hover:text-foreground'
@@ -627,7 +646,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                     {isActive && (
                       <motion.div
                         layoutId="active-profile-tab"
-                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_8px_rgba(143,207,232,0.8)]"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
                       />
                     )}
                   </button>
@@ -672,11 +691,10 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                                 value={profile.current_class}
                                 disabled={!isSignedIn}
                                 onChange={e => setLocalProfile(p => ({ ...p, current_class: Number(e.target.value) }))}
-                                style={{ colorScheme: 'dark' }}
-                                className="w-full border border-border bg-surface px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
+                                className="w-full rounded-none border border-border bg-surface px-3 py-2 text-xs font-mono text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
                               >
                                 {CLASSES.map(c => (
-                                  <option key={c} value={c} style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Class {c} (Grade {c})</option>
+                                  <option key={c} value={c} className="bg-card text-foreground">Class {c} (Grade {c})</option>
                                 ))}
                               </select>
                             </div>
@@ -690,13 +708,12 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                                 value={profile.gender || 'prefer_not_to_say'}
                                 disabled={!isSignedIn}
                                 onChange={e => setLocalProfile(p => ({ ...p, gender: e.target.value as StudentGender }))}
-                                style={{ colorScheme: 'dark' }}
-                                className="w-full border border-border bg-surface px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
+                                className="w-full rounded-none border border-border bg-surface px-3 py-2 text-xs font-mono text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
                               >
-                                <option value="prefer_not_to_say" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Prefer not to say</option>
-                                <option value="male" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Male</option>
-                                <option value="female" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Female</option>
-                                <option value="other" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Other</option>
+                                <option value="prefer_not_to_say" className="bg-card text-foreground">Prefer not to say</option>
+                                <option value="male" className="bg-card text-foreground">Male</option>
+                                <option value="female" className="bg-card text-foreground">Female</option>
+                                <option value="other" className="bg-card text-foreground">Other</option>
                               </select>
                             </div>
                           </div>
@@ -825,11 +842,10 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                               value={profile.preferred_language}
                               disabled={!isSignedIn}
                               onChange={e => setLocalProfile(p => ({ ...p, preferred_language: e.target.value }))}
-                              style={{ colorScheme: 'dark' }}
-                              className="w-full border border-border bg-surface px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
+                              className="w-full rounded-none border border-border bg-surface px-3 py-2 text-xs font-mono text-foreground focus:border-primary focus:outline-none disabled:opacity-50"
                             >
-                              <option value="English" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>English (International)</option>
-                              <option value="Hindi" style={{ backgroundColor: '#12161f', color: '#f1f5f9' }}>Hindi (हिंदी)</option>
+                              <option value="English" className="bg-card text-foreground">English (International)</option>
+                              <option value="Hindi" className="bg-card text-foreground">Hindi (हिंदी)</option>
                             </select>
                           </div>
                         </FieldGroup>
@@ -885,10 +901,10 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                         {isSignedIn ? (
                           <>
                             <FieldGroup label="Account Credentials" icon={<Shield className="size-3.5" />}>
-                              <InfoRow label="Email Address" value={user?.email ?? '—'} />
+                              <InfoRow label="Email Address" value={user?.email ?? '-'} />
                               <InfoRow
                                 label="Student ID (UUID)"
-                                value={user?.id ? `${user.id.slice(0, 16)}…` : '—'}
+                                value={user?.id ? `${user.id.slice(0, 16)}…` : '-'}
                                 mono
                                 copyable
                                 onCopy={handleCopyId}
@@ -903,7 +919,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                                         month: 'short',
                                         year: 'numeric',
                                       })
-                                    : '—'
+                                    : '-'
                                 }
                               />
                               <InfoRow

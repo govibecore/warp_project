@@ -1,5 +1,5 @@
 /**
- * Chart Theme — Single source of truth for all Recharts configuration.
+ * Chart Theme - Single source of truth for all Recharts configuration.
  * Maps to PRODUCT-REDESIGN.md §2.3 Chart Configuration.
  *
  * All charts import from here; no inline colour hex values.

@@ -3,7 +3,7 @@ import type { ScenarioRecord } from './types';
 export function getBand3_4Scenarios(): ScenarioRecord[] {
   return [
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 3 (Grade 3 · Developmental Band 3-4) — 30 Unique Questions
+    // CLASS 3 (Grade 3 · Developmental Band 3-4) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
     // 1. Scientific Inquiry (6 items)
     {
@@ -616,7 +616,7 @@ export function getBand3_4Scenarios(): ScenarioRecord[] {
     },
 
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 4 (Grade 4 · Developmental Band 3-4) — 30 Unique Questions
+    // CLASS 4 (Grade 4 · Developmental Band 3-4) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
     // 1. Scientific Inquiry (6 items)
     {

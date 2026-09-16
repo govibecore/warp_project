@@ -316,7 +316,7 @@ export const englishBand5_6: ScenarioDef[] = [
     competency: 'locatingInformation',
     developmental_band: '5-6',
     difficulty: 'advanced',
-    prompt: 'Deep-Sea Research Dispatch: "At the Mariana Trench (Challenger Deep, 10,928 meters), hydrostatic pressure reaches approximately 1,086 bar—over 1,000 times atmospheric pressure at sea level. Despite this, xenophyophores, giant single-celled protozoans measuring up to 20 centimeters, thrive in the abyssal sediment." What is the maximum recorded size of xenophyophores mentioned?',
+    prompt: 'Deep-Sea Research Dispatch: "At the Mariana Trench (Challenger Deep, 10,928 meters), hydrostatic pressure reaches approximately 1,086 bar-over 1,000 times atmospheric pressure at sea level. Despite this, xenophyophores, giant single-celled protozoans measuring up to 20 centimeters, thrive in the abyssal sediment." What is the maximum recorded size of xenophyophores mentioned?',
     options: makeOptions('locatingInformation',
       'Up to 20 centimeters',
       ['10,928 meters', '1,086 bar', '1 millimeter']
@@ -592,7 +592,7 @@ export const englishBand5_6: ScenarioDef[] = [
     difficulty: 'standard',
     prompt: 'Two accounts of a school bake sale: Account A (Student Council Treasurer): "We raised $450, exceeding our playground fundraising goal by 15%." Account B (School Neighbor): "The event caused heavy traffic congestion and litter on Maple Street." How do the authors\' roles influence their accounts?',
     options: makeOptions('evaluatingReflecting',
-      'Each author selectively highlights aspects that align with their distinct priorities—financial success versus community convenience.',
+      'Each author selectively highlights aspects that align with their distinct priorities-financial success versus community convenience.',
       ['Account A is an outright fabrication because bake sales cannot generate profit.', 'Account B proves that school bake sales should be outlawed permanently.', 'Both accounts are identical in tone and provide the same statistical data.']
     ),
     learning_objective: 'Reflecting on authorial stance, perspective, and selective presentation of evidence.',

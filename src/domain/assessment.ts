@@ -29,7 +29,7 @@ const SECONDS_PER_QUESTION: Record<string, number> = {
 
 /**
  * Builds a fixed-length plan: every calibration item followed by every mission
- * item. The plan does not branch on earlier answers — same instrument for every
+ * item. The plan does not branch on earlier answers - same instrument for every
  * learner at a given class and tier, which is what makes the norm comparison
  * meaningful. Adaptive routing is a separate instrument, not a flag here.
  */

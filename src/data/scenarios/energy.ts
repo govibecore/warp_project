@@ -26,7 +26,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Real turbines change their blades for light and strong winds.',
         [
           o('nrg-0-a', 'Adjust the blade angle: flat to catch light wind, twisted to spill strong wind.', 'engineeringDesign', 'scientificInquiry', 10),
-          o('nrg-0-b', 'Fix one blade angle forever — the best angle is the same in every wind.', 'engineeringDesign', 'scientificInquiry', 2, 'one setting fits all conditions'),
+          o('nrg-0-b', 'Fix one blade angle forever - the best angle is the same in every wind.', 'engineeringDesign', 'scientificInquiry', 2, 'one setting fits all conditions'),
           o('nrg-0-c', 'Fit much bigger blades to catch even more wind.', 'engineeringDesign', 'scientificInquiry', 3, 'catching more wind is always better'),
           o('nrg-0-d', 'Switch the turbine off whenever the wind changes.', 'engineeringDesign', 'scientificInquiry', 4),
         ],
@@ -34,7 +34,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
       '7-8': variant(
         'Optimizing power output for a wind turbine array. How do you adjust the blade pitch for current conditions?',
         'Wind speeds are fluctuating rapidly between 10 and 25 m/s.',
-        'Blade angle controls how much lift — and stress — the wind creates.',
+        'Blade angle controls how much lift - and stress - the wind creates.',
         [
           o('nrg-0-a', 'Implement an active pitch control loop using real-time anemometer data.', 'engineeringDesign', 'scientificInquiry', 10),
           o('nrg-0-b', 'Lock the blades at a 45-degree angle permanently.', 'engineeringDesign', 'scientificInquiry', 2, 'one setting fits all conditions'),
@@ -47,7 +47,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Above the rated wind speed, aerodynamic torque rises sharply with wind speed.',
         'Past the rating, the goal stops being "more power".',
         [
-          o('nrg-0-a', 'Pitch to feather above rated wind to hold rotor speed constant; pitch to catch below it — an active loop driven by anemometer data.', 'engineeringDesign', 'scientificInquiry', 10),
+          o('nrg-0-a', 'Pitch to feather above rated wind to hold rotor speed constant; pitch to catch below it - an active loop driven by anemometer data.', 'engineeringDesign', 'scientificInquiry', 10),
           o('nrg-0-b', 'Hold the most aerodynamic angle at all times to maximise capture.', 'engineeringDesign', 'scientificInquiry', 2, 'more wind always means more power'),
           o('nrg-0-c', 'Rely on passive stall of fixed blades in gusts.', 'engineeringDesign', 'scientificInquiry', 6),
           o('nrg-0-d', 'Cut the turbine out entirely above 15 m/s.', 'engineeringDesign', 'scientificInquiry', 4),
@@ -111,10 +111,10 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Panel datasheets rate output at a cell temperature of 25 °C; cells in full sun run well above air temperature.',
         'Estimate the cell temperature, then apply the coefficient.',
         [
-          o('nrg-1-a', 'No — cells near 45 °C are 20 °C above rating; 20 × 0.4% ≈ 8% loss matches the observation.', 'systemsThinking', 'scientificInquiry', 10),
-          o('nrg-1-b', 'Yes — a 35 °C day should improve output, so the array is faulty.', 'systemsThinking', 'scientificInquiry', 1, 'warmer conditions always help energy devices'),
-          o('nrg-1-c', 'Yes — an 8% loss must mean panel degradation and warranty replacement.', 'systemsThinking', 'scientificInquiry', 3, 'any unexpected loss means broken equipment'),
-          o('nrg-1-d', 'No — summer air is thinner and lets less light through.', 'systemsThinking', 'scientificInquiry', 4, 'warm air is less transparent'),
+          o('nrg-1-a', 'No - cells near 45 °C are 20 °C above rating; 20 × 0.4% ≈ 8% loss matches the observation.', 'systemsThinking', 'scientificInquiry', 10),
+          o('nrg-1-b', 'Yes - a 35 °C day should improve output, so the array is faulty.', 'systemsThinking', 'scientificInquiry', 1, 'warmer conditions always help energy devices'),
+          o('nrg-1-c', 'Yes - an 8% loss must mean panel degradation and warranty replacement.', 'systemsThinking', 'scientificInquiry', 3, 'any unexpected loss means broken equipment'),
+          o('nrg-1-d', 'No - summer air is thinner and lets less light through.', 'systemsThinking', 'scientificInquiry', 4, 'warm air is less transparent'),
         ],
       ),
       '11-12': variant(
@@ -122,7 +122,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'I–V curves show current rising slightly and voltage falling sharply as cells heat; the site also has inverter clipping at noon.',
         'Separate the temperature term from the soiling term in the energy model.',
         [
-          o('nrg-1-a', 'The negative voltage temperature coefficient: band-gap narrowing trades a little current for a lot of voltage — model cell temperature (NOCT) and inverter clipping before soiling.', 'systemsThinking', 'scientificInquiry', 10),
+          o('nrg-1-a', 'The negative voltage temperature coefficient: band-gap narrowing trades a little current for a lot of voltage - model cell temperature (NOCT) and inverter clipping before soiling.', 'systemsThinking', 'scientificInquiry', 10),
           o('nrg-1-b', 'Photon oversaturation of the junction at high irradiance.', 'systemsThinking', 'scientificInquiry', 1, 'brighter light always means more power'),
           o('nrg-1-c', 'Summer humidity scattering of the UV band.', 'systemsThinking', 'scientificInquiry', 4),
           o('nrg-1-d', 'Accelerated battery self-discharge raising the apparent load.', 'systemsThinking', 'scientificInquiry', 5),
@@ -176,18 +176,18 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Compute the stored energy first, then apply the round-trip factor.',
         [
           o('nrg-2-a', 'About 392 kJ: 1000 × 9.8 × 50 = 490 kJ stored, × 0.8 returned.', 'mathematicalReasoning', 'engineeringDesign', 10),
-          o('nrg-2-b', '490 kJ — storage does not lose energy.', 'mathematicalReasoning', 'engineeringDesign', 4, 'storage and conversion are lossless'),
-          o('nrg-2-c', 'About 613 kJ — efficiency above 100% when water flows down.', 'mathematicalReasoning', 'engineeringDesign', 1, 'going downhill adds extra energy for free'),
+          o('nrg-2-b', '490 kJ - storage does not lose energy.', 'mathematicalReasoning', 'engineeringDesign', 4, 'storage and conversion are lossless'),
+          o('nrg-2-c', 'About 613 kJ - efficiency above 100% when water flows down.', 'mathematicalReasoning', 'engineeringDesign', 1, 'going downhill adds extra energy for free'),
           o('nrg-2-d', '98 kJ: 1000 × 9.8 × 50 × 0.2, counting only the losses.', 'mathematicalReasoning', 'engineeringDesign', 2, 'the lost fraction is the delivered fraction'),
         ],
       ),
       '11-12': variant(
         'Two reservoir designs store the same water volume: one doubles the head height, the other doubles the surface area. Which stores more energy, and what else changes?',
         'E = ρVgh; both designs hold identical volume V.',
-        'Check which variable the energy actually scales with — and what the structure must then withstand.',
+        'Check which variable the energy actually scales with - and what the structure must then withstand.',
         [
-          o('nrg-2-a', 'The doubled head doubles stored energy at the same volume — but dam pressure and penstock design must scale with it.', 'mathematicalReasoning', 'engineeringDesign', 10),
-          o('nrg-2-b', 'The doubled area doubles energy — more water surface means more push.', 'mathematicalReasoning', 'engineeringDesign', 2, 'spreading the same volume wider raises stored energy'),
+          o('nrg-2-a', 'The doubled head doubles stored energy at the same volume - but dam pressure and penstock design must scale with it.', 'mathematicalReasoning', 'engineeringDesign', 10),
+          o('nrg-2-b', 'The doubled area doubles energy - more water surface means more push.', 'mathematicalReasoning', 'engineeringDesign', 2, 'spreading the same volume wider raises stored energy'),
           o('nrg-2-c', 'Both double the energy equally; only cost differs.', 'mathematicalReasoning', 'engineeringDesign', 4),
           o('nrg-2-d', 'Neither changes energy; volume alone sets capacity.', 'mathematicalReasoning', 'engineeringDesign', 3, 'height does not matter for stored energy'),
         ],
@@ -206,7 +206,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Lemon juice is sour (acidic), and acid eats into some materials faster than others.',
         'Some materials barely react with sour juice at all.',
         [
-          o('nrg-3-a', 'A material that does not react with sour juice — test a few candidates in juice for a week and compare.', 'engineeringDesign', 'systemsThinking', 10),
+          o('nrg-3-a', 'A material that does not react with sour juice - test a few candidates in juice for a week and compare.', 'engineeringDesign', 'systemsThinking', 10),
           o('nrg-3-b', 'The cheapest metal, replaced with a new straw every day.', 'engineeringDesign', 'systemsThinking', 2, 'replacing is always cheaper than choosing well'),
           o('nrg-3-c', 'The same metal, but painted a bright colour.', 'engineeringDesign', 'systemsThinking', 5),
           o('nrg-3-d', 'A wooden straw, because wood comes from nature.', 'engineeringDesign', 'systemsThinking', 1, 'natural materials resist every chemical'),
@@ -266,14 +266,14 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
     { depth: 20 },
     {
       '3-4': variant(
-        'Where does a stream push a waterwheel hardest — where the stream is squeezed narrow, or where it spreads wide?',
+        'Where does a stream push a waterwheel hardest - where the stream is squeezed narrow, or where it spreads wide?',
         'The same amount of water passes both places every second.',
         'When the same water must fit through a smaller gap, what happens to its speed?',
         [
-          o('nrg-4-a', 'Where it is narrow — the same water must hurry through the smaller gap.', 'scientificInquiry', 'mathematicalReasoning', 10),
-          o('nrg-4-b', 'Where it is wide — more water means more push.', 'scientificInquiry', 'mathematicalReasoning', 2, 'more space for water means more push'),
-          o('nrg-4-c', 'Where it is deepest — deep water is heavier.', 'scientificInquiry', 'mathematicalReasoning', 4),
-          o('nrg-4-d', 'Where it is stillest — calm water saves up its strength.', 'scientificInquiry', 'mathematicalReasoning', 1, 'still water stores more push than moving water'),
+          o('nrg-4-a', 'Where it is narrow - the same water must hurry through the smaller gap.', 'scientificInquiry', 'mathematicalReasoning', 10),
+          o('nrg-4-b', 'Where it is wide - more water means more push.', 'scientificInquiry', 'mathematicalReasoning', 2, 'more space for water means more push'),
+          o('nrg-4-c', 'Where it is deepest - deep water is heavier.', 'scientificInquiry', 'mathematicalReasoning', 4),
+          o('nrg-4-d', 'Where it is stillest - calm water saves up its strength.', 'scientificInquiry', 'mathematicalReasoning', 1, 'still water stores more push than moving water'),
         ],
       ),
       '5-6': variant(
@@ -281,10 +281,10 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Stretch A is narrow and fast; Stretch B is wide and slow; Stretch C is a quiet pond.',
         'The wheel is turned by moving water, not by deep or wide water.',
         [
-          o('nrg-4-a', 'The narrow, fast stretch — the river squeezes through and flows quickest there.', 'scientificInquiry', 'mathematicalReasoning', 10),
-          o('nrg-4-b', 'The wide, slow stretch — there is more water to push the wheel.', 'scientificInquiry', 'mathematicalReasoning', 2, 'more space for water means more push'),
-          o('nrg-4-c', 'The quiet pond — its stored water is full of energy.', 'scientificInquiry', 'mathematicalReasoning', 1, 'still water stores more push than moving water'),
-          o('nrg-4-d', 'The deepest point — deep water presses down hardest.', 'scientificInquiry', 'mathematicalReasoning', 4),
+          o('nrg-4-a', 'The narrow, fast stretch - the river squeezes through and flows quickest there.', 'scientificInquiry', 'mathematicalReasoning', 10),
+          o('nrg-4-b', 'The wide, slow stretch - there is more water to push the wheel.', 'scientificInquiry', 'mathematicalReasoning', 2, 'more space for water means more push'),
+          o('nrg-4-c', 'The quiet pond - its stored water is full of energy.', 'scientificInquiry', 'mathematicalReasoning', 1, 'still water stores more push than moving water'),
+          o('nrg-4-d', 'The deepest point - deep water presses down hardest.', 'scientificInquiry', 'mathematicalReasoning', 4),
         ],
       ),
       '7-8': variant(
@@ -301,7 +301,7 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
       '9-10': variant(
         'Rank these tidal sites for a kinetic turbine array using Q = Av and P ∝ v³.',
         'Site surveys: (A) narrow shallow strait, (B) deep open bay, (C) cliff drop-off, (D) slow delta.',
-        'For the same tidal flow Q, what does shrinking the cross-section A do to v — and what does v then do to P?',
+        'For the same tidal flow Q, what does shrinking the cross-section A do to v - and what does v then do to P?',
         [
           o('nrg-4-a', 'The narrow strait: continuity raises velocity, and power grows with the cube of velocity.', 'scientificInquiry', 'mathematicalReasoning', 10),
           o('nrg-4-b', 'The deep open bay: the largest water mass must carry the most energy.', 'scientificInquiry', 'mathematicalReasoning', 2, 'more water means more energy'),
@@ -314,10 +314,10 @@ export const energyBlueprints: readonly ItemBlueprint[] = [
         'Kinetic-stream power scales with v³; barrage schemes scale with range² and basin area. Capital cost dominates both.',
         'Match the technology to the resource, then demand measurements, not maps.',
         [
-          o('nrg-4-a', 'ADCP current surveys in the strait: if mean v³ is high, kinetic turbines win — decide on measured velocity distributions, not bathymetry alone.', 'scientificInquiry', 'mathematicalReasoning', 10),
+          o('nrg-4-a', 'ADCP current surveys in the strait: if mean v³ is high, kinetic turbines win - decide on measured velocity distributions, not bathymetry alone.', 'scientificInquiry', 'mathematicalReasoning', 10),
           o('nrg-4-b', 'The estuary automatically: the biggest tidal range always gives the most energy.', 'scientificInquiry', 'mathematicalReasoning', 4, 'one resource number settles a design choice'),
-          o('nrg-4-c', 'Whichever site is deeper — depth sets the pressure that drives turbines.', 'scientificInquiry', 'mathematicalReasoning', 2, 'depth drives kinetic turbines'),
-          o('nrg-4-d', 'Whichever is nearer the city — cable length beats resource quality every time.', 'scientificInquiry', 'mathematicalReasoning', 3, 'transmission distance outweighs the resource'),
+          o('nrg-4-c', 'Whichever site is deeper - depth sets the pressure that drives turbines.', 'scientificInquiry', 'mathematicalReasoning', 2, 'depth drives kinetic turbines'),
+          o('nrg-4-d', 'Whichever is nearer the city - cable length beats resource quality every time.', 'scientificInquiry', 'mathematicalReasoning', 3, 'transmission distance outweighs the resource'),
         ],
       ),
     },

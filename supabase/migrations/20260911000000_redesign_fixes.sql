@@ -2,7 +2,7 @@
 -- Fixes: RLS breaches, consent gate, IRT parameter exposure, shared-report RPC
 
 -- ═══════════════════════════════════════════════════════════════════════
--- 1. Fix Flaw #1 — Drop enumerable shared-report policy
+-- 1. Fix Flaw #1 - Drop enumerable shared-report policy
 --    The current policy allows anyone to scan all reports with a non-null
 --    share_token. Replace with a server-side RPC that requires knowing
 --    the exact token.
@@ -24,7 +24,7 @@ revoke execute on function public.get_shared_report(text) from public;
 
 
 -- ═══════════════════════════════════════════════════════════════════════
--- 2. Fix Flaw #5 — Add DPDP consent gate to assessment UPDATE policy
+-- 2. Fix Flaw #5 - Add DPDP consent gate to assessment UPDATE policy
 --    SELECT and INSERT already have the consent check; UPDATE was missing.
 -- ═══════════════════════════════════════════════════════════════════════
 drop policy if exists "own assessments update" on public.assessments;
@@ -47,7 +47,7 @@ create policy "own assessments update" on public.assessments
 
 
 -- ═══════════════════════════════════════════════════════════════════════
--- 3. Fix Flaw #6 — Harden next_scenario RPC
+-- 3. Fix Flaw #6 - Harden next_scenario RPC
 --    Replace the existing next_scenario to:
 --    a) Accept p_assessment UUID (not raw theta/seen arrays)
 --    b) Derive theta and seen items server-side from the assessment record
@@ -147,7 +147,7 @@ $$ language plpgsql stable security definer;
 
 
 -- ═══════════════════════════════════════════════════════════════════════
--- 4. Fix Flaw #6 — Restrict scenarios SELECT to exclude IRT params
+-- 4. Fix Flaw #6 - Restrict scenarios SELECT to exclude IRT params
 --    Create a view without irt_a/b/c and point the RLS policy at it.
 --    Since RLS can't do column-level security, we drop direct authenticated
 --    read and create a safe view instead.

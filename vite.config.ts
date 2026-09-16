@@ -4,9 +4,18 @@ import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
 import { nemotronSocraticTutorPlugin } from './vite-plugin-nemotron';
+import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
   plugins: [
+    nodePolyfills({
+      globals: {
+        Buffer: true,
+        global: true,
+        process: true,
+      },
+      protocolImports: true,
+    }),
     react(), 
     tailwindcss(),
     nemotronSocraticTutorPlugin(),
@@ -59,7 +68,7 @@ export default defineConfig({
       output: {
         manualChunks: {
           'vendor-charts': ['recharts'],
-          'vendor-pdf': ['html2pdf.js', 'jspdf'],
+          'vendor-pdf': ['@react-pdf/renderer'],
           'vendor-three': ['three'],
         },
       },

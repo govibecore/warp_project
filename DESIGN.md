@@ -1,6 +1,6 @@
 # Nordic Lagom Design System
 
-> _"Lagom"_ — not too much, not too little. The right amount.
+> _"Lagom"_ - not too much, not too little. The right amount.
 
 A design system for WARP, a STEM competency assessment platform for students in Classes 3–12. The system prioritises legibility, calm, and trust. It is not decorative.
 
@@ -10,7 +10,7 @@ A design system for WARP, a STEM competency assessment platform for students in 
 
 **Restraint over decoration.** A student taking a timed assessment does not need confetti. A parent reading a report does not need glassmorphism. The design system uses one accent colour, warm-paper neutrals, and a single hairline for elevation. Everything else is typography and space.
 
-**Light is primary.** The scene is a student at a desk in daytime, a parent reading a printed report, a classroom projector. Dark mode is a complete second theme for evening and low-glare use — not an afterthought override.
+**Light is primary.** The scene is a student at a desk in daytime, a parent reading a printed report, a classroom projector. Dark mode is a complete second theme for evening and low-glare use - not an afterthought override.
 
 **Depth from alignment, not shadow.** No stacked shadows. No glow. No blur. Depth comes from whitespace, section rhythm, and a single 1px border on cards.
 
@@ -22,13 +22,13 @@ A design system for WARP, a STEM competency assessment platform for students in 
 
 | Token | OKLCH | Purpose |
 |---|---|---|
-| `--background` | `oklch(0.985 0.003 90)` | Page — warm paper |
+| `--background` | `oklch(0.985 0.003 90)` | Page - warm paper |
 | `--surface` | `oklch(0.968 0.004 90)` | Subtle sections |
 | `--elevated` | `oklch(1 0 0)` | Cards, popovers |
 | `--foreground` | `oklch(0.21 0.008 260)` | Body text |
 | `--foreground-secondary` | `oklch(0.5 0.008 260)` | Captions, labels |
 | `--foreground-muted` | `oklch(0.62 0.008 260)` | Placeholders |
-| `--primary` (Fjord) | `oklch(0.52 0.11 230)` | The single accent — action, focus, selection |
+| `--primary` (Fjord) | `oklch(0.52 0.11 230)` | The single accent - action, focus, selection |
 | `--success` (Moss) | `oklch(0.55 0.1 150)` | Positive semantic |
 | `--warning` (Amber) | `oklch(0.58 0.12 40)` | Caution semantic |
 | `--highlight` (Terracotta) | `oklch(0.68 0.13 75)` | Attention semantic |
@@ -68,7 +68,7 @@ Two families plus one mono:
 
 **Scale:** Tailwind's default modular scale. No custom sizes.
 
-**Weight:** 400 for body, 600 for emphasis, 700 for headings. Never 800 or above — it shouts.
+**Weight:** 400 for body, 600 for emphasis, 700 for headings. Never 800 or above - it shouts.
 
 **Tabular numerals:** Applied via the `.tabular` utility class wherever numbers appear in columns (scores, percentiles, timers, progress counts).
 
@@ -82,7 +82,7 @@ Two families plus one mono:
 | `--radius-card` | `0` | Cards, panels |
 | `--radius-pill` | `0` | Badges, tags |
 
-**Sharp geometry.** Every radius is zero. The brand's spacetime grid is angular — surfaces meet at corners, never curves. The one organic form in the brand language is the logo's sphere (the mass that warps the grid). Loading states tick a square edge (`.spinner-square`) rather than sweeping an arc.
+**Sharp geometry.** Every radius is zero. The brand's spacetime grid is angular - surfaces meet at corners, never curves. The one organic form in the brand language is the logo's sphere (the mass that warps the grid). Loading states tick a square edge (`.spinner-square`) rather than sweeping an arc.
 
 ---
 
@@ -133,7 +133,7 @@ Motion is calm, short, and single-purpose. Staggered children animate in over 50
 
 ## 7. Application Rules
 
-1. **One accent.** Fjord is the only colour that marks action. Moss, Amber, Terracotta, and Destructive are semantics with meaning — never decoration.
+1. **One accent.** Fjord is the only colour that marks action. Moss, Amber, Terracotta, and Destructive are semantics with meaning - never decoration.
 2. **Hairline elevation.** Cards get `1px solid var(--border)`. No `box-shadow` except the scrollbar thumb.
 3. **No glass.** No `backdrop-filter`, no `blur()`, no translucent overlays.
 4. **No rainbow.** Charts use `--chart-*` tokens, not raw colour values. The primary series uses `--chart-1`; others use neutrals or the remaining chart tokens.
