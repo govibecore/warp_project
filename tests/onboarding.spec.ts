@@ -11,7 +11,8 @@ test("Onboarding Registration Flow displays registration form", async ({ page })
 
   // Verify Email & Password fields are displayed for registration
   await expect(page.getByLabel(/Email/i)).toBeVisible();
-  await expect(page.getByLabel(/Password/i)).toBeVisible();
+  // Use #password to avoid strict mode violation with the toggle button aria-label
+  await expect(page.locator('#password')).toBeVisible();
   await expect(page.getByRole("button", { name: /^Sign up$/i })).toBeVisible();
 });
 
@@ -37,7 +38,7 @@ test("Successful Registration shows confirmation notice", async ({ page }) => {
   await page.getByRole("button", { name: /Create free account/i }).click();
 
   await page.getByLabel(/Email/i).fill("tom123@warp.app");
-  await page.getByLabel(/Password/i).fill("SuperSecret123!");
+  await page.locator('#password').fill("SuperSecret123!");
   await page.getByRole("button", { name: /^Sign up$/i }).click();
 
   // Notice should be displayed
@@ -49,7 +50,8 @@ test("Sign in mode renders credentials form", async ({ page }) => {
   await page.getByRole("button", { name: /Sign in Continue where you left off/i }).click();
 
   await expect(page.getByLabel(/Email/i)).toBeVisible();
-  await expect(page.getByLabel(/Password/i)).toBeVisible();
+  // Use #password to avoid strict mode violation with the toggle button aria-label
+  await expect(page.locator('#password')).toBeVisible();
   await expect(page.locator('form').getByRole("button", { name: /^Sign in$/i })).toBeVisible();
 });
 

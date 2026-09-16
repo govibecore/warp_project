@@ -11,18 +11,9 @@ import { resetSession } from '../persistence/storage';
  * 4. Cleans any URL search parameters (like ?dashboard, ?choose) and redirects cleanly to '/' (Landing Page)
  */
 export async function signOutUser(): Promise<void> {
-  // 1. Sign out of Supabase first so SDK can transmit revocation request to auth server
-  try {
-    await supabase.auth.signOut();
-  } catch (e) {
-    console.error('Supabase sign out error:', e);
-  }
-
-  // 2. Clear zustand stores
-  useAuthStore.getState().clearAuth();
-  useAssessment.getState().resetAssessment();
-
-  // 3. Reset Warp session storage & remove any remaining client tokens
+  // 1. Proactively mark logged out and clear client storage so that any reactive effects
+  // (like StudentDashboard or App.tsx) immediately know the user is signing out
+  // and do not trigger unexpected redirects to ?login or ?dashboard
   if (typeof window !== 'undefined') {
     try {
       window.sessionStorage.setItem('logged_out', 'true');
@@ -43,6 +34,17 @@ export async function signOutUser(): Promise<void> {
       }
       keysToRemove.forEach(k => window.localStorage.removeItem(k));
     } catch {}
+  }
+
+  // 2. Clear zustand stores
+  useAuthStore.getState().clearAuth();
+  useAssessment.getState().resetAssessment();
+
+  // 3. Sign out of Supabase
+  try {
+    await supabase.auth.signOut();
+  } catch (e) {
+    console.error('Supabase sign out error:', e);
   }
 
   // 4. Redirect cleanly to landing page

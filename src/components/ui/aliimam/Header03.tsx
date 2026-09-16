@@ -158,6 +158,7 @@ export function Header03({ onEnter }: Header03Props) {
             </div>
           ) : (
             <Button
+              id="landing-sign-in-btn"
               size="md"
               onClick={() => onEnter('login')}
               className="h-11 px-4 sm:px-5 text-xs font-semibold tracking-wide cursor-pointer shadow-md hover:shadow-primary/20"
@@ -223,6 +224,7 @@ export function Header03({ onEnter }: Header03Props) {
               <div className="mt-8 border-t border-border/80 pt-6 space-y-3">
                 {!isSignedIn ? (
                   <Button
+                    id="mobile-landing-sign-in-btn"
                     size="lg"
                     block
                     onClick={() => {

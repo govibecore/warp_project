@@ -94,8 +94,8 @@ export function StudentDashboard() {
 
     if (isGuest || !user?.id) {
       if (!isGuest) {
-        // Not a guest and no user ID => force login overlay/redirect
-        if (typeof window !== 'undefined') {
+        // Not a guest and no user ID => force login overlay/redirect unless currently logging out
+        if (typeof window !== 'undefined' && !window.sessionStorage.getItem('logged_out')) {
           window.location.search = '?login';
         }
       }

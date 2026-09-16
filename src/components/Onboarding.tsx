@@ -153,7 +153,7 @@ function AuthForm({
             type="button"
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer p-1"
-            aria-label={showPassword ? 'Hide password' : 'Show password'}
+            aria-label="Toggle password visibility"
             tabIndex={-1}
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -163,7 +163,7 @@ function AuthForm({
 
       {/* Submit Button */}
       <Button type="submit" disabled={loading} block size="lg" className="w-full mt-1 cursor-pointer">
-        {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Login'}
+        {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
       </Button>
 
       {/* Separator */}
