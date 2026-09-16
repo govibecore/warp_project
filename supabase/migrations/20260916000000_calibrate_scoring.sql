@@ -92,7 +92,7 @@ BEGIN
     RAISE EXCEPTION 'Scenario not found: %', p_scenario_id;
   END IF;
 
-  SELECT id, responses, ability_theta
+  SELECT id, student_id, status, responses, ability_theta
     INTO v_assessment
   FROM public.assessments
   WHERE id = p_assessment;
@@ -101,8 +101,39 @@ BEGIN
     RAISE EXCEPTION 'Assessment not found: %', p_assessment;
   END IF;
 
+  -- Verify assessment status is active
+  IF v_assessment.status != 'in_progress' THEN
+    RAISE EXCEPTION 'Assessment is not active (current status: %)', v_assessment.status;
+  END IF;
+
+  -- IDOR Protection: Verify caller ownership
+  -- 1. Authenticated user must own the assessment
+  IF auth.uid() IS NOT NULL AND auth.uid() != v_assessment.student_id THEN
+    RAISE EXCEPTION 'Access denied: You do not own this assessment';
+  END IF;
+
+  -- 2. Anonymous caller cannot mutate assessments belonging to registered users
+  IF auth.uid() IS NULL AND EXISTS (SELECT 1 FROM auth.users u WHERE u.id = v_assessment.student_id) THEN
+    RAISE EXCEPTION 'Access denied: Authentication required for this assessment';
+  END IF;
+
   v_responses := COALESCE(v_assessment.responses, '[]'::jsonb);
   v_ability_theta := COALESCE(v_assessment.ability_theta, '{}'::jsonb);
+
+  -- Prevent duplicate submissions for the same scenario in one assessment session
+  IF EXISTS (
+    SELECT 1 FROM jsonb_array_elements(v_responses) r
+    WHERE (r->>'scenario_id')::uuid = v_scenario.id
+  ) THEN
+    RETURN jsonb_build_object(
+      'success', true,
+      'competency', v_scenario.competency,
+      'theta', (v_ability_theta->>v_scenario.competency)::float,
+      'ability_theta', v_ability_theta,
+      'response_count', jsonb_array_length(v_responses),
+      'duplicate_ignored', true
+    );
+  END IF;
 
   -- Construct new response record with real parameters recorded
   v_new_response := jsonb_build_object(
