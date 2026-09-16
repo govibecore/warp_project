@@ -83,6 +83,7 @@ DECLARE
   v_r jsonb;
   v_opt jsonb;
   v_is_correct boolean;
+  v_found_option boolean;
 BEGIN
   -- Read scenario with security definer to access irt parameters and authoritative options
   SELECT id, prompt, competency, irt_a, irt_b, irt_c, international_benchmark, options
@@ -141,13 +142,19 @@ BEGIN
 
   -- Authoritatively derive correctness from scenario options if available
   v_is_correct := p_correct;
-  IF v_scenario.options IS NOT NULL AND jsonb_typeof(v_scenario.options) = 'array' THEN
+  IF v_scenario.options IS NOT NULL AND jsonb_typeof(v_scenario.options) = 'array' AND jsonb_array_length(v_scenario.options) > 0 THEN
+    v_is_correct := false;
+    v_found_option := false;
     FOR v_opt IN SELECT * FROM jsonb_array_elements(v_scenario.options) LOOP
       IF v_opt->>'text' = p_selected_text THEN
         v_is_correct := COALESCE((v_opt->>'correct')::boolean, (v_opt->>'is_correct')::boolean, false);
+        v_found_option := true;
         EXIT;
       END IF;
     END LOOP;
+    IF NOT v_found_option THEN
+      RAISE EXCEPTION 'Invalid selection: Option not found in scenario options';
+    END IF;
   END IF;
 
   -- Construct new response record with real parameters recorded
@@ -260,7 +267,7 @@ DECLARE
   i int;
 BEGIN
   FOR v_ass IN
-    SELECT id, responses, ability_theta
+    SELECT id, responses, ability_theta, percentiles
     FROM public.assessments
     WHERE status = 'completed'
       AND (global_score IS NULL OR percentiles IS NULL OR percentiles->>'global' IS NULL)
@@ -314,7 +321,7 @@ BEGIN
       SET global_score = v_global_score,
           ability_theta = v_ability_theta,
           scaled_scores = v_scaled_scores,
-          percentiles = jsonb_build_object('global', v_global_pct, 'Global', v_global_pct)
+          percentiles = COALESCE(v_ass.percentiles, '{}'::jsonb) || jsonb_build_object('global', v_global_pct, 'Global', v_global_pct)
       WHERE id = v_ass.id;
     END IF;
   END LOOP;

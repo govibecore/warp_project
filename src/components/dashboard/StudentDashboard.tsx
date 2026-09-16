@@ -147,6 +147,10 @@ export function StudentDashboard() {
           const calibratedAssessments = recentAssessments.filter(
             (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
           );
+          const latestCalibratedRecord = calibratedAssessments.length > 0
+            ? assessments.find(a => a.id === calibratedAssessments[0].id)
+            : null;
+
           const latestScore = calibratedAssessments.length > 0 ? calibratedAssessments[0].score : null;
           const scoreDelta = calibratedAssessments.length > 1
             ? calibratedAssessments[0].score - calibratedAssessments[1].score
@@ -155,13 +159,14 @@ export function StudentDashboard() {
             .map(a => a.globalPct)
             .filter((pct): pct is number => typeof pct === 'number');
           const bestGlobalPct = calibratedPcts.length > 0 ? Math.max(...calibratedPcts) : null;
-          const latestAbilityTheta = 
-            (assessments[0].ability_theta as Record<string, number> | null) ||
-            (assessments[0] as any).result?.abilityTheta ||
-            (assessments[0] as any).result?.theta ||
-            null;
-          const latestClassLevel = assessments[0].class_level || 8;
-          const latestSubject = (assessments[0] as any).subject || 'STEM';
+          const latestAbilityTheta = latestCalibratedRecord
+            ? (latestCalibratedRecord.ability_theta as Record<string, number> | null) ||
+              (latestCalibratedRecord as any).result?.abilityTheta ||
+              (latestCalibratedRecord as any).result?.theta ||
+              null
+            : null;
+          const latestClassLevel = latestCalibratedRecord?.class_level ?? 8;
+          const latestSubject = (latestCalibratedRecord as any)?.subject || 'STEM';
           const firstAssessmentAt = assessments[assessments.length - 1].completed_at || null;
 
           setSummary({
