@@ -22,7 +22,7 @@ function ordinal(n: number): string {
 }
 
 function formatDuration(ms?: number): string {
-  if (!ms || ms <= 0) return '—';
+  if (!ms || ms <= 0) return '-';
   const totalSeconds = Math.round(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -79,7 +79,7 @@ export function OnePagePrintSummary({
   const subjectDisplay = isEnglish ? 'English Literacy' : (benchmark?.subject || 'STEM');
 
   return (
-    <div className="one-page-summary border border-neutral-300 bg-white text-neutral-900 p-6 font-sans text-xs leading-tight print:p-4 print:border-none">
+    <div className="one-page-summary print-page border border-neutral-300 bg-white text-neutral-900 p-6 md:p-8 font-sans text-xs leading-tight print:p-0 print:border-none print:shadow-none shadow-sm rounded-none">
       {/* ── Document Header ── */}
       <div className="flex items-start justify-between border-b-2 border-neutral-900 pb-3 mb-3">
         <div className="flex items-center gap-3">
@@ -131,14 +131,14 @@ export function OnePagePrintSummary({
           </div>
         </div>
 
-        {/* Global Scaled Score Hero — static SVG ring (no animation, pre-drawn at final position) */}
+        {/* Global Scaled Score Hero - static SVG ring (no animation, pre-drawn at final position) */}
         <div className="col-span-4 flex items-center justify-end gap-3 pl-3 border-l border-neutral-200">
           {/* Static score ring */}
           <div className="relative shrink-0">
             <svg width="64" height="64" viewBox="0 0 64 64" className="block -rotate-90">
               {/* Track */}
               <circle cx="32" cy="32" r="26" fill="none" stroke="#E5E7EB" strokeWidth="5" />
-              {/* Fill ring — pre-drawn at score fraction */}
+              {/* Fill ring - pre-drawn at score fraction */}
               <circle
                 cx="32"
                 cy="32"
@@ -173,7 +173,7 @@ export function OnePagePrintSummary({
 
       {/* ── Dual Column Body: Student Sprint (Left) & Parent Blueprint (Right) ── */}
       <div className="grid grid-cols-2 gap-4 pb-3 mb-3 border-b border-neutral-200">
-        {/* ── LEFT COLUMN: Student Section — Cyan accent — matches web hub Card 1 ── */}
+        {/* ── LEFT COLUMN: Student Section - Cyan accent - matches web hub Card 1 ── */}
         <div className="space-y-3 pr-2 border-r border-neutral-200 border-l-2 pl-2" style={{ borderLeftColor: '#8FCFE8' }}>
           <div className="flex items-center gap-1.5 pb-1 border-b border-neutral-200">
             <GraduationCap className="size-3.5" style={{ color: '#4DA8C9' }} />
@@ -234,7 +234,7 @@ export function OnePagePrintSummary({
           </div>
         </div>
 
-        {/* ── RIGHT COLUMN: Parent Section — Warm amber accent — matches web hub Card 2 ── */}
+        {/* ── RIGHT COLUMN: Parent Section - Warm amber accent - matches web hub Card 2 ── */}
         <div className="space-y-3 pl-2 border-l-2" style={{ borderLeftColor: '#D9A86E' }}>
           <div className="flex items-center gap-1.5 pb-1 border-b border-neutral-200">
             <Users className="size-3.5" style={{ color: '#B8894E' }} />
@@ -355,7 +355,7 @@ export function OnePagePrintSummary({
               <Sparkles className="size-2.5 text-cyan-800" /> CAT 3PL IRT Psychometric Calibration
             </div>
             <p className="text-neutral-600 leading-tight">
-              Adaptive item discrimination calibrated against 50,000+ student trajectories. Synthesized via NVIDIA Nemotron-70B.
+              Adaptive item discrimination calibrated against 50,000+ student trajectories. Synthesized via WARP AI.
             </p>
           </div>
           <div className="pt-1 mt-1 border-t border-neutral-200 flex items-center justify-between text-[8px] font-mono text-neutral-500">
@@ -363,6 +363,16 @@ export function OnePagePrintSummary({
             <span>warp.govibecore.com</span>
           </div>
         </div>
+      </div>
+
+      {/* Official Document Footer */}
+      <div className="pt-2 mt-2 border-t border-neutral-200 flex items-center justify-between text-[8px] font-mono text-neutral-500">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-neutral-800">WARP GLOBAL DIAGNOSTIC</span>
+          <span>·</span>
+          <span>NEP 2020 / PARAKH Calibrated</span>
+        </div>
+        <span className="font-bold text-neutral-900">PAGE 1 OF 1 · EXECUTIVE BRIEF</span>
       </div>
     </div>
   );

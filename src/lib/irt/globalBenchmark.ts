@@ -179,8 +179,10 @@ export interface InternationalBenchmarkResult {
   abilityTheta?: number;
   aggregateScaledScore: number;
   globalPercentile: number;
+  hasSufficientData?: boolean;
   regionalPercentiles: Record<BenchmarkRegion, number>;
   competencyBreakdown: Record<string, {
+    isAssessed?: boolean;
     theta: number;
     scaledScore: number;
     radarScore: number;
@@ -287,14 +289,20 @@ export function computeInternationalBenchmark(
   const isEnglish = subject.toLowerCase().includes('english');
   const keys: CompetencyKey[] = isEnglish ? ENGLISH_COMPETENCIES : STEM_COMPETENCIES;
 
+  const assessedKeys = keys.filter(
+    k => thetas && typeof thetas[k] === 'number' && !isNaN(thetas[k])
+  );
+  const hasSufficientData = assessedKeys.length > 0;
+
   const breakdown: any = {};
   let totalTheta = 0;
-  let count = 0;
 
   for (const k of keys) {
-    const th = thetas[k] ?? 0;
-    totalTheta += th;
-    count++;
+    const isAssessed = thetas && typeof thetas[k] === 'number' && !isNaN(thetas[k]);
+    const th = isAssessed ? thetas[k] : 0;
+    if (isAssessed) {
+      totalTheta += th;
+    }
 
     const sgNorm = REGIONAL_NORMS.Singapore[k];
     const cnNorm = REGIONAL_NORMS.China[k];
@@ -303,39 +311,40 @@ export function computeInternationalBenchmark(
     const inNorm = REGIONAL_NORMS.India[k];
     const glNorm = REGIONAL_NORMS.Global[k];
 
-    const sgGap = Number(((th - sgNorm.mean) / sgNorm.stdDev).toFixed(2));
+    const sgGap = isAssessed ? Number(((th - sgNorm.mean) / sgNorm.stdDev).toFixed(2)) : 0;
 
     breakdown[k] = {
-      theta: Number(th.toFixed(2)),
-      scaledScore: thetaToScaledScore(th),
-      radarScore: thetaToRadarIndex(th),
-      globalPercentile: calculateRegionalPercentile(th, glNorm),
-      singaporePercentile: calculateRegionalPercentile(th, sgNorm),
-      chinaPercentile: calculateRegionalPercentile(th, cnNorm),
-      usaPercentile: calculateRegionalPercentile(th, usNorm),
-      europePercentile: calculateRegionalPercentile(th, euNorm),
-      indiaPercentile: calculateRegionalPercentile(th, inNorm),
+      isAssessed,
+      theta: isAssessed ? Number(th.toFixed(2)) : 0,
+      scaledScore: isAssessed ? thetaToScaledScore(th) : 0,
+      radarScore: isAssessed ? thetaToRadarIndex(th) : 0,
+      globalPercentile: isAssessed ? calculateRegionalPercentile(th, glNorm) : 0,
+      singaporePercentile: isAssessed ? calculateRegionalPercentile(th, sgNorm) : 0,
+      chinaPercentile: isAssessed ? calculateRegionalPercentile(th, cnNorm) : 0,
+      usaPercentile: isAssessed ? calculateRegionalPercentile(th, usNorm) : 0,
+      europePercentile: isAssessed ? calculateRegionalPercentile(th, euNorm) : 0,
+      indiaPercentile: isAssessed ? calculateRegionalPercentile(th, inNorm) : 0,
       singaporeGapSigma: sgGap,
     };
   }
 
-  const avgTheta = count > 0 ? totalTheta / count : 0;
-  const aggregateScaledScore = thetaToScaledScore(avgTheta);
-  const globalPercentile = calculateRegionalPercentile(avgTheta, { mean: 0.0, stdDev: 1.0, description: '' });
+  const avgTheta = hasSufficientData ? totalTheta / assessedKeys.length : 0;
+  const aggregateScaledScore = hasSufficientData ? thetaToScaledScore(avgTheta) : 0;
+  const globalPercentile = hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.0, stdDev: 1.0, description: '' }) : 0;
 
   const regionalPercentiles: Record<BenchmarkRegion, number> = {
     Global: globalPercentile,
-    Singapore: calculateRegionalPercentile(avgTheta, { mean: 0.74, stdDev: 0.81, description: '' }),
-    China: calculateRegionalPercentile(avgTheta, { mean: 0.75, stdDev: 0.79, description: '' }),
-    USA: calculateRegionalPercentile(avgTheta, { mean: 0.53, stdDev: 0.97, description: '' }),
-    Europe: calculateRegionalPercentile(avgTheta, { mean: 0.58, stdDev: 0.89, description: '' }),
-    India: calculateRegionalPercentile(avgTheta, { mean: 0.41, stdDev: 1.06, description: '' }),
+    Singapore: hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.74, stdDev: 0.81, description: '' }) : 0,
+    China: hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.75, stdDev: 0.79, description: '' }) : 0,
+    USA: hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.53, stdDev: 0.97, description: '' }) : 0,
+    Europe: hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.58, stdDev: 0.89, description: '' }) : 0,
+    India: hasSufficientData ? calculateRegionalPercentile(avgTheta, { mean: 0.41, stdDev: 1.06, description: '' }) : 0,
   };
 
-  // Radar Data
+  // Radar Data - only show scores for assessed competencies; others render at 0
   const radarData = keys.map(k => ({
     competency: COMPETENCY_LABELS[k],
-    student: breakdown[k].radarScore,
+    student: breakdown[k].isAssessed ? breakdown[k].radarScore : 0,
     singaporeTop10: 88, // 90th percentile benchmark in Singapore
     globalMedian: 50,
   }));
@@ -343,13 +352,29 @@ export function computeInternationalBenchmark(
   // Cognitive Archetype determination
   let cognitiveArchetype;
 
-  if (isEnglish) {
-    const und = thetas.understanding ?? 0;
-    const loc = thetas.locatingInformation ?? 0;
-    const syn = thetas.synthesis ?? 0;
-    const evr = thetas.evaluatingReflecting ?? 0;
+  if (!hasSufficientData) {
+    cognitiveArchetype = {
+      title: 'Assessment Incomplete',
+      tagline: 'Pending responses across benchmark scenarios',
+      description: 'The candidate has not completed sufficient questions to calibrate a cognitive archetype. Please complete at least 5 benchmark questions.',
+      primaryStrength: 'Assessment pending',
+      criticalBlindspot: 'Assessment pending',
+    };
+  } else if (isEnglish) {
+    const und = thetas.understanding ?? avgTheta;
+    const loc = thetas.locatingInformation ?? avgTheta;
+    const syn = thetas.synthesis ?? avgTheta;
+    const evr = thetas.evaluatingReflecting ?? avgTheta;
 
-    if (syn >= 0.8 && evr >= 0.7) {
+    if (avgTheta <= -0.6) {
+      cognitiveArchetype = {
+        title: 'Emerging Foundational Reader',
+        tagline: 'Vulnerable to surface distractors and keyword traps',
+        description: 'Frequently relies on isolated word cues rather than synthesizing full sentence context. High vulnerability to distractors using superficial phrase matches.',
+        primaryStrength: 'Willingness to engage with reading tasks.',
+        criticalBlindspot: 'Severe susceptibility to distractor traps; requires guided paragraph decoding and structured evidence checking.',
+      };
+    } else if (syn >= 0.8 && evr >= 0.7) {
       cognitiveArchetype = {
         title: 'Critical Text Synthesizer',
         tagline: 'High-order argument synthesis and rhetorical deconstruction',
@@ -383,13 +408,21 @@ export function computeInternationalBenchmark(
       };
     }
   } else {
-    const math = thetas.mathematicalReasoning ?? 0;
-    const comp = thetas.computationalThinking ?? 0;
-    const sci = thetas.scientificInquiry ?? 0;
-    const eng = thetas.engineeringDesign ?? 0;
-    const sys = thetas.systemsThinking ?? 0;
+    const math = thetas.mathematicalReasoning ?? avgTheta;
+    const comp = thetas.computationalThinking ?? avgTheta;
+    const sci = thetas.scientificInquiry ?? avgTheta;
+    const eng = thetas.engineeringDesign ?? avgTheta;
+    const sys = thetas.systemsThinking ?? avgTheta;
 
-    if (comp >= 0.8 && math >= 0.8) {
+    if (avgTheta <= -0.6) {
+      cognitiveArchetype = {
+        title: 'Foundational Concept Seeker',
+        tagline: 'Vulnerable to textbook misconceptions and non-routine traps',
+        description: 'Operates primarily on surface associations rather than formal conservation principles. Highly susceptible to engineered distractor options that seem intuitively appealing.',
+        primaryStrength: 'Early exploratory reasoning and curiosity.',
+        criticalBlindspot: 'Frequently falls for distractor traps that violate conservation laws or physical problem constraints.',
+      };
+    } else if (comp >= 0.8 && math >= 0.8) {
       cognitiveArchetype = {
         title: 'Algorithmic Architect',
         tagline: 'High-order formal deduction & computational abstraction',
@@ -433,13 +466,19 @@ export function computeInternationalBenchmark(
   }
 
   // Reality Check: Candid evaluation
-  let verdict = 'Competitive with Global Average; Behind Asian Elite Benchmark';
-  if (regionalPercentiles.Singapore >= 75) {
+  let verdict: string;
+  if (!hasSufficientData) {
+    verdict = 'Assessment Incomplete — No Valid Data';
+  } else if (regionalPercentiles.Singapore >= 75) {
     verdict = 'Globally Elite (Top Quartile vs Singapore & China Peers)';
   } else if (regionalPercentiles.Singapore >= 50) {
     verdict = 'Solid International Foundation (At Par with Singapore/Europe Median)';
+  } else if (globalPercentile >= 40) {
+    verdict = 'Competitive with Global Average; Behind Asian Elite Benchmark';
+  } else if (globalPercentile >= 20) {
+    verdict = 'Developing Baseline — Significant Conceptual Gaps Identified';
   } else {
-    verdict = 'Significant Global Deficit in Deep Conceptual Transfer';
+    verdict = 'Critical Conceptual Deficit — Foundational Intervention Required';
   }
 
   const sgRank = regionalPercentiles.Singapore;
@@ -447,7 +486,14 @@ export function computeInternationalBenchmark(
   const glRank = regionalPercentiles.Global;
 
   let realityCheck;
-  if (isEnglish) {
+  if (!hasSufficientData) {
+    realityCheck = {
+      verdict,
+      honestSummary: 'The candidate has not yet answered sufficient questions to establish an ability estimate.',
+      internationalGapSummary: 'Pending completion of the diagnostic assessment.',
+      gradeInflationWarning: 'Diagnostic cannot be generated without active question responses.',
+    };
+  } else if (isEnglish) {
     const undGap = breakdown.understanding?.singaporeGapSigma ?? 0;
     const synGap = breakdown.synthesis?.singaporeGapSigma ?? 0;
     realityCheck = {
@@ -480,7 +526,15 @@ export function computeInternationalBenchmark(
     schoolMarksCorrelation: string;
   };
 
-  if (indiaNationalPercentile >= 90) {
+  if (!hasSufficientData) {
+    boardGradeBand = {
+      grade: '--',
+      band: 'Assessment Incomplete',
+      descriptor: 'Complete at least 5 assessment items to project CBSE/ICSE board standing.',
+      percentileEquivalent: 'N/A',
+      schoolMarksCorrelation: 'N/A',
+    };
+  } else if (indiaNationalPercentile >= 90) {
     boardGradeBand = {
       grade: 'A1',
       band: 'Outstanding Conceptual Mastery',
@@ -528,54 +582,96 @@ export function computeInternationalBenchmark(
         ? 'Equivalent to 65–74% in CBSE/ICSE English; prone to misinterpreting nuanced questions under time pressure'
         : 'Equivalent to 65–74% in CBSE/ICSE; prone to formula confusion under time pressure',
     };
-  } else {
+  } else if (indiaNationalPercentile >= 25) {
     boardGradeBand = {
       grade: 'C1',
       band: 'Foundational Support Needed',
       descriptor: isEnglish
         ? 'Linguistic gaps in core vocabulary and syntax; requires rebuilding reading stamina and basic sentence structure before advanced reading drills.'
         : 'Conceptual gaps in core definitions; requires rebuilding basics through concrete examples and visual diagrams before competitive drills.',
-      percentileEquivalent: 'Foundational Tier (Below 40th Percentile)',
+      percentileEquivalent: 'Foundational Tier (25th–39th Percentile)',
       schoolMarksCorrelation: isEnglish
-        ? 'Requires targeted revision of NCERT English readers and grammar fundamentals'
-        : 'Requires targeted revision of NCERT foundational chapters',
+        ? 'Equivalent to 50–64% in CBSE/ICSE English; requires targeted revision of readers and grammar'
+        : 'Equivalent to 50–64% in CBSE/ICSE; requires targeted revision of NCERT foundational chapters',
+    };
+  } else {
+    boardGradeBand = {
+      grade: 'D',
+      band: 'Remedial Intervention Required',
+      descriptor: isEnglish
+        ? 'Critical reading literacy gaps; prone to guessing on unseen texts. Requires intensive guided reading and vocabulary remediation.'
+        : 'Critical conceptual gaps in core mathematics and science; requires rebuilding first principles before attempting standard problems.',
+      percentileEquivalent: 'Remedial Tier (Below 25th Percentile)',
+      schoolMarksCorrelation: isEnglish
+        ? 'Equivalent to < 50% in CBSE/ICSE English; significant deficit in reading comprehension'
+        : 'Equivalent to < 50% in CBSE/ICSE; significant deficit in analytical application',
     };
   }
 
   // PARAKH (NEP 2020) 3-Pillar Progress Card
-  const parakhP1Score = Math.max(15, Math.min(99, Math.round(55 + avgTheta * 16)));
-  const parakhP2Score = Math.max(10, Math.min(99, Math.round(48 + avgTheta * 18)));
-  const parakhP3Score = Math.max(10, Math.min(99, Math.round(40 + avgTheta * 20)));
+  let parakhHolisticPillars;
+  if (!hasSufficientData) {
+    parakhHolisticPillars = {
+      conceptualKnowledge: {
+        score: 0,
+        level: 'Not Assessed',
+        label: 'Core Conceptual Knowledge & Recall',
+        description: 'Pending assessment completion.',
+      },
+      applicationAndProblemSolving: {
+        score: 0,
+        level: 'Not Assessed',
+        label: 'Application & Numerical Problem Solving',
+        description: 'Pending assessment completion.',
+      },
+      higherOrderThinkingSkills: {
+        score: 0,
+        level: 'Not Assessed',
+        label: 'Higher-Order Thinking Skills (HOTS)',
+        description: 'Pending assessment completion.',
+      },
+      overallSummary: 'Assessment Incomplete: No competency scores available.',
+    };
+  } else {
+    const parakhP1Score = Math.max(5, Math.min(99, Math.round(50 + avgTheta * 18)));
+    const parakhP2Score = Math.max(5, Math.min(99, Math.round(44 + avgTheta * 20)));
+    const parakhP3Score = Math.max(5, Math.min(99, Math.round(36 + avgTheta * 20)));
 
-  const getParakhTier = (sc: number) => (sc >= 75 ? 'Advanced Mastery' : sc >= 55 ? 'Proficient Application' : 'Developing Baseline');
+    const getParakhTier = (sc: number) => (
+      sc >= 75 ? 'Advanced Mastery' :
+      sc >= 55 ? 'Proficient Application' :
+      sc >= 35 ? 'Developing Baseline' :
+      'Foundational Need'
+    );
 
-  const parakhHolisticPillars = {
-    conceptualKnowledge: {
-      score: parakhP1Score,
-      level: getParakhTier(parakhP1Score),
-      label: 'Core Conceptual Knowledge & Recall',
-      description: isEnglish
-        ? 'Direct evidence extraction, core grammar syntax, and literal reading comprehension.'
-        : 'Mastery of fundamental definitions, scientific laws, and standard arithmetic/algebraic procedures (CBSE/ICSE syllabus alignment).',
-    },
-    applicationAndProblemSolving: {
-      score: parakhP2Score,
-      level: getParakhTier(parakhP2Score),
-      label: 'Application & Numerical Problem Solving',
-      description: isEnglish
-        ? 'Cross-paragraph thematic inference, rhetorical technique identification, and structured comparative analysis.'
-        : 'Translating real-world word problems into mathematical equations and physical models without relying on rote memorization.',
-    },
-    higherOrderThinkingSkills: {
-      score: parakhP3Score,
-      level: getParakhTier(parakhP3Score),
-      label: 'Higher-Order Thinking Skills (HOTS)',
-      description: isEnglish
-        ? 'Critical evaluation of authorial bias, subtext deconstruction, and robust immunity against deceptive distractor choices.'
-        : 'Critical inquiry, isolating invariants, spotting edge cases, and immunity to subtle distractor traps engineered around common misconceptions.',
-    },
-    overallSummary: `PARAKH (NEP 2020) 360° Profile: ${getParakhTier(parakhP1Score)} in Core Knowledge, ${getParakhTier(parakhP2Score)} in Application, and ${getParakhTier(parakhP3Score)} in HOTS.`,
-  };
+    parakhHolisticPillars = {
+      conceptualKnowledge: {
+        score: parakhP1Score,
+        level: getParakhTier(parakhP1Score),
+        label: 'Core Conceptual Knowledge & Recall',
+        description: isEnglish
+          ? 'Direct evidence extraction, core grammar syntax, and literal reading comprehension.'
+          : 'Mastery of fundamental definitions, scientific laws, and standard arithmetic/algebraic procedures (CBSE/ICSE syllabus alignment).',
+      },
+      applicationAndProblemSolving: {
+        score: parakhP2Score,
+        level: getParakhTier(parakhP2Score),
+        label: 'Application & Numerical Problem Solving',
+        description: isEnglish
+          ? 'Cross-paragraph thematic inference, rhetorical technique identification, and structured comparative analysis.'
+          : 'Translating real-world word problems into mathematical equations and physical models without relying on rote memorization.',
+      },
+      higherOrderThinkingSkills: {
+        score: parakhP3Score,
+        level: getParakhTier(parakhP3Score),
+        label: 'Higher-Order Thinking Skills (HOTS)',
+        description: isEnglish
+          ? 'Critical evaluation of authorial bias, subtext deconstruction, and robust immunity against deceptive distractor choices.'
+          : 'Critical inquiry, isolating invariants, spotting edge cases, and immunity to subtle distractor traps engineered around common misconceptions.',
+      },
+      overallSummary: `PARAKH (NEP 2020) 360° Profile: ${getParakhTier(parakhP1Score)} in Core Knowledge, ${getParakhTier(parakhP2Score)} in Application, and ${getParakhTier(parakhP3Score)} in HOTS.`,
+    };
+  }
 
   // Indian Competitive Foundation (Olympiads / JEE-NEET)
   let competitiveTier: string;
@@ -583,7 +679,12 @@ export function computeInternationalBenchmark(
   let competitiveDescription: string;
   let competitiveRecommendation: string;
 
-  if (indiaNationalPercentile >= 85) {
+  if (!hasSufficientData) {
+    competitiveTier = 'Pending Assessment Completion';
+    competitiveBadge = 'Not Assessed';
+    competitiveDescription = 'Complete the diagnostic assessment to evaluate competitive exam standing.';
+    competitiveRecommendation = 'Start assessment to calibrate foundation.';
+  } else if (indiaNationalPercentile >= 85) {
     competitiveTier = isEnglish
       ? 'National English Olympiad (IEO) & Advanced Critical Reading Tier'
       : 'National Olympiad & Advanced Foundation Tier';
@@ -605,17 +706,28 @@ export function computeInternationalBenchmark(
     competitiveRecommendation = isEnglish
       ? 'Focus on eliminating distractor traps in inference questions and expand Tier-2/Tier-3 academic vocabulary.'
       : 'Focus on eliminating calculation rush errors and practice multi-variable constraint problems.';
-  } else {
+  } else if (indiaNationalPercentile >= 35) {
     competitiveTier = isEnglish
-      ? 'Strong Board English Foundation & School Exam Tier'
-      : 'Strong Board Foundation & School Exam Tier';
+      ? 'Developing Board English Foundation & School Exam Tier'
+      : 'Developing Board Foundation & School Exam Tier';
     competitiveBadge = 'Foundational Track';
     competitiveDescription = isEnglish
-      ? 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to unseen passage patterns to build reading agility.'
-      : 'Solid foundation for CBSE/ICSE school exams; requires gradual exposure to competitive problem patterns to build higher-order agility.';
+      ? 'Understands standard classroom exercises; needs targeted guidance on unseen reading passages and vocabulary in context.'
+      : 'Understands standard classroom exercises; needs targeted guidance on non-routine multi-step questions.';
     competitiveRecommendation = isEnglish
       ? 'Strengthen NCERT English reader comprehension and grammar rules first, then attempt Level-1 IEO worksheets.'
       : 'Strengthen NCERT core concepts first, then attempt Level-1 Olympiad worksheets.';
+  } else {
+    competitiveTier = isEnglish
+      ? 'Remedial Reading Literacy & Core Vocabulary Tier'
+      : 'Remedial STEM Concepts & Basic Numeracy Tier';
+    competitiveBadge = 'Remedial Focus';
+    competitiveDescription = isEnglish
+      ? 'Struggles with basic unseen passage comprehension and syntax; prone to frequent guesswork on distractor options.'
+      : 'Struggles with foundational mathematical and physical concepts; requires concrete concept rebuilding before standard textbook exercises.';
+    competitiveRecommendation = isEnglish
+      ? 'Intensive daily guided reading of short, graded passages with margin annotations and vocabulary flashcards.'
+      : 'Work through NCERT Class 6/7 bridge modules with hands-on visual representations before attempting Class 8 problem sets.';
   }
 
   const indianCompetitiveFoundation = {
@@ -626,36 +738,51 @@ export function computeInternationalBenchmark(
   };
 
   // UNESCO 3-Tier Indicator Framework
-  const tier1Score = Math.max(10, Math.min(99, Math.round(50 + avgTheta * 18)));
-  const tier2Score = Math.max(10, Math.min(99, Math.round(45 + avgTheta * 20)));
-  const tier3Score = Math.max(5, Math.min(99, Math.round(35 + avgTheta * 22)));
+  let unescoIndicators;
+  if (!hasSufficientData) {
+    unescoIndicators = {
+      tier1Foundation: { score: 0, level: 'Not Assessed', description: 'Pending assessment.' },
+      tier2Application: { score: 0, level: 'Not Assessed', description: 'Pending assessment.' },
+      tier3Innovation: { score: 0, level: 'Not Assessed', description: 'Pending assessment.' },
+      summary: 'UNESCO 3-Tier profile: Pending assessment completion.',
+    };
+  } else {
+    const tier1Score = Math.max(5, Math.min(99, Math.round(50 + avgTheta * 18)));
+    const tier2Score = Math.max(5, Math.min(99, Math.round(44 + avgTheta * 20)));
+    const tier3Score = Math.max(5, Math.min(99, Math.round(34 + avgTheta * 22)));
 
-  const getTierLevel = (sc: number) => (sc >= 80 ? 'Advanced Mastery' : sc >= 55 ? 'Proficient Application' : 'Developing Baseline');
+    const getTierLevel = (sc: number) => (
+      sc >= 80 ? 'Advanced Mastery' :
+      sc >= 55 ? 'Proficient Application' :
+      sc >= 35 ? 'Developing Baseline' :
+      'Foundational Need'
+    );
 
-  const unescoIndicators = {
-    tier1Foundation: {
-      score: tier1Score,
-      level: getTierLevel(tier1Score),
-      description: isEnglish 
-        ? 'Foundational textual comprehension; direct evidence retrieval and literal meaning extraction.'
-        : 'Foundational scientific and mathematical conceptual grasp; recall and direct single-variable operations.',
-    },
-    tier2Application: {
-      score: tier2Score,
-      level: getTierLevel(tier2Score),
-      description: isEnglish
-        ? 'Cross-paragraph thematic inference, rhetorical technique identification, and structured comparative analysis.'
-        : 'Multi-variable causal analysis, hypothesis testing, and principled cross-domain application under routine conditions.',
-    },
-    tier3Innovation: {
-      score: tier3Score,
-      level: getTierLevel(tier3Score),
-      description: isEnglish
-        ? 'Critical text synthesis, authorial bias deconstruction, and robust immunity against deceptive distractor interpretations.'
-        : 'Demonstrated innovation ability: novel problem solving, trade-off optimization, and resilience against counter-intuitive traps.',
-    },
-    summary: `UNESCO 3-Tier diagnostic profile: ${getTierLevel(tier1Score)} in Foundation (Tier 1), ${getTierLevel(tier2Score)} in Application (Tier 2), and ${getTierLevel(tier3Score)} in Innovation (Tier 3).`,
-  };
+    unescoIndicators = {
+      tier1Foundation: {
+        score: tier1Score,
+        level: getTierLevel(tier1Score),
+        description: isEnglish 
+          ? 'Foundational textual comprehension; direct evidence retrieval and literal meaning extraction.'
+          : 'Foundational scientific and mathematical conceptual grasp; recall and direct single-variable operations.',
+      },
+      tier2Application: {
+        score: tier2Score,
+        level: getTierLevel(tier2Score),
+        description: isEnglish
+          ? 'Cross-paragraph thematic inference, rhetorical technique identification, and structured comparative analysis.'
+          : 'Multi-variable causal analysis, hypothesis testing, and principled cross-domain application under routine conditions.',
+      },
+      tier3Innovation: {
+        score: tier3Score,
+        level: getTierLevel(tier3Score),
+        description: isEnglish
+          ? 'Critical text synthesis, authorial bias deconstruction, and robust immunity against deceptive distractor interpretations.'
+          : 'Demonstrated innovation ability: novel problem solving, trade-off optimization, and resilience against counter-intuitive traps.',
+      },
+      summary: `UNESCO 3-Tier diagnostic profile: ${getTierLevel(tier1Score)} in Foundation (Tier 1), ${getTierLevel(tier2Score)} in Application (Tier 2), and ${getTierLevel(tier3Score)} in Innovation (Tier 3).`,
+    };
+  }
 
   // IEEE Model of Domain Learning (MDL - Vance et al. 2016)
   let mdlStage: 'Acclimation' | 'Competency' | 'Proficiency' | 'Mastery' = 'Acclimation';
@@ -667,7 +794,11 @@ export function computeInternationalBenchmark(
     : 'General heuristics and trial-and-error; vulnerable to distractor misconceptions.';
   let personalInterestSustenance = 'Situational interest triggered by novelty; requires structured guidance to persist through non-routine impasses.';
 
-  if (avgTheta >= 1.4) {
+  if (!hasSufficientData) {
+    domainKnowledgeDepth = 'Pending assessment completion.';
+    strategicProcessing = 'Pending assessment completion.';
+    personalInterestSustenance = 'Pending assessment completion.';
+  } else if (avgTheta >= 1.4) {
     mdlStage = 'Mastery';
     domainKnowledgeDepth = isEnglish 
       ? 'Deep, cohesive literary and rhetorical schema with effortless cross-genre synthesis.'
@@ -695,12 +826,24 @@ export function computeInternationalBenchmark(
     domainKnowledgeDepth,
     strategicProcessing,
     personalInterestSustenance,
-    progressionSummary: `Class ${classLevel} candidate is situated in the IEEE MDL '${mdlStage}' progression tier. Progression toward next tier requires deliberate practice on non-routine multi-variable transfer rather than formula drill.`,
+    progressionSummary: hasSufficientData
+      ? `Class ${classLevel} candidate is situated in the IEEE MDL '${mdlStage}' progression tier. Progression toward next tier requires deliberate practice on non-routine multi-variable transfer rather than formula drill.`
+      : 'Complete the diagnostic benchmark to determine IEEE MDL stage progression.',
   };
 
   // International Benchmarking Comparisons
   let nsfComparisons;
-  if (isEnglish) {
+  if (!hasSufficientData) {
+    nsfComparisons = {
+      candidateEquivalentTimss: 0,
+      singaporeBenchmarkScore: isEnglish ? 543 : 605,
+      eastAsiaTopTierScore: isEnglish ? 535 : 585,
+      oecdTopDecileScore: isEnglish ? 520 : 525,
+      usNationalAverageScore: isEnglish ? 480 : 488,
+      nationalPercentileDelta: 'Pending Assessment',
+      nsb2026Insight: 'Complete the diagnostic benchmark to compare performance against Singapore, US, and OECD standards.',
+    };
+  } else if (isEnglish) {
     const candidatePisa = Math.max(200, Math.min(800, Math.round(500 + avgTheta * 100)));
     const oecdPisaReading = 480;
     const sgPisaReading = 543;
@@ -731,12 +874,17 @@ export function computeInternationalBenchmark(
   }
 
   // 4 Frontier Pillars
-  const p1 = Math.max(5, Math.min(99, Math.round(50 + avgTheta * 20)));
-  const p2 = Math.max(5, Math.min(99, Math.round(50 + (avgTheta + 0.1) * 20)));
-  const p3 = Math.max(5, Math.min(99, Math.round(50 + (avgTheta - 0.1) * 20)));
-  const p4 = Math.max(5, Math.min(99, Math.round(50 + avgTheta * 20)));
+  const p1 = hasSufficientData ? Math.max(5, Math.min(99, Math.round(50 + avgTheta * 20))) : 0;
+  const p2 = hasSufficientData ? Math.max(5, Math.min(99, Math.round(50 + (avgTheta + 0.1) * 20))) : 0;
+  const p3 = hasSufficientData ? Math.max(5, Math.min(99, Math.round(50 + (avgTheta - 0.1) * 20))) : 0;
+  const p4 = hasSufficientData ? Math.max(5, Math.min(99, Math.round(50 + avgTheta * 20))) : 0;
 
-  const getPillarTier = (idx: number) => (idx >= 75 ? 'Frontier Ready' : idx >= 50 ? 'Developing Competency' : 'Emerging Foundation');
+  const getPillarTier = (idx: number) => (
+    !hasSufficientData ? 'Not Assessed' :
+    idx >= 75 ? 'Frontier Ready' :
+    idx >= 50 ? 'Developing Competency' :
+    'Emerging Foundation'
+  );
 
   const frontierPillars = {
     aiDataLiteracy: {
@@ -766,6 +914,7 @@ export function computeInternationalBenchmark(
     abilityTheta: avgTheta,
     aggregateScaledScore,
     globalPercentile,
+    hasSufficientData,
     regionalPercentiles,
     competencyBreakdown: breakdown,
     radarData,
@@ -979,14 +1128,14 @@ function getParentBlueprint(classLevel: number, _breakdown: any, isEnglish: bool
 
   const quarterlyMilestones = isEnglish
     ? [
-        'Month 1: Diagnostic Clean-up — Remediate textual comprehension and vocabulary vulnerabilities identified in this report.',
-        'Month 2: Fluency & Synthesis — Read 10 challenging non-fiction articles and complete annotated comparative tables.',
-        'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure growth in critical reading percentiles.',
+        'Month 1: Diagnostic Clean-up - Remediate textual comprehension and vocabulary vulnerabilities identified in this report.',
+        'Month 2: Fluency & Synthesis - Read 10 challenging non-fiction articles and complete annotated comparative tables.',
+        'Month 3: Timed Benchmark Re-assessment - Retake the WARP Adaptive Assessment to measure growth in critical reading percentiles.',
       ]
     : [
-        'Month 1: Diagnostic Clean-up — Isolate and remediate top 2 conceptual vulnerabilities identified in this report.',
-        'Month 2: Fluency & Heuristic Building — Complete 30 non-routine international problems (SASMO / AMC / Bebras) under un-timed exploratory conditions.',
-        'Month 3: Timed Benchmark Re-assessment — Retake the WARP Adaptive Assessment to measure delta in latent ability theta and international percentile rank.',
+        'Month 1: Diagnostic Clean-up - Isolate and remediate top 2 conceptual vulnerabilities identified in this report.',
+        'Month 2: Fluency & Heuristic Building - Complete 30 non-routine international problems (SASMO / AMC / Bebras) under un-timed exploratory conditions.',
+        'Month 3: Timed Benchmark Re-assessment - Retake the WARP Adaptive Assessment to measure delta in latent ability theta and international percentile rank.',
       ];
 
   const indianRecommendedCurricula = isEnglish

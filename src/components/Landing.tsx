@@ -1,22 +1,17 @@
 import { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { gsap } from 'gsap';
 import {
   ArrowRight,
   ShieldCheck,
-  Menu,
-  X,
-  User,
   Check,
   ChevronLeft,
   ChevronRight,
   GraduationCap,
-  Activity,
   CheckCircle2,
   Clock,
 } from 'lucide-react';
-import { useSupabaseAuth } from '../context/SupabaseAuthContext';
-import { signOutUser } from '../lib/auth';
+import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { BentoGrid, BentoGridItem } from './ui/bento';
@@ -34,10 +29,9 @@ import { CinematicHero } from './CinematicHero';
 import { TextMatrixDecode, IntersectionScope, ChromeGlowButton } from './ui/pixel-perfect';
 
 /**
- * The glade is lazy-loaded: three.js lands in its own chunk and never delays
- * first paint. Until it arrives the hero simply shows its own backdrop.
+ * STEM City is lazy-loaded: three.js lands in its own chunk and never delays
+ * first paint.
  */
-const GladeCanvas = lazy(() => import('./GladeCanvas'));
 const StemCityCanvas = lazy(() => import('./StemCityCanvas'));
 
 interface LandingProps {
@@ -51,15 +45,7 @@ const STATS = [
   { value: '5', label: 'Global benchmark cohorts' },
 ];
 
-const HERO_NAV = [
-  { label: 'Telemetry', href: '#features' },
-  { label: 'STEM City', href: '#stem-city' },
-  { label: 'Competencies', href: '#competencies' },
-  { label: 'Frameworks', href: '#frameworks' },
-  { label: 'Report', href: '#report' },
-  { label: 'Access', href: '#access' },
-  { label: 'FAQ', href: '#faq' },
-];
+
 
 const COMPETENCIES = [
   {
@@ -67,7 +53,7 @@ const COMPETENCIES = [
     name: 'Scientific Inquiry',
     mission: 'Ecology',
     color: 'var(--chart-1)',
-    body: 'Read the empirical evidence, run the controlled comparison, state what the data actually demonstrates — not what intuition anticipated.',
+    body: 'Read the empirical evidence, run the controlled comparison, state what the data actually demonstrates - not what intuition anticipated.',
   },
   {
     n: '02',
@@ -81,7 +67,7 @@ const COMPETENCIES = [
     name: 'Engineering Design',
     mission: 'Infrastructure',
     color: 'var(--chart-3)',
-    body: 'Weigh trade-offs against physical and material constraints, then choose what to build first — and what to deliberately omit.',
+    body: 'Weigh trade-offs against physical and material constraints, then choose what to build first - and what to deliberately omit.',
   },
   {
     n: '04',
@@ -108,7 +94,7 @@ const STEPS = [
   {
     num: '02',
     title: 'Work the Scenarios',
-    body: 'Thirty Computerized Adaptive Testing (CAT) items across five STEAM missions — energy, ecology, space, data, and infrastructure. Each asks you to decide under constraints.',
+    body: 'Thirty Computerized Adaptive Testing (CAT) items across five STEAM missions - energy, ecology, space, data, and infrastructure. Each asks you to decide under constraints.',
   },
   {
     num: '03',
@@ -185,31 +171,47 @@ const FAQ = [
     q: 'Is student data private and protected?',
     a: 'All data is encrypted in transit and at rest using strict row-level security. We never sell student data or serve ads. Full compliance with student privacy standards.',
   },
+  {
+    q: 'What subjects or domains are covered by the assessment?',
+    a: 'The core assessment focuses on five competency domains: Systems Thinking, Data Literacy, Ecological Engineering, Energy Dynamics, and Space Infrastructure. These go beyond traditional rote memorization to measure applied problem-solving.',
+  },
+  {
+    q: 'How quickly will I receive my results?',
+    a: 'Instantly. The moment you complete your final item, the IRT engine finalizes your psychometric estimation and generates a comprehensive, interactive report.',
+  },
+  {
+    q: 'Do I need special hardware to run the 3D environments?',
+    a: 'No. The STEM City environment is highly optimized using WebGL to run smoothly on any modern web browser, including standard school-issued laptops and tablets.',
+  },
+  {
+    q: 'How often should a student take the assessment?',
+    a: 'We recommend taking the baseline assessment at the beginning of the academic year, and a follow-up assessment every 3 to 4 months to accurately measure longitudinal growth.',
+  },
 ];
 
 const TESTIMONIALS = [
   {
     quote:
       'WARP gives us something standardized tests never could: a true diagnostic of how students think under constraints, rather than what formula they memorized.',
-    name: 'Dr. Aris Thorne',
+    name: 'Dr. Khumanthem Roshan',
     role: 'Head of STEM Curriculum',
-    institution: 'Singapore International Academy',
+    institution: 'Loktak Valley Academy',
     badge: 'Curriculum Director',
   },
   {
     quote:
       'Seeing my gap in Systems Thinking compared to the global cohort showed me exactly what to practice. Two months later my score jumped +14 points.',
-    name: 'Maya Lin',
+    name: 'Yaiphaba Thokchom',
     role: 'Class 9 Student',
-    institution: 'Global Cohort Pilot',
+    institution: 'Kangleipak International School',
     badge: 'Student Participant',
   },
   {
     quote:
       'The parent report was written in clear, actionable language without statistical haze. For once, our staff and parents were on the exact same page.',
-    name: 'Marcus Vance',
-    role: 'District STEM Coordinator',
-    institution: 'Pacific Innovation Network',
+    name: 'Rajkumar Somorendro',
+    role: 'Zonal Education Officer',
+    institution: 'Imphal Regional Education Network',
     badge: 'District Administrator',
   },
 ];
@@ -258,7 +260,7 @@ function HatchedWing() {
   );
 }
 
-/** GSAP-powered cinematic hero text block with staggered reveal. */
+/** GSAP-powered cinematic hero with centered typography and framed Blender 3D STEAM showcase. */
 function HeroCopy({ onEnter }: { onEnter: () => void }) {
   const copyRef = useRef<HTMLDivElement>(null);
 
@@ -276,9 +278,9 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
           y: 0,
           filter: 'blur(0px)',
           duration: 0.9,
-          stagger: 0.15,
+          stagger: 0.12,
           ease: 'power3.out',
-          delay: 0.3,
+          delay: 0.2,
         },
       );
     }, el);
@@ -287,20 +289,20 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
   }, []);
 
   return (
-    <div className="relative z-2 flex flex-1 flex-col justify-center px-6 py-8 sm:px-12 sm:py-10 md:px-20 lg:px-28">
-      <div className="relative w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl">
+    <div className="relative z-2 flex flex-1 flex-col items-center justify-center px-4 pt-10 pb-16 sm:px-8 sm:pt-14 sm:pb-20 md:px-12 lg:px-16">
+      <div className="relative flex w-full max-w-5xl flex-col items-center text-center">
         {/* Soft radial backdrop aura behind hero text block for enhanced legibility */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -inset-10 -z-1 bg-[radial-gradient(ellipse_at_20%_40%,oklch(0.235_0.016_245/0.95)_0%,oklch(0.275_0.018_245/0.65)_50%,transparent_75%)] blur-xl"
+          className="pointer-events-none absolute -inset-10 -z-1 bg-[radial-gradient(ellipse_at_50%_25%,oklch(0.235_0.016_245/0.85)_0%,oklch(0.275_0.018_245/0.45)_50%,transparent_75%)] blur-2xl"
         />
 
-        <div ref={copyRef} className="flex flex-col items-start">
+        <div ref={copyRef} className="flex flex-col items-center w-full">
           {/* Calibrated scientific badge */}
           <a
             href="#stem-city"
             data-hero-reveal
-            className="group mb-5 inline-flex items-center gap-2.5 border border-border bg-surface/85 px-3 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-surface"
+            className="group mb-5 inline-flex items-center gap-2.5 border border-border bg-surface/85 px-3.5 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-surface"
           >
             <span className="relative flex size-2">
               <span className="absolute inline-flex h-full w-full animate-ping bg-primary opacity-75" />
@@ -324,7 +326,7 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
           {/* Heading with fluid single-line typewriter */}
           <h1
             data-hero-reveal
-            className="mb-4 font-display text-[clamp(2.5rem,5vw,4.25rem)] font-extrabold leading-none tracking-tight text-foreground whitespace-nowrap min-h-[1.15em] flex items-center sm:mb-5"
+            className="mb-4 font-display text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-tight tracking-tight text-foreground min-h-[1.15em] flex items-center justify-center sm:mb-5"
           >
             <Typewriter
               words={[
@@ -340,17 +342,17 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
             />
           </h1>
 
-          {/* Subtitle with balanced 2-line cadence */}
+          {/* Subtitle with balanced cadence */}
           <p
             data-hero-reveal
-            className="mb-7 max-w-xl text-base sm:text-lg leading-relaxed text-foreground-secondary font-normal antialiased"
+            className="mb-7 max-w-2xl text-center text-base sm:text-lg leading-relaxed text-foreground-secondary font-normal antialiased"
           >
             WARP benchmarks how you think across five STEAM competencies against the
-            global cohort — revealing your exact gap vector and how to close it.
+            global cohort - revealing your exact gap vector and how to close it.
           </p>
 
           {/* Harmonized CTA button pair */}
-          <div data-hero-reveal className="flex flex-wrap items-center gap-3.5">
+          <div data-hero-reveal className="flex flex-wrap items-center justify-center gap-3.5">
             <ChromeGlowButton
               id="landing-start-btn"
               size="lg"
@@ -363,20 +365,21 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
             <Button
               variant="ghost"
               size="lg"
-              className="h-11 px-6 border border-border bg-surface/85 text-foreground hover:border-primary/50 hover:bg-elevated hover:text-foreground backdrop-blur-sm shadow-xs transition-all duration-200 font-medium"
+              className="h-11 px-6 border border-border bg-surface/85 text-foreground hover:border-primary/50 hover:bg-elevated hover:text-foreground backdrop-blur-sm shadow-xs transition-all duration-200 font-medium cursor-pointer"
               onClick={() =>
-                document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })
+                document.getElementById('stem-city')?.scrollIntoView({ behavior: 'smooth' })
               }
             >
-              <Activity className="size-3.5 text-primary" />
-              Explore telemetry
+              <span className="size-2 bg-emerald-400 rounded-full animate-pulse mr-2" />
+              Tour STEM City in 3D
+              <ArrowRight className="size-3.5 text-foreground-secondary ml-1" />
             </Button>
           </div>
 
           {/* Calibrated telemetry footnote strip */}
           <div
             data-hero-reveal
-            className="mt-7 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[11px] text-foreground-muted"
+            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono text-[11px] text-foreground-muted"
           >
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="size-3 text-primary" />
@@ -398,6 +401,86 @@ function HeroCopy({ onEnter }: { onEnter: () => void }) {
                 Zero tracking or ads
               </TextMatrixDecode>
             </span>
+          </div>
+
+          {/* ── Blender 3D STEAM Campus Showcase Card ── */}
+          <div
+            data-hero-reveal
+            className="group relative mt-10 w-full overflow-hidden border border-border/80 bg-surface/40 backdrop-blur-sm shadow-2xl transition-all duration-300 hover:border-primary/50"
+          >
+            {/* Technical Scope Corner Markers */}
+            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
+            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
+
+            {/* Top Telemetry Strip */}
+            <div className="flex h-9 w-full items-center justify-between border-b border-border bg-background/85 px-4 font-mono text-[11px] text-foreground-secondary">
+              <div className="flex items-center gap-2">
+                <span className="size-1.5 bg-primary animate-ping" />
+                <span className="uppercase tracking-wider text-foreground font-semibold">
+                  STEAM CAMPUS // 5-COMPETENCY ARCHITECTURE
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="hidden sm:inline text-foreground-muted">BLENDER 3D CYCLES ENGINE</span>
+                <span className="text-primary font-medium tracking-wide">ISOMETRIC COGNITIVE MODEL</span>
+              </div>
+            </div>
+
+            {/* Image Viewport (Theme Aware) */}
+            <div className="relative aspect-video w-full max-h-130 overflow-hidden bg-background">
+              {/* Dark mode variant */}
+              <img
+                src="/images/hero-blender-dark.jpg"
+                alt="WARP 3D STEAM Educational Laboratory Campus"
+                className="hidden dark:block h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                loading="eager"
+              />
+              {/* Light mode variant */}
+              <img
+                src="/images/hero-blender-light.jpg"
+                alt="WARP 3D STEAM Educational Laboratory Campus"
+                className="block dark:hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
+                loading="eager"
+              />
+
+              {/* Subtle gradient vignette to blend edges smoothly */}
+              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-background/80 via-transparent to-transparent opacity-60" />
+
+              {/* Floating Quick-Jump to STEM City on bottom right */}
+              <a
+                href="#stem-city"
+                className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10 flex items-center gap-2 border border-border/80 bg-background/90 px-3 py-1.5 text-xs font-mono text-foreground backdrop-blur-md transition-colors hover:border-primary hover:text-primary shadow-lg"
+              >
+                <span className="size-1.5 bg-emerald-400 rounded-full animate-pulse" />
+                <span>Walk in STEM City (WebGL) ↓</span>
+              </a>
+            </div>
+
+            {/* Bottom 5-Domain District Grid Bar */}
+            <div className="grid grid-cols-2 divide-y divide-border border-t border-border bg-background/90 sm:grid-cols-5 sm:divide-y-0 sm:divide-x font-mono text-[10px] text-foreground-secondary">
+              <div className="flex items-center gap-1.5 px-3 py-2">
+                <span className="size-2 rounded-full" style={{ background: 'var(--chart-1)' }} />
+                <span className="truncate">01 Ecology · Inquiry</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-2">
+                <span className="size-2 rounded-full" style={{ background: 'var(--chart-2)' }} />
+                <span className="truncate">02 Computation · Data</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-2">
+                <span className="size-2 rounded-full" style={{ background: 'var(--chart-3)' }} />
+                <span className="truncate">03 Engineering · Infra</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-2">
+                <span className="size-2 rounded-full" style={{ background: 'var(--chart-4)' }} />
+                <span className="truncate">04 Math · Energy</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-3 py-2 col-span-2 sm:col-span-1">
+                <span className="size-2 rounded-full" style={{ background: 'var(--chart-5)' }} />
+                <span className="truncate">05 Systems · Space</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1256,7 +1339,7 @@ function ClosingCTA({ onEnter }: { onEnter: () => void }) {
           Ready to close the gap?
         </h2>
         <p className="mx-auto mb-8 max-w-md text-balance text-base text-foreground-secondary leading-relaxed">
-          Join students and schools who know exactly where they stand — and what to do next.
+          Join students and schools who know exactly where they stand - and what to do next.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -1352,7 +1435,7 @@ function InstrumentFooter({ onEnter }: { onEnter: () => void }) {
         {/* Bottom bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 pt-8 text-xs font-mono text-foreground-secondary">
           <p>© 2026 WARP Benchmark Systems. All rights reserved.</p>
-          <p>Client-Authoritative 3PL IRT · Nordic Lagom Protocol · v2.0</p>
+          <p>Designed & engineered by Oliver Oinam for Arra-Core</p>
         </div>
       </div>
     </footer>
@@ -1360,11 +1443,11 @@ function InstrumentFooter({ onEnter }: { onEnter: () => void }) {
 }
 
 export function Landing({ onEnter }: LandingProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { isSignedIn } = useSupabaseAuth();
-
   return (
-    <main className="relative flex w-full flex-col overflow-x-hidden" data-testid="landing-shell">
+    <main className="relative flex w-full flex-col overflow-x-hidden pt-18 sm:pt-20" data-testid="landing-shell">
+      {/* ── Fixed Floating Instrument Navigation (Ali Imam Header-03) ── */}
+      <Header03 onEnter={onEnter} />
+
       {/* ── Dual Architectural Margins (Ali Imam landing-01 inspired) ── */}
       <div className="pointer-events-none absolute top-0 left-4 z-0 h-full w-px bg-border/40 sm:left-6 md:left-8 lg:left-12" aria-hidden="true" />
       <div className="pointer-events-none absolute top-0 right-4 z-0 h-full w-px bg-border/40 sm:right-6 md:right-8 lg:right-12" aria-hidden="true" />
@@ -1372,167 +1455,30 @@ export function Landing({ onEnter }: LandingProps) {
       {/* Top hatched bar */}
       <HatchedAccentBar height="h-5" />
 
-      {/* ── Hero — full-bleed glade, floating nav, copy anchored bottom-left ── */}
+      {/* ── Hero - centered editorial architecture with Blender 3D showcase ── */}
       <section
         className="relative flex min-h-screen flex-col overflow-hidden"
         data-testid="landing-hero"
       >
-        {/* The self-playing world: full-bleed, decorative, never interactive. */}
-        <Suspense fallback={null}>
-          <GladeCanvas className="z-0" />
-        </Suspense>
-
         {/* Cinematic GSAP-powered aurora / orb overlay */}
-        <CinematicHero className="z-0" />
+        <CinematicHero className="z-0 opacity-60 pointer-events-none" />
 
-        {/* Scrims */}
+        {/* Subtle radial & vertical scrims */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-1 bg-[linear-gradient(38deg,oklch(0.12_0.01_260)_0%,oklch(0.12_0.01_260/0.95)_16%,oklch(0.12_0.01_260/0.6)_42%,oklch(0.12_0.01_260/0.2)_62%,transparent_80%)]"
+          className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(ellipse_at_50%_20%,var(--primary)/0.08_0%,transparent_70%)]"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-1 h-24 bg-linear-to-b from-[oklch(0.12_0.01_260/0.8)] to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 z-1 h-28 bg-linear-to-b from-background/90 to-transparent"
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-36 bg-linear-to-t from-background to-transparent"
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-40 bg-linear-to-t from-background to-transparent"
         />
-        <DotPattern className="opacity-20 mix-blend-overlay" />
+        <DotPattern className="opacity-15 mix-blend-overlay pointer-events-none" />
 
-        {/* Floating nav — Ali Imam header-01 inspired instrument bar with glass transition & corner markers */}
-        <nav className="relative z-3 px-6 pt-4 sm:px-12 sm:pt-6 md:px-20 lg:px-28">
-          <div className="relative flex h-14 w-full items-stretch justify-between border border-border/80 bg-background/85 backdrop-blur-md shadow-xs transition-colors duration-300 hover:border-primary/40">
-            {/* Technical corner brackets */}
-            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 select-none font-mono text-[9px] text-border/80">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 select-none font-mono text-[9px] text-border/80">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 select-none font-mono text-[9px] text-border/80">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 select-none font-mono text-[9px] text-border/80">+</span>
-
-            <div className="flex h-full items-center">
-              <a
-                href="#top"
-                onClick={(e) => {
-                  e.preventDefault();
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
-                className="flex h-full items-center border-r border-border px-4 sm:px-6"
-                aria-label="WARP home"
-              >
-                <WarpLogo variant="lockup" className="h-8 sm:h-10 w-auto" />
-              </a>
-
-              {/* Desktop links */}
-              <div className="hidden lg:flex h-full">
-                {HERO_NAV.map((link) => (
-                  <a
-                    key={link.href}
-                    href={link.href}
-                    className="flex items-center border-r border-border px-4 text-[13px] font-medium text-foreground-secondary transition-colors duration-200 hover:bg-surface hover:text-foreground"
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex h-full items-stretch">
-              {/* Telemetry live status indicator to balance instrument bar */}
-              <div className="hidden xl:flex items-center border-l border-border px-4 font-mono text-[11px] text-foreground-secondary gap-2 select-none">
-                <span className="size-1.5 bg-emerald-400 animate-pulse" />
-                <TextMatrixDecode trigger="mount" delay={0.4} duration={1.0} className="tracking-wider">
-                  3PL IRT · ACTIVE
-                </TextMatrixDecode>
-              </div>
-
-              {!isSignedIn ? (
-                <button
-                  id="landing-sign-in-btn"
-                  onClick={() => onEnter('login')}
-                  className="flex h-full items-center border-l border-border px-4 sm:px-6 text-[13px] sm:text-[14px] font-semibold text-foreground-secondary transition-colors duration-200 hover:bg-surface hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring cursor-pointer"
-                >
-                  Sign in
-                </button>
-              ) : (
-                <div className="flex h-full items-center border-l border-border px-3 sm:px-4">
-                  <button
-                    onClick={() => signOutUser()}
-                    className="flex size-8 items-center justify-center bg-surface text-foreground-secondary hover:text-foreground transition-colors cursor-pointer"
-                    aria-label="Sign out"
-                  >
-                    <User className="size-4" />
-                  </button>
-                </div>
-              )}
-
-              {/* Mobile menu toggle */}
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="flex lg:hidden h-full items-center justify-center border-l border-border px-3.5 text-foreground-secondary hover:bg-surface hover:text-foreground cursor-pointer"
-                aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-                aria-expanded={mobileMenuOpen}
-              >
-                {mobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile menu dropdown */}
-          <AnimatePresence>
-            {mobileMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: -8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="mt-2 flex flex-col border border-border bg-background p-4 lg:hidden shadow-lg"
-              >
-                <div className="flex flex-col divide-y divide-border">
-                  {HERO_NAV.map((link) => (
-                    <a
-                      key={link.href}
-                      href={link.href}
-                      onClick={() => setMobileMenuOpen(false)}
-                      className="flex py-3 text-sm font-medium text-foreground-secondary transition-colors hover:text-foreground"
-                    >
-                      {link.label}
-                    </a>
-                  ))}
-                </div>
-                <div className="mt-4 flex flex-col gap-2 pt-2">
-                  {!isSignedIn && (
-                    <Button
-                      id="mobile-landing-sign-in-btn"
-                      variant="outline"
-                      size="md"
-                      onClick={() => {
-                        setMobileMenuOpen(false);
-                        onEnter('login');
-                      }}
-                      className="w-full"
-                    >
-                      Sign in
-                    </Button>
-                  )}
-                  <Button
-                    size="md"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onEnter();
-                    }}
-                    className="w-full"
-                  >
-                    Start your assessment
-                    <ArrowRight className="size-4" />
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </nav>
-
-        {/* Copy — cinematic block with GSAP staggered reveal */}
+        {/* Copy - cinematic block with GSAP staggered reveal */}
         <HeroCopy onEnter={onEnter} />
       </section>
 
@@ -1593,7 +1539,12 @@ export function Landing({ onEnter }: LandingProps) {
               </a>
             </div>
 
-            <figure className="relative border border-border bg-background">
+            <figure className="relative border border-border bg-background shadow-xl">
+              {/* Technical scope corner markers */}
+              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
+              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
               <Suspense
                 fallback={
                   <div className="flex h-112 items-center justify-center font-mono text-sm text-foreground-secondary sm:h-136">
@@ -1629,7 +1580,7 @@ export function Landing({ onEnter }: LandingProps) {
               </h2>
               <p className="max-w-xl text-balance text-foreground-secondary text-sm">
                 Every item is a scenario with a decision in it. Each decision feeds one of
-                five competencies — and one of five missions.
+                five competencies - and one of five missions.
               </p>
             </div>
           </div>

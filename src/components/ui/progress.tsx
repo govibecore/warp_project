@@ -1,7 +1,7 @@
 import { cn } from '../../lib/utils';
 
 /**
- * Progress. One height, one radius, one fill colour — the caller may swap the
+ * Progress. One height, one radius, one fill colour - the caller may swap the
  * fill to a semantic colour when the number itself is the message.
  */
 

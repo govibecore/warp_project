@@ -1,88 +1,105 @@
 import { useState } from 'react';
-import { Download, Printer, Check } from 'lucide-react';
+import { Download, Check, AlertCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
-import html2pdf from 'html2pdf.js';
+import { pdf } from '@react-pdf/renderer';
+import { WarpReportPDFDocument } from './pdf/WarpReportPDFDocument';
 
-interface PDFExportButtonProps {
-  targetId: string;
+export interface PDFExportButtonProps {
   studentName?: string;
   classLevel?: number;
+  completedAt?: string;
+  totalTimeMs?: number;
+  overallScore?: number;
+  abilityTheta?: number | null;
+  benchmark?: any;
+  studentVariant?: any;
+  parentVariant?: any;
+  responses?: any[];
+  printMode?: 'one-page' | 'comprehensive';
   className?: string;
+  onClose?: () => void;
+  // Kept for backwards compatibility
+  targetId?: string;
 }
 
 export function PDFExportButton({
-  targetId,
   studentName = 'Candidate',
   classLevel = 8,
+  completedAt = new Date().toISOString(),
+  totalTimeMs = 0,
+  overallScore = 0,
+  abilityTheta = 0,
+  benchmark = {},
+  studentVariant = {},
+  parentVariant = {},
+  responses = [],
+  printMode = 'one-page',
   className = '',
+  onClose,
 }: PDFExportButtonProps) {
   const [status, setStatus] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
 
   const handleExport = async () => {
+    setStatus('generating');
+    setErrorMsg('');
+
     try {
-      setStatus('generating');
+      // Compile pure vector PDF in memory via @react-pdf/renderer
+      const blob = await pdf(
+        <WarpReportPDFDocument
+          studentName={studentName}
+          classLevel={classLevel}
+          completedAt={completedAt}
+          totalTimeMs={totalTimeMs}
+          overallScore={overallScore}
+          abilityTheta={abilityTheta}
+          benchmark={benchmark}
+          studentVariant={studentVariant}
+          parentVariant={parentVariant}
+          responses={responses}
+          printMode={printMode}
+        />
+      ).toBlob();
 
-      const element = document.getElementById(targetId);
-      if (!element) {
-        console.warn(`Element #${targetId} not found for PDF generation. Fallback to print.`);
-        window.print();
-        setStatus('idle');
-        return;
-      }
-
+      // Trigger direct browser download without opening any new tab
       const cleanName = studentName.replace(/[^a-zA-Z0-9_-]/g, '_');
       const dateStr = new Date().toISOString().split('T')[0];
-      const filename = `WARP_STEM_Benchmark_${cleanName}_Class${classLevel}_${dateStr}.pdf`;
+      const filename =
+        printMode === 'one-page'
+          ? `WARP_1Page_Brief_${cleanName}_Class${classLevel}_${dateStr}.pdf`
+          : `WARP_Dossier_${cleanName}_Class${classLevel}_${dateStr}.pdf`;
 
-      const options = {
-        margin: [10, 8, 10, 8] as [number, number, number, number], // top, right, bottom, left in mm
-        filename,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff',
-          windowWidth: 1200,
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait' as const,
-        },
-        pagebreak: {
-          mode: ['avoid-all', 'css', 'legacy'],
-          avoid: ['.print-keep', '.card', 'header', 'table'],
-        },
-      };
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
 
-      // Add temporary class for print styling optimizations
-      element.classList.add('pdf-rendering-mode');
-
-      await html2pdf().set(options as any).from(element).save();
-
-      element.classList.remove('pdf-rendering-mode');
       setStatus('success');
-      setTimeout(() => setStatus('idle'), 3000);
-    } catch (err) {
-      console.error('html2pdf generation error, falling back to window.print():', err);
-      const el = document.getElementById(targetId);
-      if (el) el.classList.remove('pdf-rendering-mode');
+      onClose?.();
+      setTimeout(() => setStatus('idle'), 3500);
+    } catch (err: any) {
+      console.error('[PDFExportButton] Export failed:', err);
+      setErrorMsg(err?.message ?? 'PDF generation failed');
       setStatus('error');
-      // Fallback to browser print dialog
-      window.print();
-      setTimeout(() => setStatus('idle'), 3000);
+      setTimeout(() => setStatus('idle'), 5000);
     }
   };
 
   return (
     <Button
       variant="secondary"
+      size="sm"
       onClick={handleExport}
       disabled={status === 'generating'}
-      className={`gap-2 transition-all ${className}`}
+      className={`gap-2 whitespace-nowrap transition-all ${className}`}
       aria-label="Export official report as PDF"
+      title={status === 'error' ? errorMsg : 'Download vector A4 PDF report'}
     >
       {status === 'generating' ? (
         <>
@@ -92,12 +109,12 @@ export function PDFExportButton({
       ) : status === 'success' ? (
         <>
           <Check className="size-4 text-emerald-500" />
-          <span>Downloaded PDF</span>
+          <span>Downloaded!</span>
         </>
       ) : status === 'error' ? (
         <>
-          <Printer className="size-4 text-amber-500" />
-          <span>Printed PDF</span>
+          <AlertCircle className="size-4 text-destructive" />
+          <span>Failed</span>
         </>
       ) : (
         <>

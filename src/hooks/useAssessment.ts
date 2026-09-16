@@ -3,7 +3,7 @@ import { estimateThetaEAP, IRTResponse } from '../lib/irt/estimate';
 import { supabase } from '../lib/supabase';
 import { createAndSaveReport } from '../lib/aiService';
 
-/** Safe scenario shape — no irt_a/b/c exposed to client */
+/** Safe scenario shape - no irt_a/b/c exposed to client */
 export interface Scenario {
   id: string;
   scenario_code: string;
@@ -15,6 +15,8 @@ export interface Scenario {
   options: { text: string; correct: boolean }[];
   learning_objective?: string;
   hint?: string;
+  question_type?: string;
+  metadata?: any;
 }
 
 interface AssessmentState {
@@ -127,25 +129,8 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
     if (!currentScenario || !assessmentId) return;
 
     const comp = currentScenario.competency;
-    const compResponses = irtResponses[comp] || [];
-
-    // Client-side IRT estimation uses a simplified model since the server
-    // holds the authoritative IRT params. We use placeholder params here
-    // for real-time theta tracking; the server recalculates authoritatively.
-    const newIrtResp: IRTResponse = {
-      a: 1.0,  // placeholder — server holds real values
-      b: 0.0,  // placeholder — server holds real values
-      c: 0.25, // placeholder — server holds real values
-      correct
-    };
-
-    const updatedCompResponses = [...compResponses, newIrtResp];
-    const { theta: newTheta } = estimateThetaEAP(updatedCompResponses);
-
-    const newIrtMap = { ...irtResponses, [comp]: updatedCompResponses };
-    const newThetaMap = { ...theta, [comp]: newTheta };
     const newSeen = [...seenScenarios, currentScenario.id];
-    
+
     const newResponseRecord = {
       scenario_id: currentScenario.id,
       prompt: currentScenario.prompt,
@@ -159,21 +144,47 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
     const newResponses = [...responses, newResponseRecord];
 
     set({
-      irtResponses: newIrtMap,
-      theta: newThetaMap,
       seenScenarios: newSeen,
       responses: newResponses,
       currentScenario: null // clear while loading next
     });
 
-    // Persist response update to db before fetching next scenario
-    const { error: updateError } = await supabase.from('assessments').update({
-      responses: newResponses,
-      ability_theta: newThetaMap
-    }).eq('id', assessmentId);
+    try {
+      // Server-authoritative: Call record_assessment_response to use real item parameters (irt_a, irt_b, irt_c)
+      const { data: rpcData, error: rpcError } = await (supabase.rpc as any)('record_assessment_response', {
+        p_assessment: assessmentId,
+        p_scenario_id: currentScenario.id,
+        p_selected_text: optionSelected?.text || '',
+        p_correct: correct,
+        p_option: optionSelected || null
+      });
 
-    if (updateError) {
-      console.warn('Failed to persist assessment response update:', updateError);
+      if (!rpcError && rpcData && (rpcData as any).ability_theta) {
+        set({ theta: (rpcData as any).ability_theta });
+      } else {
+        // Fallback: If RPC is not available, calculate locally with realistic item defaults
+        console.warn('record_assessment_response RPC fallback:', rpcError);
+        const compResponses = irtResponses[comp] || [];
+        const newIrtResp: IRTResponse = {
+          a: 1.3,
+          b: 0.0,
+          c: 0.20,
+          correct
+        };
+        const updatedCompResponses = [...compResponses, newIrtResp];
+        const { theta: newTheta } = estimateThetaEAP(updatedCompResponses);
+        const newThetaMap = { ...theta, [comp]: newTheta };
+        set({
+          irtResponses: { ...irtResponses, [comp]: updatedCompResponses },
+          theta: newThetaMap
+        });
+        await supabase.from('assessments').update({
+          responses: newResponses,
+          ability_theta: newThetaMap
+        }).eq('id', assessmentId);
+      }
+    } catch (err) {
+      console.error('Failed to record assessment response:', err);
     }
 
     // Full benchmark session: up to 30 items
@@ -190,9 +201,20 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
     if (!assessmentId) return;
 
     try {
+      // Guard: Require at least 5 answered questions for a completed diagnostic assessment
+      if (responses.length < 5) {
+        console.warn(`Assessment has only ${responses.length} responses; minimum 5 required for full diagnostic report.`);
+        await supabase.from('assessments').update({
+          status: 'in_progress',
+          responses
+        } as any).eq('id', assessmentId);
+        set({ status: 'completed', loading: false });
+        return;
+      }
+
       const total_time_ms = startTime ? Date.now() - startTime : null;
 
-      // Score each competency
+      // Score each competency that has recorded theta
       const scaled_scores: Record<string, number> = {};
       const percentiles: Record<string, number> = {};
       let total_scaled = 0;
@@ -218,7 +240,7 @@ export const useAssessment = create<AssessmentState>((set, get) => ({
         return;
       }
 
-      // Only persist global_score when competency scoring succeeded; do not fabricate median score
+      // Only compute global score across active, scored competencies
       const global_score = count > 0 ? Math.max(100, Math.min(900, Math.round(total_scaled / count))) : undefined;
 
       const assessmentUpdate: Record<string, any> = {

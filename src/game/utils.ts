@@ -1,11 +1,11 @@
 /**
- * utils.ts — seeded randomness, value-noise fbm, interpolation, colour.
+ * utils.ts - seeded randomness, value-noise fbm, interpolation, colour.
  *
  * Everything in the glade is deterministic: one seed produces one world, so
  * every visitor (and every test run) sees the same painting.
  */
 
-/** mulberry32 — tiny, fast, seedable PRNG. Returns values in [0, 1). */
+/** mulberry32 - tiny, fast, seedable PRNG. Returns values in [0, 1). */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {

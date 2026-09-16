@@ -1,9 +1,9 @@
 /**
- * effects.ts — combat feedback, world-space only.
+ * effects.ts - combat feedback, world-space only.
  *
  * Hit sparks, death debris that arcs and settles, expanding rings for novas
  * and level-ups, and the soft respawn flash. No screen shake, no zoom-punch,
- * no full-screen flash — the camera never knows any of this happened.
+ * no full-screen flash - the camera never knows any of this happened.
  *
  * Particles shrink out instead of fading so they can share materials per
  * colour (no per-particle transparency cost).

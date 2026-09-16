@@ -1,0 +1,192 @@
+-- ═══════════════════════════════════════════════════════════════════════
+-- Migration: 20260916000000_calibrate_scoring.sql
+-- Description: Server-authoritative IRT response recording, 3PL EAP
+--              quadrature estimation, and unified linear score calibration.
+-- ═══════════════════════════════════════════════════════════════════════
+
+-- 1. Helper function to compute EAP theta via 41-node Gauss-Hermite quadrature
+CREATE OR REPLACE FUNCTION public.estimate_theta_eap(
+  p_responses jsonb
+) RETURNS float AS $$
+DECLARE
+  v_nodes float[] := array[
+    -4.0, -3.8, -3.6, -3.4, -3.2, -3.0, -2.8, -2.6, -2.4, -2.2,
+    -2.0, -1.8, -1.6, -1.4, -1.2, -1.0, -0.8, -0.6, -0.4, -0.2,
+     0.0,  0.2,  0.4,  0.6,  0.8,  1.0,  1.2,  1.4,  1.6,  1.8,
+     2.0,  2.2,  2.4,  2.6,  2.8,  3.0,  3.2,  3.4,  3.6,  3.8,  4.0
+  ];
+  v_theta float;
+  v_w float;
+  v_lik float;
+  v_p float;
+  v_numer float := 0.0;
+  v_denom float := 0.0;
+  v_r jsonb;
+  v_a float;
+  v_b float;
+  v_c float;
+  v_corr boolean;
+  i int;
+BEGIN
+  IF p_responses IS NULL OR jsonb_array_length(p_responses) = 0 THEN
+    RETURN 0.0;
+  END IF;
+
+  FOR i IN 1..array_length(v_nodes, 1) LOOP
+    v_theta := v_nodes[i];
+    v_w := exp(-0.5 * v_theta * v_theta);
+    v_lik := 1.0;
+
+    FOR v_r IN SELECT * FROM jsonb_array_elements(p_responses) LOOP
+      v_a := COALESCE((v_r->>'a')::float, 1.0);
+      v_b := COALESCE((v_r->>'b')::float, 0.0);
+      v_c := COALESCE((v_r->>'c')::float, 0.25);
+      v_corr := COALESCE((v_r->>'correct')::boolean, false);
+
+      -- 3PL probability model: P(theta) = c + (1 - c) / (1 + exp(-a * (theta - b)))
+      v_p := v_c + (1.0 - v_c) / (1.0 + exp(-v_a * (v_theta - v_b)));
+      IF v_corr THEN
+        v_lik := v_lik * v_p;
+      ELSE
+        v_lik := v_lik * (1.0 - v_p);
+      END IF;
+    END LOOP;
+
+    v_numer := v_numer + v_theta * v_lik * v_w;
+    v_denom := v_denom + v_lik * v_w;
+  END LOOP;
+
+  IF v_denom = 0.0 THEN
+    RETURN 0.0;
+  END IF;
+
+  RETURN v_numer / v_denom;
+END;
+$$ LANGUAGE plpgsql IMMUTABLE;
+
+-- 2. Server-authoritative response submission with real scenario parameters
+CREATE OR REPLACE FUNCTION public.record_assessment_response(
+  p_assessment uuid,
+  p_scenario_id uuid,
+  p_selected_text text,
+  p_correct boolean,
+  p_option jsonb default null
+) RETURNS jsonb AS $$
+DECLARE
+  v_scenario record;
+  v_assessment record;
+  v_responses jsonb;
+  v_ability_theta jsonb;
+  v_comp_responses jsonb := '[]'::jsonb;
+  v_new_response jsonb;
+  v_new_theta float;
+  v_r jsonb;
+BEGIN
+  -- Read scenario with security definer to access irt parameters
+  SELECT id, prompt, competency, irt_a, irt_b, irt_c, international_benchmark
+    INTO v_scenario
+  FROM public.scenarios
+  WHERE id = p_scenario_id;
+
+  IF v_scenario.id IS NULL THEN
+    RAISE EXCEPTION 'Scenario not found: %', p_scenario_id;
+  END IF;
+
+  SELECT id, responses, ability_theta
+    INTO v_assessment
+  FROM public.assessments
+  WHERE id = p_assessment;
+
+  IF v_assessment.id IS NULL THEN
+    RAISE EXCEPTION 'Assessment not found: %', p_assessment;
+  END IF;
+
+  v_responses := COALESCE(v_assessment.responses, '[]'::jsonb);
+  v_ability_theta := COALESCE(v_assessment.ability_theta, '{}'::jsonb);
+
+  -- Construct new response record with real parameters recorded
+  v_new_response := jsonb_build_object(
+    'scenario_id', v_scenario.id,
+    'prompt', v_scenario.prompt,
+    'competency', v_scenario.competency,
+    'benchmarkStandard', COALESCE(v_scenario.international_benchmark, 'International Benchmark'),
+    'userSelectedOption', p_selected_text,
+    'correct', p_correct,
+    'option', p_option,
+    'irt_a', COALESCE(v_scenario.irt_a, 1.0),
+    'irt_b', COALESCE(v_scenario.irt_b, 0.0),
+    'irt_c', COALESCE(v_scenario.irt_c, 0.25),
+    'timestamp', to_char(clock_timestamp(), 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"')
+  );
+
+  v_responses := v_responses || jsonb_build_array(v_new_response);
+
+  -- Re-estimate theta for this competency across all historical responses in this session
+  FOR v_r IN SELECT * FROM jsonb_array_elements(v_responses) LOOP
+    IF v_r->>'competency' = v_scenario.competency THEN
+      v_comp_responses := v_comp_responses || jsonb_build_array(jsonb_build_object(
+        'a', COALESCE((v_r->>'irt_a')::float, 1.0),
+        'b', COALESCE((v_r->>'irt_b')::float, 0.0),
+        'c', COALESCE((v_r->>'irt_c')::float, 0.25),
+        'correct', (v_r->>'correct')::boolean
+      ));
+    END IF;
+  END LOOP;
+
+  v_new_theta := public.estimate_theta_eap(v_comp_responses);
+  v_ability_theta := jsonb_set(v_ability_theta, array[v_scenario.competency], to_jsonb(v_new_theta));
+
+  UPDATE public.assessments
+  SET responses = v_responses,
+      ability_theta = v_ability_theta
+  WHERE id = p_assessment;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'competency', v_scenario.competency,
+    'theta', v_new_theta,
+    'ability_theta', v_ability_theta,
+    'response_count', jsonb_array_length(v_responses),
+    'new_response', v_new_response
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.record_assessment_response(uuid, uuid, text, boolean, jsonb) TO authenticated, anon;
+
+-- 3. Unified linear scaled scoring in score_competency RPC
+CREATE OR REPLACE FUNCTION public.score_competency(
+  p_theta float, p_competency text, p_region text default 'global'
+) RETURNS TABLE (percentile float, scaled_score int) AS $$
+DECLARE
+  v_mean float;
+  v_std float;
+  v_z float;
+  v_perc float;
+  v_scaled int;
+BEGIN
+  SELECT mean, std_dev INTO v_mean, v_std
+  FROM public.norms
+  WHERE competency = p_competency
+    AND region = p_region
+  ORDER BY version DESC
+  LIMIT 1;
+
+  IF v_mean IS NULL THEN
+    v_mean := 0.0; v_std := 1.0;
+  END IF;
+
+  v_z := (p_theta - v_mean) / v_std;
+  -- Standard normal CDF approximation (Abramowitz & Stegun logistic approximation)
+  v_perc := 1.0 / (1.0 + exp(-1.702 * v_z));
+  
+  -- Unified linear scale: 500 mean, 133.33 SD, bounded in [100, 900]
+  v_scaled := greatest(100, least(900, round(500.0 + 133.33 * p_theta)))::int;
+
+  RETURN QUERY SELECT 
+    greatest(1.0, least(99.0, round(v_perc * 100.0)))::float AS percentile,
+    v_scaled AS scaled_score;
+END;
+$$ LANGUAGE plpgsql STABLE;
+
+GRANT EXECUTE ON FUNCTION public.score_competency(float, text, text) TO authenticated, anon;

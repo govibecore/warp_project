@@ -19,10 +19,10 @@ interface ParakhRadarChartProps {
 
 // Pillar accent colors aligned to Nordic Lagom competency tokens
 const PILLAR_COLORS = [
-  '#8FCFE8', // c1 — Computational/Conceptual (accent cyan)
-  '#D9A86E', // c3 — Mathematical/HOTS (warm amber)
-  '#7FCBA0', // c2 — Engineering/Application (ok green)
-  '#B89BD9', // c5 — Systems/Metacognition (violet)
+  '#8FCFE8', // c1 - Computational/Conceptual (accent cyan)
+  '#D9A86E', // c3 - Mathematical/HOTS (warm amber)
+  '#7FCBA0', // c2 - Engineering/Application (ok green)
+  '#B89BD9', // c5 - Systems/Metacognition (violet)
 ];
 
 const SVG_SIZE = 220;

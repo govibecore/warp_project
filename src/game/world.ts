@@ -1,9 +1,9 @@
 /**
- * world.ts — the sunlit glade.
+ * world.ts - the sunlit glade.
  *
  * A gentle, non-negative fbm height field coloured per-vertex (grass
  * variants, dirt patches, sandy pond shores), with procedurally scattered
- * trees, rocks, grass tufts and flowers — all from one seed. Foliage sways
+ * trees, rocks, grass tufts and flowers - all from one seed. Foliage sways
  * in the wind, cloud puffs drift overhead, pond discs sit in the dips.
  * A clear circle at the origin keeps the spawn point open.
  */
@@ -28,7 +28,7 @@ const POND = '#7abcc8';
 const FOLIAGE = ['#4a8a9a', '#5c9caa', '#3d7888'];
 const FLOWERS = ['#d0dfe8', '#a0c4d8', '#7ab0c8', '#e0eaf0'];
 
-/** Ground height — pure function so entities can walk the same field. */
+/** Ground height - pure function so entities can walk the same field. */
 export function heightAt(x: number, z: number): number {
   const rolling = Math.pow(fbm(x * 0.035 + 7.3, z * 0.035 + 7.3, 4), 1.25) * 2.4;
   const d = Math.hypot(x, z);

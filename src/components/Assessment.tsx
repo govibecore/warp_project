@@ -11,6 +11,7 @@ import { Badge } from './ui/badge';
 import { Spinner } from './ui/spinner';
 import { getNemotronSocraticHint } from '../lib/nvidiaService';
 import { AssessmentTutorial } from './AssessmentTutorial';
+import { InteractiveScenarioCard } from './InteractiveScenarioCard';
 import { COMPETENCY_LABELS, CompetencyKey } from '../lib/irt/globalBenchmark';
 
 function getGuestId(): string {
@@ -217,7 +218,7 @@ export function Assessment() {
     return <AssessmentTutorial onStart={() => setShowTutorial(false)} />;
   }
 
-  // ── All items answered — no confetti, just a calm chip ─────────────────
+  // ── All items answered - no confetti, just a calm chip ─────────────────
   if (status === 'completed') {
     return (
       <Centred>
@@ -291,7 +292,7 @@ export function Assessment() {
           <span className="font-mono text-xs font-medium tabular text-foreground-secondary">
             Question {lockedCount + 1} of {totalItems}
           </span>
-          {/* 2px hairline progress in accent — replaces the chunky <Progress> bar */}
+          {/* 2px hairline progress in accent - replaces the chunky <Progress> bar */}
           <div className="relative w-48 h-0.5 bg-border overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-300"
@@ -301,7 +302,7 @@ export function Assessment() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Quiet mono elapsed-time — no pulse, no icon animation */}
+          {/* Quiet mono elapsed-time - no pulse, no icon animation */}
           <span className="font-mono text-xs tabular text-foreground-muted">
             {formatTimer(elapsedSeconds)}
           </span>
@@ -335,7 +336,7 @@ export function Assessment() {
                 </div>
               )}
 
-              {/* Socratic Hint powered by NVIDIA Nemotron */}
+              {/* Socratic Hint powered by WARP AI */}
               {!socraticHint ? (
                 <div className="flex items-center pt-1">
                   <button
@@ -358,7 +359,7 @@ export function Assessment() {
                     style={{ transitionDuration: '200ms', transitionTimingFunction: 'var(--ease-lagom)' }}
                   >
                     <Sparkles className="size-3 text-primary" />
-                    <span>{hintLoading ? 'Formulating Socratic hint...' : 'Need a hint? Ask Nemotron'}</span>
+                    <span>{hintLoading ? 'Formulating Socratic hint...' : 'Need a hint? Ask WARP AI'}</span>
                   </button>
                 </div>
               ) : (
@@ -371,7 +372,7 @@ export function Assessment() {
                   <Lightbulb className="size-4 text-primary shrink-0 mt-0.5" />
                   <div className="space-y-1">
                     <span className="font-bold text-[10px] uppercase tracking-wider text-primary">
-                      Socratic Invariant Guide (NVIDIA Nemotron)
+                      Socratic Invariant Guide (WARP AI)
                     </span>
                     <p className="leading-relaxed text-foreground-secondary">{socraticHint}</p>
                   </div>
@@ -379,45 +380,12 @@ export function Assessment() {
               )}
             </div>
 
-            {/* ── Options: single-column, full-width hairline rows ── */}
-            <fieldset className="flex flex-col gap-0" aria-label="Response options">
-              {item.options.map((option: any, index: number) => {
-                const isSelected = selectedOptionId === option.text;
-                return (
-                  <label
-                    key={index}
-                    className={
-                      'group relative flex cursor-pointer items-center gap-4 border border-border px-5 py-4 text-left transition-colors -mt-px first:mt-0 ' +
-                      (isSelected
-                        ? 'z-10 border-primary bg-primary/8'
-                        : 'hover:border-border-strong')
-                    }
-                    style={{ transitionDuration: '200ms', transitionTimingFunction: 'var(--ease-lagom)' }}
-                  >
-                    <input
-                      type="radio"
-                      name="assessment-option"
-                      value={option.text}
-                      checked={isSelected}
-                      onChange={() => setSelectedOptionId(option.text)}
-                      className="sr-only"
-                    />
-                    <span
-                      className={
-                        'flex size-7 shrink-0 items-center justify-center text-xs font-bold transition-colors ' +
-                        (isSelected
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-accent text-foreground-secondary')
-                      }
-                      aria-hidden="true"
-                    >
-                      {String.fromCharCode(65 + index)}
-                    </span>
-                    <span className="text-sm font-medium leading-snug">{option.text}</span>
-                  </label>
-                );
-              })}
-            </fieldset>
+            {/* ── Interactive Scenario Component ── */}
+            <InteractiveScenarioCard 
+              item={item} 
+              selectedOptionId={selectedOptionId} 
+              onSelect={setSelectedOptionId} 
+            />
           </motion.div>
         </AnimatePresence>
       </div>

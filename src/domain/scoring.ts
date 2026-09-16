@@ -8,7 +8,7 @@ export interface Projection {
 
 export function projectScore(rawPercent: number, norm: Norm): Projection {
   const zScore = (rawPercent - norm.mean) / norm.standardDeviation;
-  return { zScore, score: clamp(Math.round(480 + 100 * zScore), 100, 900) };
+  return { zScore, score: clamp(Math.round(500 + 133.33 * zScore), 100, 900) };
 }
 
 export function calculateResult(responses: readonly ItemResponse[], classLevel: number, completedAt: string): ResultSnapshot {
@@ -24,36 +24,45 @@ export function calculateResult(responses: readonly ItemResponse[], classLevel: 
   }
 
   const activeCompetencies = COMPETENCIES.filter((competency) => totals[competency].available > 0);
-  const targetCompetencies = activeCompetencies.length > 0 ? activeCompetencies : COMPETENCIES;
+  const hasData = activeCompetencies.length > 0;
+  const targetCompetencies = hasData ? activeCompetencies : COMPETENCIES;
 
   const competencies = {} as Record<Competency, CompetencyProjection>;
   for (const competency of targetCompetencies) {
     const total = totals[competency];
-    const rawPercent = total.available > 0 ? (100 * total.earned) / total.available : 50;
+    const rawPercent = total.available > 0 ? (100 * total.earned) / total.available : 0;
     const norm = getNorm(classLevel, competency);
-    competencies[competency] = { rawPercent, norm, ...projectScore(rawPercent, norm) };
+    competencies[competency] = total.available > 0
+      ? { rawPercent, norm, ...projectScore(rawPercent, norm) }
+      : { rawPercent: 0, norm, zScore: 0, score: 0 };
   }
 
-  // Populate any unassessed competencies so ResultSnapshot maintains full schema
+  // Populate any unassessed competencies with 0 score (no artificial 500 padding)
   for (const competency of COMPETENCIES) {
     if (!competencies[competency]) {
       const norm = getNorm(classLevel, competency);
-      competencies[competency] = { rawPercent: 50, norm, ...projectScore(50, norm) };
+      competencies[competency] = { rawPercent: 0, norm, zScore: 0, score: 0 };
     }
   }
 
   let sumScores = 0;
-  for (const c of targetCompetencies) {
-    sumScores += competencies[c as Competency].score;
+  if (hasData) {
+    for (const c of activeCompetencies) {
+      sumScores += competencies[c as Competency].score;
+    }
   }
-  const overallScore = Math.round(sumScores / targetCompetencies.length);
+  const overallScore = hasData ? Math.round(sumScores / activeCompetencies.length) : 0;
 
   const regions: import('./types').Region[] = ['India', 'China', 'USA', 'Singapore', 'Europe', 'Global'];
   const regionalPercentiles = {} as Record<import('./types').Region, number>;
   
   for (const region of regions) {
+    if (!hasData) {
+      regionalPercentiles[region] = 0;
+      continue;
+    }
     // Recalculate overall Z-score against that region's norms for active subject competencies
-    const regionNorms = targetCompetencies.map(c => getNorm(classLevel, c as Competency, region));
+    const regionNorms = activeCompetencies.map(c => getNorm(classLevel, c as Competency, region));
     let meanSum = 0;
     let stdDevSum = 0;
     for (const n of regionNorms) {
@@ -64,10 +73,10 @@ export function calculateResult(responses: readonly ItemResponse[], classLevel: 
     const avgRegionStdDev = stdDevSum / regionNorms.length;
     
     let rawSum = 0;
-    for (const c of targetCompetencies) {
+    for (const c of activeCompetencies) {
       rawSum += competencies[c as Competency].rawPercent;
     }
-    const studentRawAvg = rawSum / targetCompetencies.length;
+    const studentRawAvg = rawSum / activeCompetencies.length;
     const regionZScore = (studentRawAvg - avgRegionMean) / (avgRegionStdDev || 1);
     regionalPercentiles[region] = clamp(Math.round(normalCdf(regionZScore) * 100), 1, 99);
   }

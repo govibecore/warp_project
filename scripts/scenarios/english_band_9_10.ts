@@ -170,7 +170,7 @@ export const englishBand9_10: ScenarioDef[] = [
     competency: 'understanding',
     developmental_band: '9-10',
     difficulty: 'olympiad',
-    prompt: '"The political essayist warns that when totalitarian regimes monopolize language through state-sanctioned euphemisms, they do not merely censor dissenting speech—they dismantle the cognitive conceptual vocabulary required to formulate dissenting thoughts." What profound mechanism of control is identified?',
+    prompt: '"The political essayist warns that when totalitarian regimes monopolize language through state-sanctioned euphemisms, they do not merely censor dissenting speech-they dismantle the cognitive conceptual vocabulary required to formulate dissenting thoughts." What profound mechanism of control is identified?',
     options: makeOptions('understanding',
       'Linguistic determinism: restricting language to preemptively eradicate the mental capacity for critical rebellion.',
       ['Physical imprisonment of political dissidents in remote penal colonies.', 'Enforcing compulsory attendance at patriotic military rallies.', 'Banning all import tariffs on foreign consumer electronics.']

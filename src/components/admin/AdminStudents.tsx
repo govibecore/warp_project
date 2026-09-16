@@ -132,7 +132,7 @@ export function AdminStudents() {
                     </td>
                     <td className="px-6 py-4 font-mono tabular">{s.assessmentsCount}</td>
                     <td className="px-6 py-4 font-mono tabular">
-                      {s.lastScore !== null ? `${s.lastScore}/900` : '—'}
+                      {s.lastScore !== null ? `${s.lastScore}/900` : '-'}
                     </td>
                     <td className="px-6 py-4 text-xs text-foreground-secondary">
                       {dateFmt.format(new Date(s.joinedAt))}

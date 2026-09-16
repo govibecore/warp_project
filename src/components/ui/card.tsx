@@ -3,7 +3,7 @@ import { cn } from '../../lib/utils';
 
 /**
  * A card is a surface with one hairline border. It does not glow, float, or
- * cast a shadow. Padding is the caller's call — pass `className="p-0"` for
+ * cast a shadow. Padding is the caller's call - pass `className="p-0"` for
  * full-bleed tables and let the inner element own its own inset.
  *
  * Supports Ali Imam's dashed hairline border style via `dashed` prop.

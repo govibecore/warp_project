@@ -1,4 +1,4 @@
-# STEM Benchmark Platform — Innovative Build Plan
+# STEM Benchmark Platform - Innovative Build Plan
 ### Vite + React 19 · Supabase · OpenRouter · NVIDIA Nemotron
 
 > **Document version:** 2.0 (build plan)
@@ -9,14 +9,14 @@
 
 ## 0. Executive Summary
 
-This plan rebuilds the STEM Benchmark Platform on a **Supabase-native** stack, replacing the v1.0 MongoDB + Express design. The pivot is not cosmetic — it changes the security model, the server model, and what the AI can do.
+This plan rebuilds the STEM Benchmark Platform on a **Supabase-native** stack, replacing the v1.0 MongoDB + Express design. The pivot is not cosmetic - it changes the security model, the server model, and what the AI can do.
 
 | Dimension | v1.0 (MongoDB/Express) | v2.0 (Supabase/Nemotron) | Why it's better |
 |---|---|---|---|
 | **Database** | MongoDB (document) | Supabase Postgres + RLS | Relational + **database-enforced** student isolation |
 | **Backend** | Express.js server | Supabase Edge Functions (Deno) | Serverless, no server to maintain, auto-scaled |
 | **Auth** | Custom JWT + bcrypt | Supabase Auth (GoTrue) | Managed, audited, OAuth-ready |
-| **Security** | Middleware checks | **Row Level Security policies** | Can't be bypassed by app bugs — enforced at DB |
+| **Security** | Middleware checks | **Row Level Security policies** | Can't be bypassed by app bugs - enforced at DB |
 | **AI model** | `mistral-7b-instruct:free` (deprecated) | **NVIDIA Nemotron 3 Ultra** (1M ctx) | Reasoning + full-history context in one prompt |
 | **Reports** | Per-assessment snapshot | **Longitudinal trajectory** + dual-audience | Reason over entire student history |
 | **Psychometrics** | Raw earned/available | **IRT + CAT** (adaptive) | Valid measurement, comparable across grades |
@@ -25,11 +25,11 @@ This plan rebuilds the STEM Benchmark Platform on a **Supabase-native** stack, r
 
 ### The five innovations that define v2.0
 
-1. **Longitudinal Trajectory Reports** — Nemotron's 1M-token context fits a student's *entire* assessment history into one prompt, producing a growth-arc report (not a single-test snapshot) with trajectory prediction.
-2. **Database-level psychometrics** — IRT ability estimation and norm lookup run as Postgres RPC functions, testable and audit-friendly at the data layer.
-3. **RLS-enforced consent gating** — a student literally cannot read/write an assessment row until their `consent_status = 'verified'`; the check lives in Postgres, not application code.
-4. **Realtime AI streaming** — Nemotron's streamed output flows through Supabase Realtime channels to render report sections progressively with a Lottie "brain-loading" state.
-5. **Outcome-based peer matching** — pgvector embeddings of competency *profiles* (not behavioral data) power "students like you" — DPDP-compliant because it never profiles behavior.
+1. **Longitudinal Trajectory Reports** - Nemotron's 1M-token context fits a student's *entire* assessment history into one prompt, producing a growth-arc report (not a single-test snapshot) with trajectory prediction.
+2. **Database-level psychometrics** - IRT ability estimation and norm lookup run as Postgres RPC functions, testable and audit-friendly at the data layer.
+3. **RLS-enforced consent gating** - a student literally cannot read/write an assessment row until their `consent_status = 'verified'`; the check lives in Postgres, not application code.
+4. **Realtime AI streaming** - Nemotron's streamed output flows through Supabase Realtime channels to render report sections progressively with a Lottie "brain-loading" state.
+5. **Outcome-based peer matching** - pgvector embeddings of competency *profiles* (not behavioral data) power "students like you" - DPDP-compliant because it never profiles behavior.
 
 ---
 
@@ -62,10 +62,10 @@ export const AI_MODEL_CASCADE = [
   { id: 'thinkingmachines/inkling:free',             role: 'multilingual', ctx: 1_050_000, reason: 'regional languages' },
 ] as const;
 
-// Models that may retain/train on inputs — NEVER used for minors
+// Models that may retain/train on inputs - NEVER used for minors
 export const PRIVACY_BLOCKLIST_PREFIXES = ['poolside/', 'liquid/'];
 
-// v1.0's hardcoded model is deprecated — NEVER hardcode a single ID
+// v1.0's hardcoded model is deprecated - NEVER hardcode a single ID
 export const DEPRECATED = ['openrouter/mistralai/mistral-7b-instruct:free'];
 ```
 
@@ -105,15 +105,15 @@ export const DEPRECATED = ['openrouter/mistralai/mistral-7b-instruct:free'];
 
 **Key architectural wins vs. v1.0:**
 - No Express server to deploy, patch, or scale.
-- The OpenRouter key never reaches the browser — it lives in Supabase Vault and is used only inside Edge Functions.
+- The OpenRouter key never reaches the browser - it lives in Supabase Vault and is used only inside Edge Functions.
 - Student isolation is a Postgres constraint (`auth.uid() = student_id`), not middleware that a bug can skip.
-- Audit logging is a **database trigger** — it fires on every mutation regardless of which client or function performed it.
+- Audit logging is a **database trigger** - it fires on every mutation regardless of which client or function performed it.
 
 ---
 
 ## 3. Database Schema (PostgreSQL)
 
-### 3.1 `students` — auth lives in Supabase Auth; this table is the profile
+### 3.1 `students` - auth lives in Supabase Auth; this table is the profile
 
 ```sql
 create table public.students (
@@ -156,9 +156,9 @@ create index on students (current_class);
 create index on students (consent_status) where consent_status = 'verified';
 ```
 
-> **Innovation Spotlight — RLS consent gating.** A student cannot read or write assessment rows until their own `students.consent_status = 'verified'`. The policy joins to the student row, so even a compromised anon key with a valid-but-unverified JWT is blocked at the database. This is impossible to achieve with middleware alone.
+> **Innovation Spotlight - RLS consent gating.** A student cannot read or write assessment rows until their own `students.consent_status = 'verified'`. The policy joins to the student row, so even a compromised anon key with a valid-but-unverified JWT is blocked at the database. This is impossible to achieve with middleware alone.
 
-### 3.2 `assessments` — sessions + responses (embedded as JSONB for hot reads)
+### 3.2 `assessments` - sessions + responses (embedded as JSONB for hot reads)
 
 ```sql
 create table public.assessments (
@@ -190,7 +190,7 @@ create index on assessments (student_id, created_at desc);
 create index on scenarios (competency, developmental_band, difficulty, is_active);
 ```
 
-### 3.3 `scenarios` — question bank with IRT parameters
+### 3.3 `scenarios` - question bank with IRT parameters
 
 ```sql
 create extension if not exists vector;  -- also needed for pgvector
@@ -210,7 +210,7 @@ create table public.scenarios (
   learning_objective text,
   hint            text,
 
-  -- IRT parameters (3PL) — the v2.0 measurement upgrade
+  -- IRT parameters (3PL) - the v2.0 measurement upgrade
   irt_a           float check (irt_a between 0 and 3),   -- discrimination
   irt_b           float check (irt_b between -3 and 3),  -- difficulty (logits)
   irt_c           float check (irt_c between 0 and 1),   -- guessing
@@ -223,7 +223,7 @@ create table public.scenarios (
 create index on scenarios (competency, developmental_band, difficulty, is_active);
 ```
 
-### 3.4 `reports` — dual-audience + AI provenance
+### 3.4 `reports` - dual-audience + AI provenance
 
 ```sql
 create table public.reports (
@@ -257,7 +257,7 @@ create table public.reports (
 create index on reports (student_id, generated_at desc);
 ```
 
-### 3.5 `norms` — PISA/TIMSS-anchored benchmark data
+### 3.5 `norms` - PISA/TIMSS-anchored benchmark data
 
 ```sql
 create table public.norms (
@@ -277,7 +277,7 @@ create table public.norms (
 create unique index on norms (region, class_level, difficulty, competency, version);
 ```
 
-### 3.6 `resources` — curated anti-hallucination DB
+### 3.6 `resources` - curated anti-hallucination DB
 
 ```sql
 -- The LLM emits resource_key from this table; server maps key→URL.
@@ -295,7 +295,7 @@ create table public.resources (
 );
 ```
 
-### 3.7 `audit_logs` — trigger-driven (can't be bypassed)
+### 3.7 `audit_logs` - trigger-driven (can't be bypassed)
 
 ```sql
 create table public.audit_logs (
@@ -331,7 +331,7 @@ create trigger trg_audit_assessment
 
 ---
 
-## 4. Row Level Security (RLS) — the compliance core
+## 4. Row Level Security (RLS) - the compliance core
 
 ```sql
 alter table public.students   enable row level security;
@@ -392,7 +392,7 @@ create policy "authenticated read resources" on public.resources
   for select to authenticated using (verified = true);
 ```
 
-> **Innovation Spotlight.** The consent gate is a `select 1 from students where consent_status='verified'` clause inside the RLS policy. It cannot be skipped by a frontend bug, a stolen anon key, or even a misconfigured Edge Function — Postgres rejects the row before it leaves the database. This is the single most DPDP-defensible design choice in the stack.
+> **Innovation Spotlight.** The consent gate is a `select 1 from students where consent_status='verified'` clause inside the RLS policy. It cannot be skipped by a frontend bug, a stolen anon key, or even a misconfigured Edge Function - Postgres rejects the row before it leaves the database. This is the single most DPDP-defensible design choice in the stack.
 
 ---
 
@@ -409,7 +409,7 @@ create policy "authenticated read resources" on public.resources
 
 ### 5.2 The longitudinal trajectory innovation
 
-v1.0 generated one report per assessment. v2.0 generates a **trajectory report** — Nemotron reasons over *all* the student's completed assessments in a single call, producing:
+v1.0 generated one report per assessment. v2.0 generates a **trajectory report** - Nemotron reasons over *all* the student's completed assessments in a single call, producing:
 
 - A growth arc ("Your mathematical reasoning rose from the 58th to the 84th percentile over 3 tests")
 - Trajectory prediction ("At current pace, you'd reach the 90th percentile in ~2 more cycles")
@@ -474,7 +474,7 @@ export default async (req: Request) => {
     try {
       const result = await callOpenRouter(model.id, SYSTEM_PROMPT, userPrompt);
       const parsed = await safeJsonParse(result);          // strip fences, etc.
-      const validated = DualReportSchema.parse(parsed);   // Zod — throws if invalid
+      const validated = DualReportSchema.parse(parsed);   // Zod - throws if invalid
       // 6. Persist + publish via Realtime
       await persistReport(supabase, assessmentId, validated, model, history);
       return Response.json({ success: true, report: validated });
@@ -483,7 +483,7 @@ export default async (req: Request) => {
     }
   }
 
-  // 7. Deterministic fallback — never fails, never leaves a student without a report
+  // 7. Deterministic fallback - never fails, never leaves a student without a report
   const fallback = deterministicReport(assessment, student, history);
   await persistReport(supabase, assessmentId, fallback,
                       { id: 'deterministic-fallback' }, history);
@@ -510,7 +510,7 @@ useEffect(() => {
 }, [assessmentId]);
 ```
 
-> **Innovation Spotlight — Realtime AI streaming.** The Lottie "brain-loading" animation plays briefly, then report sections fade in one-by-one as Nemotron streams. Perceived latency drops dramatically and the UX degrades gracefully (if streaming fails, the final persisted report still renders).
+> **Innovation Spotlight - Realtime AI streaming.** The Lottie "brain-loading" animation plays briefly, then report sections fade in one-by-one as Nemotron streams. Perceived latency drops dramatically and the UX degrades gracefully (if streaming fails, the final persisted report still renders).
 
 ### 5.4 Anti-hallucination contract
 
@@ -523,14 +523,14 @@ useEffect(() => {
 
 ---
 
-## 6. IRT / CAT Engine — the measurement core
+## 6. IRT / CAT Engine - the measurement core
 
 ### 6.1 Why IRT replaces raw scoring
 
 v1.0 scored `earned / available` per competency. That approach:
 - Can't compare across grades (a Class-3 "80%" ≠ a Class-11 "80%")
 - Can't compare across difficulties
-- Is noisy at extremes (a strong student gets every easy item right — no information gained)
+- Is noisy at extremes (a strong student gets every easy item right - no information gained)
 
 IRT models each student as a latent ability **θ** and each item with (a, b, c). The ability estimate is on a common scale, so percentiles and longitudinal growth become meaningful.
 
@@ -564,7 +564,7 @@ $$ language sql stable;
 ### 6.3 Ability estimation (EAP) in the Edge Function
 
 ```typescript
-// lib/irt/estimate.ts — Expected A Posteriori, simple & stable
+// lib/irt/estimate.ts - Expected A Posteriori, simple & stable
 export function estimateThetaEAP(
   responses: { a: number; b: number; c: number; correct: boolean }[]
 ): number {
@@ -605,7 +605,7 @@ create or replace function public.score_competency(
 $$ language sql stable;
 ```
 
-> **Innovation Spotlight — DB-level psychometrics.** Scoring is SQL, auditable, and re-runnable. If a norm gets recalibrated, you can backfill every past report with one `update ... from score_competency(...)` — impossible with v1.0's embedded-in-the-app scoring.
+> **Innovation Spotlight - DB-level psychometrics.** Scoring is SQL, auditable, and re-runnable. If a norm gets recalibrated, you can backfill every past report with one `update ... from score_competency(...)` - impossible with v1.0's embedded-in-the-app scoring.
 
 ---
 
@@ -672,7 +672,7 @@ export default async (req: Request) => {
 ### 7.3 What was removed from v1.0 for compliance
 
 - ❌ Behavioral engagement analytics → replaced with outcome-only analytics
-- ❌ Engagement-based reward badges → kept only **outcome-based** milestones (e.g., "80th Percentile Club" — earned from a score, not from behavior)
+- ❌ Engagement-based reward badges → kept only **outcome-based** milestones (e.g., "80th Percentile Club" - earned from a score, not from behavior)
 - ❌ Tab-switch / keystroke monitoring → integrity comes from item randomization + IRT, not surveillance
 - ❌ `openrouter/free` auto-router → explicit privacy-filtered allow-list
 
@@ -726,7 +726,7 @@ export const supabase = createClient(
   import.meta.env.VITE_SUPABASE_ANON_KEY
 );
 
-// hooks/useAuth.ts — reactive auth state
+// hooks/useAuth.ts - reactive auth state
 export function useAuth() {
   const [session, setSession] = useState<Session | null>(null);
   useEffect(() => {
@@ -756,7 +756,7 @@ export default defineConfig({
 });
 ```
 
-Responses are queued in IndexedDB on mutation failure and synced on reconnect — a mid-test disconnect does not destroy the session.
+Responses are queued in IndexedDB on mutation failure and synced on reconnect - a mid-test disconnect does not destroy the session.
 
 ---
 
@@ -781,7 +781,7 @@ const { data: { signedUrl } } = await supabase.storage
   .from('reports').createSignedUrl(data.path, 3600); // 1h link
 ```
 
-> v1.0 stored a `pdfUrl` (public S3). v2.0 uses **signed URLs** — revocable, 1-hour, DPDP-friendly. The `share_token` RLS policy is the only public-read path.
+> v1.0 stored a `pdfUrl` (public S3). v2.0 uses **signed URLs** - revocable, 1-hour, DPDP-friendly. The `share_token` RLS policy is the only public-read path.
 
 ---
 
@@ -791,7 +791,7 @@ const { data: { signedUrl } } = await supabase.storage
 |---|---|---|---|
 | 1 | **Longitudinal trajectory reports** | AI reasons over entire student history, not one test | Nemotron 1M ctx |
 | 2 | **DB-level psychometrics** | Scoring as Postgres RPC; backfillable, auditable | Supabase Postgres |
-| 3 | **RLS consent gating** | Can't read assessment rows until consent verified — at the DB | Supabase RLS |
+| 3 | **RLS consent gating** | Can't read assessment rows until consent verified - at the DB | Supabase RLS |
 | 4 | **Realtime AI streaming** | Report sections render as Nemotron streams | Supabase Realtime |
 | 5 | **Outcome-based peer matching** | "Students like you" via competency embeddings, not behavior | pgvector |
 | 6 | **Dual-audience reports** | One call → student variant + parent variant | Edge Function + Nemotron |
@@ -813,20 +813,20 @@ set competency_embedding = (
 )
 where id = assessment.student_id;
 
--- Find 5 "students like you" — by OUTCOME similarity, never behavior
+-- Find 5 "students like you" - by OUTCOME similarity, never behavior
 select id from public.students
 where id <> auth.uid() and consent_status = 'verified'
 order by competency_embedding <-> (select competency_embedding from students where id = auth.uid())
 limit 5;
 ```
 
-> This is DPDP-compliant because it profiles **competency outcomes**, not behavior — the DPDP prohibition is on behavioral monitoring/tracking, not on outcome-based academic similarity.
+> This is DPDP-compliant because it profiles **competency outcomes**, not behavior - the DPDP prohibition is on behavioral monitoring/tracking, not on outcome-based academic similarity.
 
 ---
 
 ## 11. Build Roadmap (phased)
 
-### Phase 1 — Foundation (Weeks 1–3)
+### Phase 1 - Foundation (Weeks 1–3)
 - [ ] Supabase project + schema (§3) + RLS (§4)
 - [ ] Supabase Auth + `students` profile + consent table
 - [ ] `consent-webhook` Edge Function (DigiLocker/Aadhaar stub)
@@ -835,7 +835,7 @@ limit 5;
 - [ ] Audit trigger live
 - [ ] Seed 20 scenarios *with IRT params* (a/b/c estimated)
 
-### Phase 2 — Adaptive Assessment (Weeks 4–6)
+### Phase 2 - Adaptive Assessment (Weeks 4–6)
 - [ ] IRT EAP estimation (§6.3)
 - [ ] `next_scenario` RPC + adaptive engine
 - [ ] Assessment session UI (QuestionCard, Timer, ProgressBar)
@@ -843,7 +843,7 @@ limit 5;
 - [ ] `score_competency` RPC + norms seeded from PISA/TIMSS (provisional)
 - [ ] Results page with Recharts competency radar
 
-### Phase 3 — AI Reports (Weeks 7–9)
+### Phase 3 - AI Reports (Weeks 7–9)
 - [ ] `ai-report-generate` Edge Function with Nemotron cascade (§5)
 - [ ] Dual-audience report UI (StudentVariant / ParentVariant)
 - [ ] Trajectory arc visualization
@@ -852,7 +852,7 @@ limit 5;
 - [ ] Client-side PDF + Storage signed URLs
 - [ ] Multilingual prompt flag (Hindi pilot)
 
-### Phase 4 — Dashboard & Polish (Weeks 10–12)
+### Phase 4 - Dashboard & Polish (Weeks 10–12)
 - [ ] Student dashboard (StatCards, ProgressChart, CompetencyRadar, BenchmarkChart)
 - [ ] Assessment history + "Retake Similar" (equivalent forms via IRT)
 - [ ] Shared report links via `share_token` RLS policy
@@ -861,7 +861,7 @@ limit 5;
 - [ ] pgvector peer matching
 - [ ] Load test (1000 concurrent via Supabase auto-scale)
 
-### Phase 5 — Scale & Compliance (Ongoing)
+### Phase 5 - Scale & Compliance (Ongoing)
 - [ ] School B2B2C onboarding (`consent_method='school_exempt'`)
 - [ ] Educator analytics dashboard (cohort-level, anonymized)
 - [ ] Norm recalibration with organic data (flip `is_provisional`)
@@ -873,19 +873,19 @@ limit 5;
 ## 12. Environment & Secrets
 
 ```bash
-# Frontend (.env) — Vite
+# Frontend (.env) - Vite
 VITE_SUPABASE_URL=https://xxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...           # public, safe (RLS protects data)
 VITE_APP_NAME=STEM Benchmark
 
-# Supabase Vault (Edge Function secrets) — NEVER in frontend
+# Supabase Vault (Edge Function secrets) - NEVER in frontend
 OPENROUTER_API_KEY=sk-or-v1-...         # used only in Edge Functions
 SUPABASE_SERVICE_ROLE_KEY=...           # server-side only
 DIGILOCKER_CLIENT_ID=...
 DIGILOCKER_CLIENT_SECRET=...
 ```
 
-> v1.0 put `VITE_OPENROUTER_KEY` in the frontend `.env` — that exposes the key to the browser. **v2.0 moves it to Supabase Vault** and proxies all AI calls through Edge Functions. This alone fixes a serious v1.0 security flaw.
+> v1.0 put `VITE_OPENROUTER_KEY` in the frontend `.env` - that exposes the key to the browser. **v2.0 moves it to Supabase Vault** and proxies all AI calls through Edge Functions. This alone fixes a serious v1.0 security flaw.
 
 ---
 
@@ -896,7 +896,7 @@ DIGILOCKER_CLIENT_SECRET=...
 | Frontend | Vercel Pro | $20 |
 | Backend (Postgres + Auth + Edge Functions + Realtime + Storage) | Supabase Pro | $25 |
 | AI (OpenRouter free Nemotron + paid fallback ceiling) | OpenRouter | $0–$30 |
-| Vector (pgvector, included in Supabase) | — | $0 |
+| Vector (pgvector, included in Supabase) | - | $0 |
 | Domain + SSL | Cloudflare | $15 |
 | **Total** | | **~$60–$90/mo** |
 

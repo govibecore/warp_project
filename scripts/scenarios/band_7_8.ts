@@ -3,7 +3,7 @@ import type { ScenarioRecord } from './types';
 export function getBand7_8Scenarios(): ScenarioRecord[] {
   return [
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 7 (Grade 7 · Developmental Band 7-8) — 30 Unique Questions
+    // CLASS 7 (Grade 7 · Developmental Band 7-8) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -617,7 +617,7 @@ export function getBand7_8Scenarios(): ScenarioRecord[] {
     },
 
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 8 (Grade 8 · Developmental Band 7-8) — 30 Unique Questions
+    // CLASS 8 (Grade 8 · Developmental Band 7-8) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)

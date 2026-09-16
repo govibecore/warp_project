@@ -3,7 +3,7 @@ import type { ScenarioRecord } from './types';
 export function getBand5_6Scenarios(): ScenarioRecord[] {
   return [
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 5 (Grade 5 · Developmental Band 5-6) — 30 Unique Questions
+    // CLASS 5 (Grade 5 · Developmental Band 5-6) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -549,7 +549,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
         { text: 'Cyanobacteria absorb all the water in the lake, reducing water levels by 80%.', correct: false },
       ],
       learning_objective: 'Eutrophication cascades, nutrient loading feedback loops, biological oxygen demand (BOD), and hypoxia.',
-      hint: 'The danger is not just the algae growing—it is what happens when massive amounts of dead algae decompose and bacteria use up all the dissolved oxygen.',
+      hint: 'The danger is not just the algae growing-it is what happens when massive amounts of dead algae decompose and bacteria use up all the dissolved oxygen.',
       irt_a: 1.45,
       irt_b: -0.3,
       irt_c: 0.25,
@@ -589,7 +589,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
         { text: 'Open seawater reflects 100% of cosmic rays back into outer space, cooling the Earth’s mantle.', correct: false },
       ],
       learning_objective: 'Positive feedback amplification, planetary albedo, cryosphere dynamics, and climate tipping elements.',
-      hint: 'In systems dynamics, a "positive" feedback loop does not mean "good"—it means self-reinforcing, where the effect amplifies the initial cause.',
+      hint: 'In systems dynamics, a "positive" feedback loop does not mean "good"-it means self-reinforcing, where the effect amplifies the initial cause.',
       irt_a: 1.6,
       irt_b: 0.15,
       irt_c: 0.25,
@@ -609,7 +609,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
         { text: 'Replacing alternating current (AC) with low-voltage static electricity across high-voltage transmission towers.', correct: false },
       ],
       learning_objective: 'Grid frequency stabilization, supply-demand balancing with intermittent renewables, and energy storage systems.',
-      hint: 'When electricity supply exceeds demand, energy cannot simply vanish—it must either be stored in another form (potential or chemical) or lost.',
+      hint: 'When electricity supply exceeds demand, energy cannot simply vanish-it must either be stored in another form (potential or chemical) or lost.',
       irt_a: 1.65,
       irt_b: 0.25,
       irt_c: 0.25,
@@ -617,7 +617,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
     },
 
     // ═════════════════════════════════════════════════════════════════════════
-    // CLASS 6 (Grade 6 · Developmental Band 5-6) — 30 Unique Questions
+    // CLASS 6 (Grade 6 · Developmental Band 5-6) - 30 Unique Questions
     // ═════════════════════════════════════════════════════════════════════════
 
     // 1. Scientific Inquiry (6 items: 2 standard, 2 advanced, 2 olympiad)
@@ -893,7 +893,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
       difficulty: 'standard',
       prompt: 'Engineers designing an earthquake-resistant skyscraper model for a shake-table test observe severe resonance when the table vibrates at 2.5 Hz, threatening structural failure. Which engineering solution directly mitigates harmonic resonance oscillations without stiffening the entire building?',
       options: [
-        { text: 'Install a Tuned Mass Damper (TMD)—a heavy pendulum suspended near the roof that sways out of phase with the building to absorb vibrational energy.', correct: true },
+        { text: 'Install a Tuned Mass Damper (TMD)-a heavy pendulum suspended near the roof that sways out of phase with the building to absorb vibrational energy.', correct: true },
         { text: 'Remove the ground foundation entirely so the building floats above the earth during tremors.', correct: false },
         { text: 'Add glass windows to the outer facade to increase brittleness.', correct: false },
         { text: 'Paint the exterior walls white to reflect earthquake sound waves.', correct: false },
@@ -1163,7 +1163,7 @@ export function getBand5_6Scenarios(): ScenarioRecord[] {
         { text: 'A runaway linear feedback loop that destroyed river geomorphology.', correct: false },
       ],
       learning_objective: 'Trophic cascades, keystone species dynamics, indirect ecological interactions, and river geomorphological feedbacks.',
-      hint: 'Predators don’t just eat prey—they change prey grazing behavior, allowing bankside vegetation to stabilize soil and allow engineers like beavers to return.',
+      hint: 'Predators don’t just eat prey-they change prey grazing behavior, allowing bankside vegetation to stabilize soil and allow engineers like beavers to return.',
       irt_a: 1.45,
       irt_b: -0.2,
       irt_c: 0.25,

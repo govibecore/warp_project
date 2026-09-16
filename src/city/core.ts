@@ -1,5 +1,5 @@
 /**
- * STEM City — core toolkit.
+ * STEM City - core toolkit.
  *
  * Deterministic RNG, hand-written value noise, and the semantic region spec
  * that drives the entire island. Terrain, buildings and landmarks all read
@@ -11,7 +11,7 @@
 
 /* ── Deterministic randomness ───────────────────────────────────────────── */
 
-/** mulberry32 — small, fast, seedable. Same seed → same city, every load. */
+/** mulberry32 - small, fast, seedable. Same seed → same city, every load. */
 export function mulberry32(seed: number): () => number {
   let a = seed >>> 0;
   return () => {
@@ -34,7 +34,7 @@ export function smoothstep(e0: number, e1: number, x: number): number {
   return t * t * (3 - 2 * t);
 }
 
-/** Shortest signed angular difference — the camera never takes the long way. */
+/** Shortest signed angular difference - the camera never takes the long way. */
 export function angDiff(a: number, b: number): number {
   let d = (b - a) % TAU;
   if (d > Math.PI) d -= TAU;
@@ -114,7 +114,7 @@ export interface RegionSpec {
   z: number;
   r: number;
   ops: TerrainOp[];
-  /** Accent colour — the district's chart hue. */
+  /** Accent colour - the district's chart hue. */
   color: string;
   landmark: Landmark;
 }
@@ -147,7 +147,7 @@ export function scoreToHeight(score: number): number {
 
 /**
  * The five competency districts sit on a ring around the island, one per
- * competency. Their elevation *is* the learner's score — which is the whole
+ * competency. Their elevation *is* the learner's score - which is the whole
  * point: you can read a profile off the skyline at a glance.
  */
 export const DISTRICTS: readonly RegionSpec[] = [
@@ -307,7 +307,7 @@ export const CITY_COLORS = {
 } as const;
 
 /**
- * Blended region weight at a point. Regions overlap by design — the falloff is
+ * Blended region weight at a point. Regions overlap by design - the falloff is
  * smooth so the island reads as one landmass rather than ten stitched discs.
  */
 export function regionWeight(r: RegionSpec, x: number, z: number): number {

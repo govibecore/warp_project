@@ -1,7 +1,7 @@
 import { blueprint, o, variant, type ItemBlueprint } from './builder';
 
 /**
- * Calibration items — the five scenarios every learner answers first, one per
+ * Calibration items - the five scenarios every learner answers first, one per
  * competency. Order matters: `cal-sci` must stay first and `cal-comp` second
  * (locked by the progression tests). Each distractor is tagged with the
  * canonical misconception it diagnoses so reports can name the misunderstanding.
@@ -103,7 +103,7 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
       '7-8': variant(
         'A script must remove duplicate readings from a list of 10,000 sensor values. Which approach is most efficient?',
         'The list is unsorted. Readings may repeat many times.',
-        'How much work does each value cause — once, or compared against all others?',
+        'How much work does each value cause - once, or compared against all others?',
         [
           o('c5', 'Walk the list once, keeping a set of values already seen and skipping repeats.', 'computationalThinking', 'mathematicalReasoning', 10),
           o('c6', 'Compare every value with every other value to find the duplicates.', 'computationalThinking', 'mathematicalReasoning', 2, 'comparing all pairs is necessary for uniqueness'),
@@ -191,7 +191,7 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
         'Constraints: fixed span, fixed material budget, deflection limit L/360.',
         'Deflection scales with the second moment of area, not with the amount of material.',
         [
-          o('c9', 'Rearrange material into a deeper triangulated section — geometry raises the second moment of area without added mass.', 'engineeringDesign', 'mathematicalReasoning', 10),
+          o('c9', 'Rearrange material into a deeper triangulated section - geometry raises the second moment of area without added mass.', 'engineeringDesign', 'mathematicalReasoning', 10),
           o('c10', 'Switch to a denser timber of the same dimensions.', 'engineeringDesign', 'mathematicalReasoning', 3, 'heavier material is always stiffer'),
           o('c11', 'Add a cosmetic deck plate to distribute point loads.', 'engineeringDesign', 'mathematicalReasoning', 4),
           o('c12', 'Relax the deflection criterion and document the deviation.', 'engineeringDesign', 'mathematicalReasoning', 1, 'changing the requirement counts as meeting it'),
@@ -255,7 +255,7 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
         'Nameplate power is the peak, not the average.',
         'Energy is the area under the power curve, not the peak times the hours.',
         [
-          o('c13', 'Integrate the output curve: average of a half-sine is 2/π of peak, so 200 × (2/π) × 8 × 0.8 ≈ 815 Wh — the battery will not quite fill.', 'mathematicalReasoning', 'systemsThinking', 10),
+          o('c13', 'Integrate the output curve: average of a half-sine is 2/π of peak, so 200 × (2/π) × 8 × 0.8 ≈ 815 Wh - the battery will not quite fill.', 'mathematicalReasoning', 'systemsThinking', 10),
           o('c14', 'Multiply peak power by daylight hours: 200 × 8 × 0.8 = 1280 Wh, so it fills easily.', 'mathematicalReasoning', 'systemsThinking', 3, 'peak output equals average output'),
           o('c15', 'Use rated power over 24 hours: 200 × 24 × 0.8 = 3840 Wh.', 'mathematicalReasoning', 'systemsThinking', 1, 'the sun shines at night'),
           o('c16', 'Average the peak and zero output: (200 + 0)/2 × 8 × 0.8 = 640 Wh.', 'mathematicalReasoning', 'systemsThinking', 6, 'a sine profile averages like a straight ramp'),
@@ -272,10 +272,10 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
     {
       '3-4': variant(
         'To protect the rose bushes, a gardener releases ladybirds to eat the aphids. What might happen next?',
-        'Ladybirds eat aphids — and sometimes other small insects. They can also fly away.',
+        'Ladybirds eat aphids - and sometimes other small insects. They can also fly away.',
         'Living things do not always do what we plan.',
         [
-          o('c17', 'The ladybirds might eat other insects or fly away — nature is connected, not a switch we flip.', 'systemsThinking', 'scientificInquiry', 10),
+          o('c17', 'The ladybirds might eat other insects or fly away - nature is connected, not a switch we flip.', 'systemsThinking', 'scientificInquiry', 10),
           o('c18', 'Nothing can go wrong; the ladybirds will do exactly what we want.', 'systemsThinking', 'scientificInquiry', 1, 'animals follow human plans'),
           o('c19', 'The aphids will turn into ladybirds over time.', 'systemsThinking', 'scientificInquiry', 0, 'one species transforms into another'),
           o('c20', 'The roses will eat the ladybirds.', 'systemsThinking', 'scientificInquiry', 2, 'all plants catch and eat animals'),
@@ -306,9 +306,9 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
       '9-10': variant(
         'Cane toads were released in Australia to eat beetles attacking sugar cane. The beetle problem barely changed. Which mechanism best explains the failure?',
         'Cane toads now number in the hundreds of millions; native predator populations have fallen where toads spread.',
-        'Food webs have many links — a consumer switches to whatever is easiest to catch.',
+        'Food webs have many links - a consumer switches to whatever is easiest to catch.',
         [
-          o('c17', 'The toads switched to easier native prey and poisoned their own predators — a food-web effect the one-pest plan ignored.', 'systemsThinking', 'scientificInquiry', 10),
+          o('c17', 'The toads switched to easier native prey and poisoned their own predators - a food-web effect the one-pest plan ignored.', 'systemsThinking', 'scientificInquiry', 10),
           o('c18', 'The beetles evolved armour against toads within a few seasons.', 'systemsThinking', 'scientificInquiry', 2, 'evolution works within a few generations on demand'),
           o('c19', 'The toads ate all the beetles first, then starved before helping.', 'systemsThinking', 'scientificInquiry', 3, 'a consumer can only ever eat one prey species'),
           o('c20', 'Two cane harvests were simply unlucky.', 'systemsThinking', 'scientificInquiry', 1, 'chance explains systematic outcomes'),
@@ -319,7 +319,7 @@ export const calibrationBlueprints: readonly ItemBlueprint[] = [
         'Biocontrol agents disperse and reproduce; an introduction is effectively irreversible.',
         'Ask what the agent will do after the target pest becomes rare.',
         [
-          o('c17', 'Host-specificity trials across native relatives and modelling of non-target effects — because the agent cannot be recalled once released.', 'systemsThinking', 'scientificInquiry', 10),
+          o('c17', 'Host-specificity trials across native relatives and modelling of non-target effects - because the agent cannot be recalled once released.', 'systemsThinking', 'scientificInquiry', 10),
           o('c18', 'A successful greenhouse trial against the pest alone.', 'systemsThinking', 'scientificInquiry', 4, 'lab success guarantees field safety'),
           o('c19', 'Releasing twice the recommended density to guarantee control.', 'systemsThinking', 'scientificInquiry', 1, 'more intervention guarantees more control'),
           o('c20', 'Approval from the farmers who will benefit most.', 'systemsThinking', 'scientificInquiry', 2, 'those who benefit can judge the ecological risk'),

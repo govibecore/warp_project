@@ -1,8 +1,7 @@
-import { ArrowLeft, RefreshCw, Sparkles, GraduationCap, Users, Clock, Globe, TrendingUp, FileCheck, Printer, LayoutDashboard, ArrowRight, FileText } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, Clock, Printer, FileText, MoreHorizontal, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
 import { useState, useEffect } from 'react';
-import type React from 'react';
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { WarpLogo } from '../WarpLogo';
@@ -18,6 +17,7 @@ import { ParentVariant } from '../report/ParentVariant';
 import { ScenarioAudit } from '../report/ScenarioAudit';
 import { TrajectoryArc } from '../report/TrajectoryArc';
 import { OnePagePrintSummary } from '../report/OnePagePrintSummary';
+import { ComprehensivePrintDossier } from '../report/ComprehensivePrintDossier';
 import { ParakhRadarChart } from '../report/ParakhRadarChart';
 import { ScoreRing } from '../ui/ScoreRing';
 import { BrainLoading } from '../animations/BrainLoading';
@@ -41,7 +41,7 @@ function ordinal(n: number): string {
 }
 
 function formatDuration(ms?: number): string {
-  if (!ms || ms <= 0) return '—';
+  if (!ms || ms <= 0) return '-';
   const totalSeconds = Math.round(ms / 1000);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
@@ -72,6 +72,7 @@ export function ReportDetail() {
   const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
   const [studentName, setStudentName] = useState<string>('Candidate');
   const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
+  const [showOverflow, setShowOverflow] = useState(false);
 
   const stream = useReportStream(assessmentId || null);
 
@@ -190,7 +191,8 @@ export function ReportDetail() {
               name,
               currentClass,
               (assessment.ability_theta as any) || {},
-              (assessment.responses as any) || []
+              (assessment.responses as any) || [],
+              (assessment as any).subject || 'STEM'
             );
             setReportData(generated);
           }
@@ -207,16 +209,15 @@ export function ReportDetail() {
 
   useEffect(() => {
     if (stream.status === 'complete' && stream.report) {
-      setReportData({
+      setReportData((prev: any) => ({
+        ...prev,
         student_variant: stream.report.student_variant,
         parent_variant: stream.report.parent_variant,
-      });
+      }));
     }
   }, [stream]);
 
   const aiGenerating = stream.status === 'analyzing';
-
-
 
   if (!assessmentData) {
     if (loading || aiGenerating) {
@@ -236,6 +237,44 @@ export function ReportDetail() {
     );
   }
 
+  const recordedResponses = (assessmentData.responses as any[]) || [];
+  const isIncomplete = recordedResponses.length < 5 || assessmentData.status === 'in_progress';
+
+  if (isIncomplete) {
+    return (
+      <div className="mx-auto max-w-2xl px-6 py-24 text-center">
+        <div className="mb-6 inline-flex p-4 rounded-2xl bg-amber-500/10 text-amber-500 border border-amber-500/20">
+          <AlertTriangle className="size-8" />
+        </div>
+        <h1 className="mb-3 font-display text-3xl font-bold tracking-tight text-foreground">
+          Assessment Incomplete
+        </h1>
+        <p className="mb-6 text-sm text-foreground-secondary leading-relaxed max-w-md mx-auto">
+          This session recorded {recordedResponses.length} response{recordedResponses.length === 1 ? '' : 's'}. A minimum of 5 completed items are required to calibrate your psychometric latent ability parameters and generate an authoritative diagnostic report.
+        </p>
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Button
+            onClick={() => {
+              window.location.search = '?choose';
+            }}
+            size="md"
+          >
+            Start New Assessment <ArrowRight className="size-4 ml-1.5" />
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={() => {
+              window.location.search = '?dashboard';
+            }}
+            size="md"
+          >
+            Go to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   // Derive international psychometric benchmark numbers
   const benchmark = reportData?.benchmark || reportData?.parent_variant?.benchmark || computeInternationalBenchmark(
     assessmentData.ability_theta || {},
@@ -246,7 +285,7 @@ export function ReportDetail() {
   const snapshot = {
     classLevel: assessmentData.class_level || 8,
     completedAt: assessmentData.completed_at || assessmentData.created_at,
-    overallScore: assessmentData.global_score || benchmark.aggregateScaledScore,
+    overallScore: assessmentData.global_score ?? (benchmark.hasSufficientData ? benchmark.aggregateScaledScore : 0),
     regionalPercentiles: benchmark.regionalPercentiles,
     scaledScores: assessmentData.scaled_scores || {},
     totalTimeMs: assessmentData.total_time_ms,
@@ -270,48 +309,62 @@ export function ReportDetail() {
   const boardGradeBand = benchmark.boardGradeBand;
   const parakh = benchmark.parakhHolisticPillars;
   const homeRoutines = parentVariant?.indianHomeRoutines || parentVariant?.immediateHomeRoutines || benchmark.parentActionBlueprint?.indianHomeRoutines || [];
-  const indiaPercentile = benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68;
+  const indiaPercentile = benchmark.indiaNationalPercentile ?? benchmark.regionalPercentiles?.India ?? 0;
   const isEnglish = (assessmentData.subject || benchmark.subject || '').toLowerCase().includes('english');
   const subjectDisplay = isEnglish ? 'English Literacy' : (assessmentData.subject || benchmark.subject || 'STEM');
   const responses = assessmentData.responses || [];
   const correctCount = responses.filter((r: any) => r.correct === true).length;
   const totalCount = responses.length || 6;
+  const accuracyPercent = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
+
+  const metacognitiveScore = benchmark.hasSufficientData
+    ? Math.max(5, Math.min(99, Math.round(accuracyPercent * 0.65 + (50 + (benchmark.abilityTheta || 0) * 18) * 0.35)))
+    : 0;
+  const metacognitiveBand = !benchmark.hasSufficientData
+    ? 'Not Assessed'
+    : metacognitiveScore >= 75
+    ? 'Advanced'
+    : metacognitiveScore >= 55
+    ? 'Proficient'
+    : metacognitiveScore >= 35
+    ? 'Developing'
+    : 'Foundational Need';
 
   const parakhVitals = [
     {
       domain: 'Core Domain',
       label: 'Conceptual Knowledge',
-      value: parakh?.conceptualKnowledge?.score ?? 62,
+      value: parakh?.conceptualKnowledge?.score ?? 0,
       suffix: '%',
-      band: parakh?.conceptualKnowledge?.level || 'Proficient',
-      delta: (parakh?.conceptualKnowledge?.score ?? 62) - 50,
+      band: parakh?.conceptualKnowledge?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
+      delta: (parakh?.conceptualKnowledge?.score ?? 50) - 50,
       observation: parakh?.conceptualKnowledge?.description || 'Evaluated via adaptive CAT item discrimination on first-principles reasoning.',
     },
     {
       domain: 'Cognitive Domain',
       label: 'Higher Order Thinking (HOTS)',
-      value: parakh?.higherOrderThinkingSkills?.score ?? 49,
+      value: parakh?.higherOrderThinkingSkills?.score ?? 0,
       suffix: '%',
-      band: parakh?.higherOrderThinkingSkills?.level || 'Developing',
-      delta: (parakh?.higherOrderThinkingSkills?.score ?? 49) - 50,
+      band: parakh?.higherOrderThinkingSkills?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
+      delta: (parakh?.higherOrderThinkingSkills?.score ?? 50) - 50,
       observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts and multi-step deduction analysis.',
     },
     {
       domain: 'Methodological',
       label: 'Application & Problem Solving',
-      value: parakh?.applicationAndProblemSolving?.score ?? 56,
+      value: parakh?.applicationAndProblemSolving?.score ?? 0,
       suffix: '%',
-      band: parakh?.applicationAndProblemSolving?.level || 'Proficient',
-      delta: (parakh?.applicationAndProblemSolving?.score ?? 56) - 50,
+      band: parakh?.applicationAndProblemSolving?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
+      delta: (parakh?.applicationAndProblemSolving?.score ?? 50) - 50,
       observation: parakh?.applicationAndProblemSolving?.description || (isEnglish ? 'Applies linguistic analysis to novel textual contexts.' : 'Applies foundational theorems to novel STEM challenge contexts.'),
     },
     {
       domain: 'Metacognitive',
       label: 'Metacognition & Traps',
-      value: 78,
+      value: metacognitiveScore,
       suffix: '%',
-      band: 'Advanced',
-      delta: 28,
+      band: metacognitiveBand,
+      delta: metacognitiveScore - 50,
       observation: 'Pacing control and recognition of distractor choices engineered around formula traps.',
     },
   ];
@@ -321,11 +374,11 @@ export function ReportDetail() {
       <div className="mx-auto max-w-5xl" id="report-printable-area">
         {/* ── Header ── */}
         <header
-          className="bg-warp-grid border-b border-border bg-surface px-6 pt-6 pb-8 md:px-10 md:pt-8 md:pb-10 screen-only"
+          className="border-b border-border bg-surface px-6 pt-4 pb-5 md:px-10 md:pt-5 md:pb-6 screen-only"
           style={{ animation: 'fadeIn 300ms cubic-bezier(.2,.7,.2,1) both' }}
         >
-          {/* Top bar: nav + calibration badge */}
-          <div className="mb-5 flex items-center justify-between gap-4">
+          {/* Top bar: nav only */}
+          <div className="mb-4 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
@@ -339,23 +392,15 @@ export function ReportDetail() {
               <WarpLogo variant="lockup" className="h-7 w-auto print:hidden" />
               <WarpLogo variant="lockup" theme="light" className="print-only h-7 w-auto" />
             </div>
-            <div className="flex items-center gap-2">
-              <span className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[11px] font-semibold bg-primary/10 text-primary border border-primary/20">
-                <Globe className="size-3.5" /> Calibrated against India (CBSE/PARAKH), Singapore, China & US
-              </span>
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-foreground-muted">
-                Official Report
-              </p>
-            </div>
           </div>
 
           {/* Hero: title + metadata strip on left, score ring on right */}
-          <div className="flex flex-col justify-between gap-8 md:flex-row md:items-center">
+          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div
-              className="space-y-3"
+              className="space-y-2"
               style={{ animation: 'slideUp 350ms 100ms cubic-bezier(.2,.7,.2,1) both' }}
             >
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+              <p className="text-xs font-medium tracking-wide text-foreground-secondary">
                 WARP Global {subjectDisplay} Benchmark
               </p>
               <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
@@ -385,14 +430,6 @@ export function ReportDetail() {
                 {' · '}
                 <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
               </p>
-              {/* India percentile quick read */}
-              <p className="text-xs font-semibold text-foreground-secondary">
-                🇮🇳 {ordinal(benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68)} percentile in India
-                {' · '}
-                🌐 {ordinal(benchmark.globalPercentile)} global
-                {' · '}
-                🇸🇬 {ordinal(benchmark.regionalPercentiles?.Singapore)} vs Singapore
-              </p>
             </div>
 
             {/* Score Ring Hero */}
@@ -410,107 +447,130 @@ export function ReportDetail() {
           </div>
         </header>
 
-        {/* ── Sticky Pill Tab Navigation ── */}
+        {/* ── Sticky Tab Navigation ── */}
         <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-sm">
-          {/* Pill tab row */}
-          {(() => {
-            const tabs: Array<{ id: TabType; icon: React.ElementType; label: string; badge?: string }> = [
-              { id: 'hub', icon: LayoutDashboard, label: 'Executive Hub' },
-              { id: 'onepage', icon: FileText, label: '1-Page Brief', badge: 'Print Ready' },
-              { id: 'student', icon: GraduationCap, label: 'Student Sprint' },
-              { id: 'parent', icon: Users, label: 'Parent Blueprint' },
-              { id: 'audit', icon: FileCheck, label: 'Scenario Audit', badge: String(totalCount) },
-              { id: 'trajectory', icon: TrendingUp, label: 'Longitudinal Arc' },
-            ];
-            return (
-              <div className="flex items-center gap-1 overflow-x-auto px-4 md:px-6 pt-2 pb-0">
-                {tabs.map(({ id, icon: Icon, label, badge }) => (
+          <div className="flex items-center justify-between px-4 md:px-6">
+            {/* Tab row — text only, no icons */}
+            <div className="flex items-center gap-0.5 overflow-x-auto">
+              {(['hub', 'onepage', 'student', 'parent', 'audit', 'trajectory'] as TabType[]).map((id) => {
+                const labels: Record<TabType, string> = {
+                  hub: 'Executive Hub',
+                  onepage: '1-Page Brief',
+                  student: 'Student Sprint',
+                  parent: 'Parent Blueprint',
+                  audit: 'Scenario Audit',
+                  trajectory: 'Longitudinal Arc',
+                };
+                return (
                   <button
                     key={id}
                     onClick={() => setActiveTab(id)}
-                    className={`flex items-center gap-1.5 px-3 py-2 mb-0 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 ${
+                    className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
                       activeTab === id
-                        ? 'border-primary text-primary bg-primary/5'
-                        : 'border-transparent text-foreground-secondary hover:text-foreground hover:bg-surface/60'
+                        ? 'border-primary text-primary'
+                        : 'border-transparent text-foreground-secondary hover:text-foreground'
                     }`}
                   >
-                    <Icon className="size-3.5 shrink-0" />
-                    {label}
-                    {badge && (
-                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary font-mono font-bold">
-                        {badge}
-                      </span>
-                    )}
+                    {labels[id]}
                   </button>
-                ))}
-              </div>
-            );
-          })()}
-
-          {/* Secondary action row */}
-          <div className="flex items-center justify-end gap-2 px-4 md:px-6 py-2 border-t border-border/50">
-            {/* Print Mode Selector */}
-            <div className="flex items-center border border-border bg-surface p-0.5 text-xs mr-auto">
-              <button
-                type="button"
-                onClick={() => setPrintMode('one-page')}
-                className={`px-2.5 py-1 font-mono text-[11px] font-semibold transition-colors ${
-                  printMode === 'one-page'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground-secondary hover:text-foreground'
-                }`}
-                title="Strict 1-Page condensed printout"
-              >
-                1-Page Print
-              </button>
-              <button
-                type="button"
-                onClick={() => setPrintMode('comprehensive')}
-                className={`px-2.5 py-1 font-mono text-[11px] font-semibold transition-colors ${
-                  printMode === 'comprehensive'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground-secondary hover:text-foreground'
-                }`}
-                title="Full multi-page comprehensive report"
-              >
-                Full Dossier
-              </button>
+                );
+              })}
             </div>
+
+            {/* Share Report — always mounted so modal portal survives dropdown close */}
             <ShareButton
               reportId={reportData?.id}
               assessmentId={assessmentData.id}
+              studentId={assessmentData.student_id}
               initialShareToken={reportData?.share_token}
               studentName={studentName}
+              className="shrink-0"
             />
-            <PDFExportButton
-              targetId="report-printable-area"
-              studentName={studentName}
-              classLevel={snapshot.classLevel}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.print()}
-              className="gap-1.5"
-              aria-label="Print official dossier"
-            >
-              <Printer className="size-3.5" />
-              <span>Print {printMode === 'one-page' ? '(1-Page)' : '(Full)'}</span>
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setIsTutorOpen(true)}
-              className="gap-1.5 border-border bg-accent/40 text-foreground hover:bg-accent"
-            >
-              <Sparkles className="size-3.5 text-primary" />
-              <span>Ask Nemotron Tutor</span>
-            </Button>
+
+            {/* Overflow actions menu */}
+            <div className="relative shrink-0">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowOverflow(!showOverflow)}
+                className="h-8 w-8 p-0"
+                aria-label="Report actions"
+              >
+                <MoreHorizontal className="size-4" />
+              </Button>
+              {showOverflow && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowOverflow(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-40 min-w-50 border border-border bg-surface shadow-lg py-1">
+                    <div className="px-3 py-1 text-[10px] font-mono uppercase text-foreground-muted border-b border-border">
+                      Print &amp; Export Options
+                    </div>
+                    <div className="px-3 py-1.5 flex items-center justify-between gap-2">
+                      <span className="text-xs text-foreground-secondary">Format:</span>
+                      <div className="flex items-center bg-elevated border border-border p-0.5 text-xs">
+                        <button
+                          onClick={() => setPrintMode('one-page')}
+                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                            printMode === 'one-page'
+                              ? 'bg-primary text-primary-foreground font-semibold'
+                              : 'text-foreground-secondary hover:text-foreground'
+                          }`}
+                        >
+                          1-Page
+                        </button>
+                        <button
+                          onClick={() => setPrintMode('comprehensive')}
+                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                            printMode === 'comprehensive'
+                              ? 'bg-primary text-primary-foreground font-semibold'
+                              : 'text-foreground-secondary hover:text-foreground'
+                          }`}
+                        >
+                          4-Page
+                        </button>
+                      </div>
+                    </div>
+                    <div className="px-3 py-1.5">
+                      <PDFExportButton
+                        studentName={studentName}
+                        classLevel={snapshot.classLevel}
+                        completedAt={snapshot.completedAt}
+                        totalTimeMs={snapshot.totalTimeMs}
+                        overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                        abilityTheta={benchmark.abilityTheta}
+                        benchmark={benchmark}
+                        studentVariant={studentVariant}
+                        parentVariant={parentVariant}
+                        responses={responses}
+                        printMode={printMode}
+                        className="w-full justify-start"
+                        onClose={() => setShowOverflow(false)}
+                      />
+                    </div>
+                    <button
+                      onClick={() => { setShowOverflow(false); window.print(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                    >
+                      <Printer className="size-4" />
+                      Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}
+                    </button>
+                    <div className="border-t border-border my-1" />
+                    <button
+                      onClick={() => { setShowOverflow(false); window.location.href = '/'; }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                    >
+                      <RefreshCw className="size-4" />
+                      New assessment
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* ── Screen-Only Interactive Main (Compact, Calm, Zero Bloat) ── */}
-        <main className="space-y-6 p-4 sm:p-8 md:p-10 screen-only">
+        {/* ── Screen-Only Interactive Main ── */}
+        <main className="space-y-8 px-6 py-8 md:px-12 md:py-10 screen-only">
           {aiGenerating && (
             <Card className="flex flex-col items-center justify-center py-10 gap-4">
               <Spinner size="lg" className="text-primary" />
@@ -520,32 +580,26 @@ export function ReportDetail() {
 
           {/* ══════════════════ EXECUTIVE SUMMARY HUB ══════════════════ */}
           {!aiGenerating && activeTab === 'hub' && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              {/* High Signal Focus Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:grid-rows-[1fr]">
-                {/* ── CARD 1: Student Cognitive Profile — Cyan accent ── */}
-                <Card
-                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-1"
-                  style={{ borderLeftColor: 'var(--color-accent, #8FCFE8)' }}
-                >
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
-                        Student Profile
-                      </span>
-                      <GraduationCap className="size-4 text-primary" />
-                    </div>
+            <div className="space-y-8 animate-in fade-in duration-200">
+              {/* Section A — At a Glance */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* CARD 1: Student Cognitive Profile */}
+                <Card className="p-5 md:p-6 border border-border bg-card">
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
+                      Student Profile
+                    </span>
 
                     <div>
                       <h3 className="text-lg font-bold font-display text-foreground leading-snug">
                         {archetypeTitle}
                       </h3>
-                      <p className="text-xs text-foreground-secondary italic mt-0.5 line-clamp-2">
+                      <p className="text-xs text-foreground-secondary italic mt-1 line-clamp-2">
                         "{archetypeTagline}"
                       </p>
                     </div>
 
-                    <div className="space-y-2 text-xs pt-1 border-t border-border">
+                    <div className="space-y-1.5 text-xs pt-3 border-t border-border">
                       <div>
                         <span className="font-semibold text-foreground">Core Strength: </span>
                         <span className="text-foreground-secondary">{keyStrengths[0]}</span>
@@ -556,37 +610,14 @@ export function ReportDetail() {
                       </div>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('student')}
-                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <GraduationCap className="size-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Explore 30-Day Sprint</div>
-                        <div className="text-[10px] text-foreground-muted font-normal">Targeted milestones & superpower expansion</div>
-                      </div>
-                    </div>
-                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </button>
                 </Card>
 
-                {/* ── CARD 2: Parent Educational Blueprint — Warm amber accent ── */}
-                <Card
-                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-2"
-                  style={{ borderLeftColor: 'var(--color-warm, #D9A86E)' }}
-                >
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
-                        Parent Blueprint
-                      </span>
-                      <Users className="size-4 text-primary" />
-                    </div>
+                {/* CARD 2: Parent Verdict */}
+                <Card className="p-5 md:p-6 border border-border bg-card">
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
+                      Parent Blueprint
+                    </span>
 
                     <div>
                       <div className="flex items-center gap-2">
@@ -594,19 +625,19 @@ export function ReportDetail() {
                           {boardGradeBand ? `Grade ${boardGradeBand.grade}` : verdict}
                         </h3>
                         {boardGradeBand && (
-                          <span className="text-[11px] font-mono px-1.5 py-0.5 bg-accent text-foreground-secondary font-medium">
+                          <span className="text-xs font-mono px-1.5 py-0.5 bg-accent text-foreground-secondary">
                             {boardGradeBand.band}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-foreground-secondary mt-0.5">
+                      <p className="text-xs text-foreground-secondary mt-1">
                         NEP 2020 & Board Diagnostic Verdict
                       </p>
                     </div>
 
-                    <div className="space-y-2 text-xs pt-1 border-t border-border">
+                    <div className="space-y-1.5 text-xs pt-3 border-t border-border">
                       <div>
-                        <span className="font-semibold text-foreground">Ratta Reality: </span>
+                        <span className="font-semibold text-foreground">Reality Check: </span>
                         <span className="text-foreground-secondary line-clamp-2">{honestSummary}</span>
                       </div>
                       {homeRoutines[0] && (
@@ -619,37 +650,14 @@ export function ReportDetail() {
                       )}
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('parent')}
-                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <Users className="size-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">View Board & PTM Guide</div>
-                        <div className="text-[10px] text-foreground-muted font-normal">Home routines & teacher discussion questions</div>
-                      </div>
-                    </div>
-                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </button>
                 </Card>
 
-                {/* ── CARD 3: Diagnostic Precision & Audit — Emerald accent ── */}
-                <Card
-                  className="p-5 md:p-6 border border-border border-l-2 bg-card flex flex-col justify-between hover:-translate-y-0.5 hover:border-border-strong transition-all duration-200 hub-card-3"
-                  style={{ borderLeftColor: 'var(--color-ok, #7FCBA0)' }}
-                >
-                  <div className="space-y-3.5">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-primary">
-                        Psychometric Audit
-                      </span>
-                      <FileCheck className="size-4 text-primary" />
-                    </div>
+                {/* CARD 3: Score & Ranking */}
+                <Card className="p-5 md:p-6 border border-border bg-card">
+                  <div className="space-y-3">
+                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
+                      Psychometric Audit
+                    </span>
 
                     <div>
                       <div className="flex items-baseline gap-2">
@@ -657,18 +665,18 @@ export function ReportDetail() {
                           {snapshot.overallScore || benchmark.aggregateScaledScore}
                         </span>
                         <span className="text-xs font-mono text-foreground-muted">/ 900</span>
-                        <span className="text-xs font-semibold text-primary ml-auto font-mono">
-                          🇮🇳 {ordinal(indiaPercentile)} %ile
+                        <span className="text-xs font-medium text-primary ml-auto font-mono">
+                          India {ordinal(indiaPercentile)} %ile
                         </span>
                       </div>
-                      <p className="text-xs text-foreground-secondary mt-0.5">
+                      <p className="text-xs text-foreground-secondary mt-1">
                         {correctCount} of {totalCount} scenarios answered correctly ({Math.round((correctCount / totalCount) * 100)}%)
                       </p>
                     </div>
 
-                    {/* Efferd ShareBarList: Cohort Score Distribution */}
-                    <div className="space-y-1.5 pt-1 border-t border-border">
-                      <div className="flex items-center justify-between text-[10px] font-mono text-foreground-muted">
+                    {/* Cohort Score Distribution */}
+                    <div className="space-y-1.5 pt-3 border-t border-border">
+                      <div className="flex items-center justify-between text-xs font-mono text-foreground-muted">
                         <span>Cohort Benchmarks</span>
                         <span>Score / 900</span>
                       </div>
@@ -688,7 +696,7 @@ export function ReportDetail() {
                           <ShareBarListFill />
                           <ShareBarListContent>
                             <ShareBarListLabel>
-                              🇮🇳 India 50th %ile
+                              India 50th %ile
                             </ShareBarListLabel>
                             <ShareBarListValue>510</ShareBarListValue>
                           </ShareBarListContent>
@@ -706,7 +714,7 @@ export function ReportDetail() {
                           <ShareBarListFill />
                           <ShareBarListContent>
                             <ShareBarListLabel>
-                              🇸🇬 Singapore SASMO 75th %ile
+                              Singapore SASMO 75th %ile
                             </ShareBarListLabel>
                             <ShareBarListValue>690</ShareBarListValue>
                           </ShareBarListContent>
@@ -714,116 +722,142 @@ export function ReportDetail() {
                       </ShareBarList>
                     </div>
                   </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('audit')}
-                    className="w-full text-left pt-3.5 mt-4 border-t border-border -mx-5 -mb-5 px-5 py-3 flex items-center justify-between text-xs font-semibold text-foreground hover:bg-surface/80 group transition-colors cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="flex size-7 items-center justify-center rounded-none bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                        <FileCheck className="size-3.5" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-foreground group-hover:text-primary transition-colors">Review Question Audit ({totalCount})</div>
-                        <div className="text-[10px] text-foreground-muted font-normal">3PL IRT latent theta & distractor traps</div>
-                      </div>
-                    </div>
-                    <ArrowRight className="size-3.5 text-foreground-muted group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
-                  </button>
                 </Card>
               </div>
 
-              {/* Secondary Row: PARAKH 360° WebVitals Grid & Quick Socratic Assist */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {/* PARAKH 360° Radar Chart */}
-                <Card className="md:col-span-2 p-5 border border-border bg-card hub-parakh">
-                  <div className="flex items-center justify-between mb-4 border-b border-border pb-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-foreground-secondary">
-                        PARAKH 360° Holistic Assessment Framework
-                      </span>
-                      <span className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary font-mono font-semibold">NEP 2020</span>
-                    </div>
-                    <span className="text-[11px] text-foreground-muted font-mono">Calibrated vs Class {snapshot.classLevel} Baseline</span>
-                  </div>
-                  <ParakhRadarChart pillars={parakhVitals} baseline={50} />
-                </Card>
+              {/* Section B — Deep Diagnostic (PARAKH radar full-width + inline domain vitals) */}
+              <Card className="p-6 md:p-8 border border-border bg-card">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    PARAKH 360° Holistic Assessment — NEP 2020
+                  </h3>
+                  <span className="text-xs text-foreground-muted font-mono">vs Class {snapshot.classLevel} Baseline</span>
+                </div>
+                <ParakhRadarChart pillars={parakhVitals} baseline={50} />
 
-                {/* Socratic Tutor & Fast Actions */}
-                <Card className="p-5 border border-border bg-card flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-2 text-primary">
-                      <Sparkles className="size-4" />
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider">
-                        Nemotron Socratic Tutor
-                      </span>
+                {/* Inline domain vitals */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
+                  {parakhVitals.map((v) => (
+                    <div key={v.label} className="space-y-1">
+                      <p className="text-xs text-foreground-muted">{v.domain}</p>
+                      <p className="text-sm font-semibold text-foreground">{v.label}</p>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-lg font-bold font-display text-foreground">{v.value}{v.suffix}</span>
+                        <span className={`text-xs font-mono ${v.delta >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {v.delta >= 0 ? '+' : ''}{v.delta.toFixed(1)} pts
+                        </span>
+                      </div>
+                      <p className="text-xs text-foreground-secondary">{v.band}</p>
                     </div>
-                    <h4 className="text-sm font-bold text-foreground mb-1">
-                      Need Live Socratic Explanations?
-                    </h4>
-                    <p className="text-xs text-foreground-secondary leading-relaxed">
-                      Nemotron walks candidate and parents through distractor traps step-by-step using first principles.
-                    </p>
-                  </div>
-
-                  <div className="pt-3 mt-3 border-t border-border space-y-2">
-                    <Button
-                      size="sm"
-                      onClick={() => setIsTutorOpen(true)}
-                      className="w-full gap-2 text-xs font-semibold"
-                    >
-                      <Sparkles className="size-3.5" />
-                      <span>Launch Socratic Tutor</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setActiveTab('trajectory')}
-                      className="w-full gap-2 text-xs font-semibold"
-                    >
-                      <TrendingUp className="size-3.5" />
-                      <span>View Longitudinal Arc</span>
-                    </Button>
-                  </div>
-                </Card>
-              </div>
+                  ))}
+                </div>
+              </Card>
             </div>
           )}
 
-          {/* ══════════════════ 1-PAGE SUMMARY SCREEN PREVIEW ══════════════════ */}
+          {/* ══════════════════ 1-PAGE & COMPREHENSIVE PRINT SCREEN PREVIEW ══════════════════ */}
           {!aiGenerating && activeTab === 'onepage' && (
             <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between p-3.5 bg-surface border border-border text-xs">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-surface border border-border text-xs">
                 <div className="flex items-center gap-2">
                   <FileText className="size-4 text-primary" />
-                  <span className="font-semibold text-foreground">
-                    1-Page Executive Summary (Print-Ready Preview)
-                  </span>
-                  <span className="hidden md:inline text-[10px] font-mono text-foreground-muted">
-                    Exact single-page brief for students, parents & PTM discussions
-                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-foreground">
+                        {printMode === 'one-page' ? '1-Page Executive Brief' : '4-Page Comprehensive Dossier'}
+                      </span>
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20 font-bold">
+                        Print-Ready A4
+                      </span>
+                    </div>
+                    <span className="hidden md:inline text-[10px] text-foreground-muted">
+                      {printMode === 'one-page'
+                        ? 'Guaranteed single-sheet executive summary for parents and PTM discussions'
+                        : 'Full 4-page diagnostic: Executive Calibration, Student Sprint, Parent Blueprint & Scenario Audit'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => window.print()} className="gap-1.5 text-xs font-semibold">
-                    <Printer className="size-3.5" /> Print Single Page
+
+                <div className="flex items-center gap-2 self-end sm:self-auto">
+                  {/* Mode Selector */}
+                  <div className="flex items-center bg-elevated border border-border p-0.5">
+                    <button
+                      onClick={() => setPrintMode('one-page')}
+                      className={`px-2.5 py-1 text-xs transition-colors ${
+                        printMode === 'one-page'
+                          ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                          : 'text-foreground-secondary hover:text-foreground'
+                      }`}
+                    >
+                      1-Page Brief
+                    </button>
+                    <button
+                      onClick={() => setPrintMode('comprehensive')}
+                      className={`px-2.5 py-1 text-xs transition-colors ${
+                        printMode === 'comprehensive'
+                          ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
+                          : 'text-foreground-secondary hover:text-foreground'
+                      }`}
+                    >
+                      4-Page Dossier
+                    </button>
+                  </div>
+
+                  <PDFExportButton
+                    studentName={studentName}
+                    classLevel={snapshot.classLevel}
+                    completedAt={snapshot.completedAt}
+                    totalTimeMs={snapshot.totalTimeMs}
+                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    abilityTheta={benchmark.abilityTheta}
+                    benchmark={benchmark}
+                    studentVariant={studentVariant}
+                    parentVariant={parentVariant}
+                    responses={responses}
+                    printMode={printMode}
+                    className="whitespace-nowrap"
+                  />
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => window.print()}
+                    className="gap-1.5 text-xs font-semibold whitespace-nowrap"
+                  >
+                    <Printer className="size-3.5" />
+                    Print {printMode === 'one-page' ? '(1 Page)' : '(4 Pages)'}
                   </Button>
                 </div>
               </div>
 
-              <div className="shadow-sm">
-                <OnePagePrintSummary
-                  studentName={studentName}
-                  classLevel={snapshot.classLevel}
-                  completedAt={snapshot.completedAt}
-                  totalTimeMs={snapshot.totalTimeMs}
-                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
-                  abilityTheta={benchmark.abilityTheta}
-                  benchmark={benchmark}
-                  studentVariant={studentVariant}
-                  parentVariant={parentVariant}
-                  responses={assessmentData.responses || []}
-                />
+              <div className="shadow-sm overflow-x-auto flex justify-center">
+                {printMode === 'one-page' ? (
+                  <OnePagePrintSummary
+                    studentName={studentName}
+                    classLevel={snapshot.classLevel}
+                    completedAt={snapshot.completedAt}
+                    totalTimeMs={snapshot.totalTimeMs}
+                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    abilityTheta={benchmark.abilityTheta}
+                    benchmark={benchmark}
+                    studentVariant={studentVariant}
+                    parentVariant={parentVariant}
+                    responses={assessmentData.responses || []}
+                  />
+                ) : (
+                  <ComprehensivePrintDossier
+                    studentName={studentName}
+                    classLevel={snapshot.classLevel}
+                    completedAt={snapshot.completedAt}
+                    totalTimeMs={snapshot.totalTimeMs}
+                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    abilityTheta={benchmark.abilityTheta}
+                    benchmark={benchmark}
+                    studentVariant={studentVariant}
+                    parentVariant={parentVariant}
+                    responses={assessmentData.responses || []}
+                  />
+                )}
               </div>
             </div>
           )}
@@ -869,154 +903,64 @@ export function ReportDetail() {
           )}
         </main>
 
-        {/* ══════════════════ DYNAMIC PRINT DOSSIER ══════════════════ */}
-        <div className="hidden print:block print-dossier p-0 space-y-8">
+        {/* ══════════════════ PDF CAPTURE TARGET (always in DOM, off-screen) ══════════════════
+             Positioned fixed far off-screen so html2canvas can compute its layout
+             (display:none would make it invisible to canvas; off-screen keeps layout intact).
+             For real window.print() usage, print:block overrides the fixed position. */}
+        <div
+          id="report-printable-area"
+          className="print-dossier p-0 print:block"
+          style={{ position: 'fixed', top: 0, left: '-9999px', width: '794px', zIndex: -10, background: '#fff' }}
+        >
           {printMode === 'one-page' ? (
-            <div className="print-avoid-break">
-              <OnePagePrintSummary
-                studentName={studentName}
-                classLevel={snapshot.classLevel}
-                completedAt={snapshot.completedAt}
-                totalTimeMs={snapshot.totalTimeMs}
-                overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
-                abilityTheta={benchmark.abilityTheta}
-                benchmark={benchmark}
-                studentVariant={studentVariant}
-                parentVariant={parentVariant}
-                responses={assessmentData.responses || []}
-              />
-            </div>
+            <OnePagePrintSummary
+              studentName={studentName}
+              classLevel={snapshot.classLevel}
+              completedAt={snapshot.completedAt}
+              totalTimeMs={snapshot.totalTimeMs}
+              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              abilityTheta={benchmark.abilityTheta}
+              benchmark={benchmark}
+              studentVariant={studentVariant}
+              parentVariant={parentVariant}
+              responses={assessmentData.responses || []}
+            />
           ) : (
-            <>
-              {/* PAGE 1: EXECUTIVE 1-PAGE SUMMARY */}
-              <section className="print-avoid-break">
-                <OnePagePrintSummary
-                  studentName={studentName}
-                  classLevel={snapshot.classLevel}
-                  completedAt={snapshot.completedAt}
-                  totalTimeMs={snapshot.totalTimeMs}
-                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
-                  abilityTheta={benchmark.abilityTheta}
-                  benchmark={benchmark}
-                  studentVariant={studentVariant}
-                  parentVariant={parentVariant}
-                  responses={assessmentData.responses || []}
-                />
-              </section>
-
-              {/* PAGE 2: STUDENT COGNITIVE PROFILE & 30-DAY SPRINT */}
-              <section className="space-y-4 print-break-before pt-4">
-                <div className="flex items-center justify-between border-b border-border pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
-                      PAGE 2 · CANDIDATE PROFILE
-                    </span>
-                    <h2 className="text-base font-bold font-display text-foreground">
-                      Student Cognitive Profile & 30-Day Action Sprint
-                    </h2>
-                  </div>
-                  <span className="text-xs text-foreground-muted">
-                    Class {snapshot.classLevel} · {studentName}
-                  </span>
-                </div>
-                <StudentVariant
-                  studentVariant={studentVariant}
-                  benchmark={benchmark}
-                  classLevel={snapshot.classLevel}
-                />
-              </section>
-
-              {/* PAGE 3: PARENT EDUCATIONAL BLUEPRINT & BOARD ALIGNMENT */}
-              <section className="space-y-4 print-break-before pt-4">
-                <div className="flex items-center justify-between border-b border-border pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
-                      PAGE 3 · PARENT BLUEPRINT
-                    </span>
-                    <h2 className="text-base font-bold font-display text-foreground">
-                      Parent Educational Blueprint & Board Alignment (NEP 2020 / PARAKH)
-                    </h2>
-                  </div>
-                  <span className="text-xs text-foreground-muted">
-                    CBSE / ICSE / Global Benchmarking
-                  </span>
-                </div>
-                <ParentVariant
-                  parentVariant={parentVariant}
-                  benchmark={benchmark}
-                  classLevel={snapshot.classLevel}
-                />
-              </section>
-
-              {/* PAGE 4: SCENARIO DIAGNOSTIC AUDIT */}
-              <section className="space-y-4 print-break-before pt-4">
-                <div className="flex items-center justify-between border-b border-border pb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 bg-primary/10 text-primary border border-primary/20">
-                      PAGE 4 · DIAGNOSTIC AUDIT
-                    </span>
-                    <h2 className="text-base font-bold font-display text-foreground">
-                      Scenario Diagnostic Audit & Distractor Traps
-                    </h2>
-                  </div>
-                  <span className="text-xs text-foreground-muted">
-                    Item Response Theory (3PL IRT) Psychometric Transparency
-                  </span>
-                </div>
-                <ScenarioAudit
-                  responses={assessmentData.responses || []}
-                  overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
-                  classLevel={snapshot.classLevel}
-                  nationalPercentile={benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68}
-                  boardGrade={benchmark.boardGradeBand?.grade || 'A2'}
-                  onAskTutor={(scenarioIdx) => {
-                    setSelectedTutorScenarioIndex(scenarioIdx);
-                    setIsTutorOpen(true);
-                  }}
-                />
-              </section>
-            </>
+            <ComprehensivePrintDossier
+              studentName={studentName}
+              classLevel={snapshot.classLevel}
+              completedAt={snapshot.completedAt}
+              totalTimeMs={snapshot.totalTimeMs}
+              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              abilityTheta={benchmark.abilityTheta}
+              benchmark={benchmark}
+              studentVariant={studentVariant}
+              parentVariant={parentVariant}
+              responses={assessmentData.responses || []}
+            />
           )}
         </div>
 
-        {/* ── Footer controls ── */}
-        <footer className="no-print print:hidden mt-4 flex flex-wrap items-center justify-between gap-4 border-t border-border p-6 md:p-8">
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => (window.location.search = '?dashboard')}
-            >
-              <ArrowLeft className="size-4" />
-              Back to dashboard
-            </Button>
-            <span className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none text-[10px] font-medium bg-muted text-foreground-secondary border border-border">
-              <Sparkles className="size-3 text-primary" /> Synthesized with NVIDIA Nemotron-70B Psychometric Intelligence
-            </span>
-          </div>
+        {/* Attribution — quiet, non-interactive */}
+        <div className="no-print print:hidden py-4 text-center">
+          <p className="text-xs text-foreground-muted font-mono">
+            Synthesized with WARP AI Psychometric Intelligence
+          </p>
+        </div>
 
-          <div className="flex gap-3">
-            <PDFExportButton
-              targetId="report-printable-area"
-              studentName={studentName}
-              classLevel={snapshot.classLevel}
-            />
-            <Button
-              variant="outline"
-              onClick={() => window.print()}
-              className="gap-1.5"
-            >
-              <Printer className="size-4" />
-              Print Dossier
-            </Button>
-            <Button onClick={() => (window.location.href = '/')}>
-              <RefreshCw className="size-4" />
-              New assessment
-            </Button>
-          </div>
-        </footer>
+        {/* ── Floating AI Tutor Button ── */}
+        {!isTutorOpen && (
+          <button
+            onClick={() => setIsTutorOpen(true)}
+            className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 no-print print:hidden"
+            aria-label="Open AI Tutor"
+          >
+            <Sparkles className="size-4" />
+            Ask AI
+          </button>
+        )}
 
-        {/* ── Interactive NVIDIA Nemotron Socratic Tutor ── */}
+        {/* ── Interactive WARP AI Socratic Tutor ── */}
         <NemotronSocraticTutor
           isOpen={isTutorOpen}
           onClose={() => setIsTutorOpen(false)}
@@ -1024,6 +968,7 @@ export function ReportDetail() {
           initialScenarioIndex={selectedTutorScenarioIndex}
           initialMode={activeTab === 'parent' ? 'parent' : 'student'}
           recentScenarios={assessmentData?.responses || []}
+          subject={subjectDisplay}
         />
       </div>
     </div>

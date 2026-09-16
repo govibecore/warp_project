@@ -1,4 +1,4 @@
-# STEM Benchmark Platform — Comprehensive Technical Architecture
+# STEM Benchmark Platform - Comprehensive Technical Architecture
 
 ## Executive Summary
 
@@ -800,7 +800,7 @@ If OpenRouter free tier is unavailable:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│  Report #3 — Aug 23, 2026                                                  │
+│  Report #3 - Aug 23, 2026                                                  │
 │  Arjun Sharma • Class 8 • Advanced Difficulty                               │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │

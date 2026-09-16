@@ -1,5 +1,5 @@
 /**
- * shaders.ts — the one shared toon shader.
+ * shaders.ts - the one shared toon shader.
  *
  * Every surface in the glade uses this: NdotL against a single world-space
  * sun, quantised by a narrow smoothstep terminator into exactly two tones
@@ -7,7 +7,7 @@
  * colour. Optional wind sway, per-vertex colour modulation, and a hit-flash
  * uniform for combat feedback.
  *
- * Fog and time uniforms are SHARED objects — the tuning panel and the world
+ * Fog and time uniforms are SHARED objects - the tuning panel and the world
  * update them in one place and every material follows.
  */
 
@@ -17,7 +17,7 @@ import { hexToRgb, warmShadow } from './utils';
 /** World-space sun. One light, one direction, no shadow maps. */
 export const SUN_DIR = new THREE.Vector3(0.45, 0.85, 0.35).normalize();
 
-/** Shared uniforms — mutate `.value` and all toon materials follow. */
+/** Shared uniforms - mutate `.value` and all toon materials follow. */
 export const sharedUniforms = {
   uTime: { value: 0 },
   uSunDir: { value: SUN_DIR.clone() },
@@ -90,9 +90,9 @@ const FRAG = /* glsl */ `
 `;
 
 export interface ToonOptions {
-  /** Lit tone — '#rrggbb' or [r,g,b]. */
+  /** Lit tone - '#rrggbb' or [r,g,b]. */
   base: string | [number, number, number];
-  /** Shadow tone — defaults to a warm-biased darken of `base`. */
+  /** Shadow tone - defaults to a warm-biased darken of `base`. */
   shadow?: [number, number, number];
   /** Wind sway amplitude in world units (0 = rigid). */
   sway?: number;
@@ -118,7 +118,7 @@ export function makeToonMaterial(opts: ToonOptions): THREE.ShaderMaterial {
       uSway: { value: opts.sway ?? 0 },
       uFlash: { value: 0 },
       uOpacity: { value: opacity },
-      // Shared references — panel/world changes propagate to every material.
+      // Shared references - panel/world changes propagate to every material.
       uTime: sharedUniforms.uTime,
       uSunDir: sharedUniforms.uSunDir,
       uFogColor: sharedUniforms.uFogColor,

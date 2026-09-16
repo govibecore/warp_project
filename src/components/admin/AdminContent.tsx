@@ -258,7 +258,7 @@ export function AdminContent() {
                           {s.prompt}
                         </td>
                         <td className="px-6 py-3 font-mono text-[11px] text-foreground-muted whitespace-nowrap">
-                          {s.irt_a != null && s.irt_b != null ? `a:${s.irt_a.toFixed(1)}, b:${s.irt_b.toFixed(1)}` : '—'}
+                          {s.irt_a != null && s.irt_b != null ? `a:${s.irt_a.toFixed(1)}, b:${s.irt_b.toFixed(1)}` : '-'}
                         </td>
                       </tr>
                     ))}
@@ -359,7 +359,7 @@ export function AdminContent() {
                             {n.std_dev != null ? Number(n.std_dev).toFixed(2) : '1.00'}
                           </td>
                           <td className="px-6 py-3 font-mono tabular text-foreground-secondary">
-                            {n.sample_size ? Number(n.sample_size).toLocaleString() : '—'}
+                            {n.sample_size ? Number(n.sample_size).toLocaleString() : '-'}
                           </td>
                           <td className="px-6 py-3 text-xs text-foreground-muted truncate max-w-xs">
                             {n.source || 'PISA 2022 / TIMSS 2023'}

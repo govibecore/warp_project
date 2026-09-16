@@ -88,10 +88,10 @@ async def run_test():
         await expect(page.get_by_role("button", name="New assessment").nth(0)).to_be_visible(timeout=15000), "The 'New assessment' button is visible on the dashboard, indicating the admin portal is displayed."
         
         # --> Overall student metric cards are displayed (metric labels and placeholders visible).
-        await page.get_by_text("—").first.nth(0).scroll_into_view_if_needed()
+        await page.get_by_text("-").first.nth(0).scroll_into_view_if_needed()
         # Assert-outcome: passed
-        # Assert: A student metric value placeholder ('—') is visible, indicating the metric card UI is rendered.
-        await expect(page.get_by_text("—").first.nth(0)).to_be_visible(timeout=15000), "A student metric value placeholder ('\u2014') is visible, indicating the metric card UI is rendered."
+        # Assert: A student metric value placeholder ('-') is visible, indicating the metric card UI is rendered.
+        await expect(page.get_by_text("-").first.nth(0)).to_be_visible(timeout=15000), "A student metric value placeholder ('\u2014') is visible, indicating the metric card UI is rendered."
         await asyncio.sleep(5)
 
     finally:

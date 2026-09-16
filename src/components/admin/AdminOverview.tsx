@@ -14,7 +14,7 @@ import { SpinnerBlock } from '../ui/spinner';
 
 /**
  * KPI numbers carry no judgement, so they carry no colour. Colour is reserved
- * for things that are actually good or bad — a card that is red because it is
+ * for things that are actually good or bad - a card that is red because it is
  * "the fourth card" teaches the reader nothing.
  */
 function Stat({ label, value, sub }: { label: string; value: string; sub?: string }) {

@@ -152,7 +152,7 @@ export const englishBand11_12: ScenarioDef[] = [
     competency: 'understanding',
     developmental_band: '11-12',
     difficulty: 'olympiad',
-    prompt: '"The critical theorist argues that algorithmic surveillance capitalism does not merely predict consumer behavior—it manufactures behavioral futures, modifying human volition through real-time feedback loops to guarantee profitability for proprietary prediction markets." What profound transformation of human agency is articulated?',
+    prompt: '"The critical theorist argues that algorithmic surveillance capitalism does not merely predict consumer behavior-it manufactures behavioral futures, modifying human volition through real-time feedback loops to guarantee profitability for proprietary prediction markets." What profound transformation of human agency is articulated?',
     options: makeOptions('understanding',
       'The degradation of free human self-determination into engineered behavioral compliance optimized for commercial extraction.',
       ['The voluntary participation of citizens in municipal democratic assemblies.', 'An improvement in digital keyboard typing accuracy through machine learning.', 'The total elimination of financial credit card fraud across e-commerce platforms.']

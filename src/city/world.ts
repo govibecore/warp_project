@@ -29,7 +29,7 @@ import {
  * The one rule that makes this a WARP visual rather than a generic village:
  * **height is score**. Each competency district grows a score column whose top
  * is the learner's result, and a cohort ring marks where the global reference
- * sits on that same column. Above the ring is green, below it amber — the gap
+ * sits on that same column. Above the ring is green, below it amber - the gap
  * the whole product exists to close, standing in the middle of the town.
  */
 
@@ -57,7 +57,7 @@ function distToSegment(px: number, pz: number, ax: number, az: number, bx: numbe
   return Math.hypot(px - (ax + dx * t), pz - (az + dz * t));
 }
 
-/** Signed distance to the nearest road — buildings and trees keep off it. */
+/** Signed distance to the nearest road - buildings and trees keep off it. */
 export function roadDist(x: number, z: number): number {
   let d = Math.abs(Math.hypot(x, z) - RING_ROAD_R);
   for (const r of DISTRICTS) d = Math.min(d, distToSegment(x, z, 0, 0, r.x, r.z));
@@ -455,7 +455,7 @@ export function buildScoreColumn(
   group.add(ring);
 
   // The gap: the span between the learner and the reference, sheathed around
-  // the column so it reads from across the island — green above the ring
+  // the column so it reads from across the island - green above the ring
   // (ahead), amber below it (the gap to close).
   const gapH = Math.abs(youH - refH);
   if (gapH > 0.12) {
@@ -767,7 +767,7 @@ export function makeLandmark(
 
 /* ── Trees & props ─────────────────────────────────────────────────────── */
 
-/** Angular conifers — six-sided cones, no spheres. */
+/** Angular conifers - six-sided cones, no spheres. */
 export function makeTree(rng: () => number): THREE.Group {
   const g = new THREE.Group();
   const h = 2.6 + rng() * 2.6;

@@ -11,6 +11,7 @@ interface SocraticTutorPayload {
     benchmarkStandard?: string;
     userSelectedOption?: string;
     correctOption?: string;
+    subject?: string;
   };
   classLevel?: number;
   mode?: 'student' | 'parent';
@@ -49,25 +50,54 @@ export function nemotronSocraticTutorPlugin(): Plugin {
             } = payload;
 
             const isParent = mode === 'parent';
+            const subject = scenarioContext.subject || 'STEM';
+            const isEnglish = subject.toLowerCase().includes('english');
+
+            const intentGuidance = `
+Conversational & Platform Guidance:
+- GREETINGS: If the user simply greets you ("hello", "hi", etc.), greet them warmly, state your role, and invite them to ask about the benchmark question, their answer choice, or study strategies. Do NOT dump an unprompted problem deconstruction for a simple greeting.
+- WARP PROJECT & PLATFORM: If the user asks about WARP, what this project is, or how it works, explain clearly: WARP is a next-generation diagnostic benchmark platform that closes the learning gap between standard school exams and international analytical standards (Singapore SASMO, AMC 8, PISA). It uses adaptive psychometrics (3PL Item Response Theory) to measure latent ability, and pairs diagnostics with Socratic AI coaching.
+- BENCHMARK PROBLEM INQUIRIES: When the user asks about the scenario, their choice, or the concepts, apply the Socratic Teaching Guidelines below.`;
 
             const systemPrompt = isParent
-              ? `You are the WARP AI Educational Advisor powered by NVIDIA Nemotron.
+              ? `You are the WARP AI Educational Advisor powered by WARP AI.
 Audience: Parent of a Class ${classLevel} student.
 Context:
-- Benchmark Problem: "${scenarioContext.prompt || 'STEM Scenario'}"
+- Benchmark Problem: "${scenarioContext.prompt || 'Benchmark Scenario'}"
 - Competency: ${scenarioContext.competency || 'Analytical Problem Solving'}
 - Candidate Selected: "${scenarioContext.userSelectedOption || 'Not specified'}"
 - Correct Principle: "${scenarioContext.correctOption || 'Not specified'}"
-- Benchmark: ${scenarioContext.benchmarkStandard || 'CBSE/ICSE & International Olympiad Tier'}
+- Benchmark: ${scenarioContext.benchmarkStandard || 'International Tier'}
+- Subject: ${subject}
+${intentGuidance}
 
 Parent Advisory Guidelines:
-1. EDUCATIONAL REALITY CHECK: Explain how school exam scoring (CBSE/ICSE) differs from competitive benchmarks (IMO, NSO, JEE Foundation, Singapore SASMO).
+1. EDUCATIONAL REALITY CHECK: Explain how school exams differ from competitive analytical benchmarks.
 2. DECONSTRUCTING THE GAP: Explain simply why students get caught in distractor traps without overly dense academic jargon.
-3. STUDY ROUTINES & HABITS: Provide realistic, structured study routines (e.g. 20-30 min evening practice, error analysis logs).
-4. RECOMMENDED CURRICULA & BOOKS: Give concrete book recommendations (NCERT Exemplar, MTG Foundation, RD Sharma HOTS, Singapore Bar Modeling).
+3. STUDY ROUTINES & HABITS: Provide realistic, structured study routines (e.g. 20-30 min evening practice, error analysis logs, or close reading schedules).
+4. RECOMMENDED CURRICULA & BOOKS: Give concrete book or reading recommendations.
 5. PTM QUESTIONS: Offer 2-3 specific questions for parents to ask school teachers during PTM meetings.
+6. NO THINKING PROCESS: CRITICAL - Do NOT output your internal thinking process, reasoning steps, or "Here's a thinking process" text. Output ONLY the final response intended for the user.
 Format responses cleanly with bold headings, bullet points, and actionable takeaways.`
-              : `You are the WARP Socratic STEM Tutor powered by NVIDIA Nemotron.
+              : isEnglish
+              ? `You are the WARP Socratic Reading Tutor powered by WARP AI.
+Audience: Class ${classLevel} student tackling advanced literature and reading comprehension.
+Context:
+- Text Excerpt: "${scenarioContext.prompt || 'Reading Scenario'}"
+- Competency: ${scenarioContext.competency || 'Critical Reading'}
+- Student Selected: "${scenarioContext.userSelectedOption || 'Not specified'}"
+- Correct Principle: "${scenarioContext.correctOption || 'Not specified'}"
+- Benchmark: ${scenarioContext.benchmarkStandard || 'Advanced Literacy'}
+${intentGuidance}
+
+Socratic Teaching Guidelines:
+1. SOCRATIC INQUIRY: NEVER blurt out the direct answer. Guide the student step-by-step through discovery questions and conceptual hints.
+2. LITERARY HEURISTICS: Use techniques like Close Reading, syntactical deconstruction, identifying rhetorical devices, tracing authorial intent, and analyzing thematic motifs. Do NOT use math/physics heuristics.
+3. DISTRACTOR TRAP ANALYSIS: If the student picked a distractor choice, analyze why that choice was tempting (e.g., surface-level keyword match) and what contextual constraint it violated.
+4. STRUCTURAL ANCHORS: Point out transition words, shifts in tone, or grammatical structures that serve as clues.
+5. FORMATTING: Use crisp Markdown headers, numbered steps (1., 2., 3.), and bullet points.
+6. NO THINKING PROCESS: CRITICAL - Do NOT output your internal thinking process, reasoning steps, or "Here's a thinking process" text. Output ONLY the final response intended for the user.`
+              : `You are the WARP Socratic STEM Tutor powered by WARP AI.
 Audience: Class ${classLevel} student tackling high-order thinking STEM problems.
 Context:
 - Problem Scenario: "${scenarioContext.prompt || 'STEM Scenario'}"
@@ -75,13 +105,15 @@ Context:
 - Student Selected: "${scenarioContext.userSelectedOption || 'Not specified'}"
 - Correct Principle: "${scenarioContext.correctOption || 'Not specified'}"
 - Benchmark: ${scenarioContext.benchmarkStandard || 'Singapore SASMO, AMC 8, IMO/NSO & CBSE HOTS'}
+${intentGuidance}
 
 Socratic Teaching Guidelines:
 1. SOCRATIC INQUIRY: NEVER blurt out the direct answer. Guide the student step-by-step through discovery questions and conceptual hints.
 2. FIRST-PRINCIPLES THINKING: Decompose the problem into fundamental laws (conservation of energy/momentum, Newton's laws, mathematical definitions).
 3. DISTRACTOR TRAP ANALYSIS: If the student picked a distractor choice, analyze why that choice was tempting and what physical or logical constraint it violated.
 4. OLYMPIAD HEURISTICS: Apply Pólya's problem-solving method, boundary/extreme condition checks (e.g., zero, infinity, equal values), and Singapore CPA (Concrete-Pictorial-Abstract) bar modeling.
-5. FORMATTING: Use crisp Markdown headers, numbered steps (1., 2., 3.), bullet points, and LaTeX math formatting (\( ... \) for inline, \\[ ... \\] for block math).`;
+5. FORMATTING: Use crisp Markdown headers, numbered steps (1., 2., 3.), bullet points, and LaTeX math formatting (\( ... \) for inline, \\[ ... \\] for block math).
+6. NO THINKING PROCESS: CRITICAL - Do NOT output your internal thinking process, reasoning steps, or "Here's a thinking process" text. Output ONLY the final response intended for the user.`;
 
             // Build message list preserving multi-turn history
             let outgoingMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
@@ -109,13 +141,32 @@ Socratic Teaching Guidelines:
               return;
             }
 
-            // Model Cascade
+            // Model Cascade - Verified active models on NVIDIA API and OpenRouter
+            const configuredModel = env.NVIDIA_MODEL_NAME?.trim();
             const modelsToTry = [
+              {
+                provider: 'nvidia',
+                model: configuredModel || 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+                maxTokens: 800,
+                temperature: 0.35,
+              },
+              {
+                provider: 'nvidia',
+                model: 'nvidia/nemotron-3.5-lightning-30b-a3b',
+                maxTokens: 800,
+                temperature: 0.35,
+              },
+              {
+                provider: 'nvidia',
+                model: 'mistralai/mistral-nemotron',
+                maxTokens: 750,
+                temperature: 0.35,
+              },
               {
                 provider: 'openrouter',
                 model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
-                maxTokens: 750,
-                temperature: 0.35,
+                maxTokens: 650,
+                temperature: 0.3,
               },
               {
                 provider: 'openrouter',
@@ -123,27 +174,29 @@ Socratic Teaching Guidelines:
                 maxTokens: 650,
                 temperature: 0.3,
               },
-              {
-                provider: 'openrouter',
-                model: 'google/gemma-4-31b-it:free',
-                maxTokens: 700,
-                temperature: 0.35,
-              },
             ];
 
             let reply = '';
             let modelUsed = '';
 
             for (const item of modelsToTry) {
-              if (item.provider === 'openrouter' && openrouterKey) {
+              const isNvidia = item.provider === 'nvidia';
+              const apiKey = isNvidia ? nvidiaKey : openrouterKey;
+              const apiUrl = isNvidia 
+                ? `${env.NVIDIA_BASE_URL?.trim() || 'https://integrate.api.nvidia.com/v1'}/chat/completions`
+                : 'https://openrouter.ai/api/v1/chat/completions';
+
+              if (apiKey) {
                 try {
-                  const apiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                  const apiRes = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
-                      'Authorization': `Bearer ${openrouterKey}`,
+                      'Authorization': `Bearer ${apiKey}`,
                       'Content-Type': 'application/json',
-                      'HTTP-Referer': 'https://warp.education',
-                      'X-Title': 'WARP STEM Socratic Tutor',
+                      ...(isNvidia ? {} : {
+                        'HTTP-Referer': 'https://warp.education',
+                        'X-Title': 'WARP STEM Socratic Tutor',
+                      }),
                     },
                     body: JSON.stringify({
                       model: item.model,
@@ -157,13 +210,26 @@ Socratic Teaching Guidelines:
                     const data = await apiRes.json();
                     const text = data.choices?.[0]?.message?.content?.trim();
                     if (text) {
-                      reply = text;
+                      // Post-process to remove chain-of-thought blocks if they leak
+                      let cleanedText = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+                      
+                      // Strip "Here's a thinking process:" sections that some reasoning models inject
+                      const thinkingProcessMatch = cleanedText.match(/Here's a thinking process:[\s\S]*?(?=\n#|\n\n-|\n\n\*\*|\n\n[A-Z]|\n\n[0-9]+\.)/i);
+                      if (thinkingProcessMatch && thinkingProcessMatch.index === 0) {
+                        cleanedText = cleanedText.substring(thinkingProcessMatch[0].length).trim();
+                      }
+
+                      reply = cleanedText;
                       modelUsed = item.model;
+                      console.log(`[Nemotron Dev Proxy] Success with ${item.provider} model: ${item.model}`);
                       break;
                     }
+                  } else {
+                    const errBody = await apiRes.text().catch(() => '');
+                    console.warn(`[Nemotron Dev Proxy] ${item.provider} (${item.model}) returned HTTP ${apiRes.status}: ${errBody.slice(0, 150)}`);
                   }
                 } catch (fetchErr) {
-                  console.warn(`[Nemotron Dev Proxy] Error with ${item.model}:`, fetchErr);
+                  console.warn(`[Nemotron Dev Proxy] Error connecting to ${item.provider} (${item.model}):`, fetchErr);
                 }
               }
             }

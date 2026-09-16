@@ -40,7 +40,7 @@ async def run_test():
         except Exception:
             pass
         
-        # -> Click the 'Sign in' button labeled 'Sign in — Continue where you left off' to open the sign-in form.
+        # -> Click the 'Sign in' button labeled 'Sign in - Continue where you left off' to open the sign-in form.
         # Sign in Continue where you left off button
         elem = page.get_by_role("button", name="Sign in Continue where you")
         await elem.click(timeout=10000)

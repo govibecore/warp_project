@@ -11,7 +11,7 @@ coverage/
 *.tsbuildinfo
 vite.config.ts.timestamp-*.mjs
 
-# Environment — NEVER commit secrets
+# Environment - NEVER commit secrets
 .env
 .env.*
 !.env.example
@@ -27,6 +27,7 @@ vite.config.ts.timestamp-*.mjs
 .DS_Store
 *.log
 npm-debug.log*
+scratch/
 
 # Auto-generated locks/cache
 skills-lock.json

@@ -1,8 +1,8 @@
 /**
- * GladeCanvas — mounts the self-playing glade as a hero background.
+ * GladeCanvas - mounts the self-playing glade as a hero background.
  *
  * Default-exported so it can be `React.lazy`-loaded: three.js ships in its own
- * chunk and never blocks first paint. The component is purely decorative —
+ * chunk and never blocks first paint. The component is purely decorative -
  * pointer events pass through, there is no HUD, and it pauses itself when the
  * hero scrolls away or the tab is hidden so a background never burns battery.
  */
@@ -69,7 +69,7 @@ export default function GladeCanvas({ className = '' }: { className?: string }) 
     try {
       game = createGame({ canvas, width: canvas.clientWidth || window.innerWidth, height: canvas.clientHeight || window.innerHeight });
     } catch {
-      return; // No GL context available — leave the hero on its CSS backdrop.
+      return; // No GL context available - leave the hero on its CSS backdrop.
     }
     gameRef.current = game;
     setReady(true);
@@ -100,7 +100,7 @@ export default function GladeCanvas({ className = '' }: { className?: string }) 
     };
 
     if (reduced) {
-      // One painted frame, then stillness — the glade, held.
+      // One painted frame, then stillness - the glade, held.
       game.step(1 / 60);
       game.step(1 / 60);
       game.render();

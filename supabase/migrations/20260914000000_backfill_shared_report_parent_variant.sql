@@ -4,10 +4,10 @@
 
 UPDATE public.reports
 SET parent_variant = '{
-  "overallAssessment": "Diagnostic Executive Evaluation for Parents (Class 8)\nNational Standing: 72nd Percentile across Indian Schools (CBSE/ICSE Grade: A - Distinction) | Global Scaled Score: 680/900\n\nYour child demonstrates strong foundational analytical ability, ranking in the top quartile nationally. However, the international benchmark gap — particularly against Singapore SASMO and AMC 8 standards — reveals a pattern of relying on textbook procedures rather than first-principles reasoning.\n\nCore Takeaway for Parents:\nIn standard classroom examinations, this approach often yields 90%+ marks. In national Olympiads (SOF IMO/NSO) and international competitions (such as AMC 8/10 or SASMO), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, competitive mathematical and scientific reasoning.",
-  "realityCheckSummary": "Your child performs at the 76th percentile globally — a strong foundation. The critical gap is between passive formula recall and active first-principles modeling, which is exactly what SASMO, AMC 8, and PISA assess.",
-  "internationalGapSummary": "Against Singapore SASMO peers (70th percentile equivalent), your child trails by approximately 0.4 sigma — equivalent to 6 months of focused heuristic training. This gap is fully recoverable with structured practice on non-routine problem sets.",
-  "gradeInflationWarning": "Indian school examination marks (90–95%) are systematically inflated relative to international standards. A 680/900 global scaled score is honest, competitive, and actionable — it represents real analytical potential that targeted preparation can convert into Olympiad-level performance.",
+  "overallAssessment": "Diagnostic Executive Evaluation for Parents (Class 8)\nNational Standing: 72nd Percentile across Indian Schools (CBSE/ICSE Grade: A - Distinction) | Global Scaled Score: 680/900\n\nYour child demonstrates strong foundational analytical ability, ranking in the top quartile nationally. However, the international benchmark gap - particularly against Singapore SASMO and AMC 8 standards - reveals a pattern of relying on textbook procedures rather than first-principles reasoning.\n\nCore Takeaway for Parents:\nIn standard classroom examinations, this approach often yields 90%+ marks. In national Olympiads (SOF IMO/NSO) and international competitions (such as AMC 8/10 or SASMO), it breaks down because questions are explicitly engineered to disarm routine algorithms. Follow the actionable blueprint below to cultivate deep, competitive mathematical and scientific reasoning.",
+  "realityCheckSummary": "Your child performs at the 76th percentile globally - a strong foundation. The critical gap is between passive formula recall and active first-principles modeling, which is exactly what SASMO, AMC 8, and PISA assess.",
+  "internationalGapSummary": "Against Singapore SASMO peers (70th percentile equivalent), your child trails by approximately 0.4 sigma - equivalent to 6 months of focused heuristic training. This gap is fully recoverable with structured practice on non-routine problem sets.",
+  "gradeInflationWarning": "Indian school examination marks (90–95%) are systematically inflated relative to international standards. A 680/900 global scaled score is honest, competitive, and actionable - it represents real analytical potential that targeted preparation can convert into Olympiad-level performance.",
   "keyStrengths": [
     "Demonstrated baseline resilience across challenging competitive and international problem sets.",
     "High growth velocity when provided with structured heuristic frameworks.",
@@ -68,9 +68,9 @@ SET parent_variant = '{
       "India": 72
     },
     "realityCheck": {
-      "verdict": "Strong Foundation — International Gap Present",
-      "honestSummary": "Your child performs at the 76th percentile globally — a strong foundation. The critical gap is between passive formula recall and active first-principles modeling.",
-      "internationalGapSummary": "Against Singapore SASMO peers (70th percentile equivalent), your child trails by approximately 0.4 sigma — equivalent to 6 months of focused heuristic training.",
+      "verdict": "Strong Foundation - International Gap Present",
+      "honestSummary": "Your child performs at the 76th percentile globally - a strong foundation. The critical gap is between passive formula recall and active first-principles modeling.",
+      "internationalGapSummary": "Against Singapore SASMO peers (70th percentile equivalent), your child trails by approximately 0.4 sigma - equivalent to 6 months of focused heuristic training.",
       "gradeInflationWarning": "Indian school examination marks are systematically inflated relative to international standards. A 680/900 global scaled score is honest, competitive, and actionable."
     },
     "boardGradeBand": {

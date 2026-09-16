@@ -1,5 +1,5 @@
 /**
- * ChromeGlowButton — Metallic cyan sci-fi CTA button adapted from
+ * ChromeGlowButton - Metallic cyan sci-fi CTA button adapted from
  * Pixel Perfect (buttons/blue-chrome-button.tsx & buttons/border-gradient-button.tsx).
  *
  * Implements Nordic Lagom principles:

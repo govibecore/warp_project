@@ -72,15 +72,15 @@ function WarpApplication() {
 
   // Auto-redirect signed-in users from landing → dashboard.
   // This covers two cases:
-  //   1. Google OAuth bounces to /?dashboard — URL already has the param so isDashboard is true (handled above).
-  //   2. A signed-in user manually navigates to / — send them to their dashboard.
+  //   1. Google OAuth bounces to /?dashboard - URL already has the param so isDashboard is true (handled above).
+  //   2. A signed-in user manually navigates to / - send them to their dashboard.
   useEffect(() => {
-    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard) {
+    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard && !hasAssessmentId && !isSharedReport) {
       window.history.replaceState({}, '', '/?dashboard');
       // Force a URL-param re-read by reloading in-place
       window.location.replace('/?dashboard');
     }
-  }, [isLoaded, isSignedIn, session.phase, isDashboard]);
+  }, [isLoaded, isSignedIn, session.phase, isDashboard, hasAssessmentId, isSharedReport]);
 
   // Synchronize user to Supabase public.users and WarpSession
   useEffect(() => {
@@ -115,16 +115,17 @@ function WarpApplication() {
     }
   }, [isLoaded, isSignedIn, user, isGuest]);
 
-  // Save assessment to Supabase when completed
+  // Save assessment to Supabase when completed with sufficient responses
   useEffect(() => {
-    if (session.phase === 'results' && session.result && !hasAssessmentId && !isGuest && user) {
+    const responseList = session.responses ? Object.values(session.responses) : [];
+    if (session.phase === 'results' && session.result && !hasAssessmentId && !isGuest && user && responseList.length >= 5) {
       const saveAssessment = async () => {
         const { data: assessment, error } = await supabase.from('assessments').insert({
           student_id: user.id,
           class_level: session.profile?.classLevel || 8,
           difficulty: session.profile?.difficulty?.toLowerCase() || 'standard',
           status: 'completed',
-          responses: (session.responses ? Object.values(session.responses) : []) as any,
+          responses: responseList as any,
           started_at: session.assessmentStartedAt || new Date().toISOString(),
           completed_at: session.result?.completedAt || new Date().toISOString()
         }).select().single();
@@ -228,7 +229,10 @@ function WarpApplication() {
   }, [isLoaded, isSignedIn, isGuest, session.phase, goHome]);
 
   return (
-    <AppShell scrollable={session.phase === 'landing' || session.phase === 'onboarding' || session.phase === 'hub'} hideHeader={session.phase === 'landing' && !isDashboard}>
+    <AppShell
+      scrollable={session.phase === 'landing' || session.phase === 'hub' || isSharedReport || hasAssessmentId}
+      hideHeader={(session.phase === 'landing' || session.phase === 'onboarding' || isSharedReport) && !isDashboard}
+    >
       <AnimatePresence mode="wait">
         <motion.div
           key={isDashboard ? 'dash' : (hasAssessmentId || isSharedReport) ? 'rep' : session.phase}

@@ -1,5 +1,5 @@
 /**
- * entities.ts — the wanderer, the swarm, and the gems.
+ * entities.ts - the wanderer, the swarm, and the gems.
  *
  * The wanderer is fully AI-driven: it kites away from threats, drifts toward
  * nearby XP gems, wanders when safe, and steers back inside the world bounds.
@@ -333,7 +333,7 @@ export function stepEnemies(
     e.obj.position.y = heightAt(e.obj.position.x, e.obj.position.z) + e.hover;
   }
 
-  // Separation (O(n²), capped population — fine at this scale).
+  // Separation (O(n²), capped population - fine at this scale).
   for (let i = 0; i < enemies.length; i++) {
     const a = enemies[i];
     if (!a.alive) continue;
@@ -402,7 +402,7 @@ export function hurt(e: Unit, amount: number): boolean {
  * Release a unit's per-instance GPU resources.
  *
  * Units own their materials (so a hit flash lights one slime, not every slime)
- * and their geometry, which means the scene cannot reap them implicitly — a
+ * and their geometry, which means the scene cannot reap them implicitly - a
  * 12-minute run spawns hundreds. Safe to call more than once.
  */
 export function disposeUnit(u: Unit): void {
