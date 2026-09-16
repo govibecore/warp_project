@@ -438,7 +438,7 @@ export function ReportDetail() {
               style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
             >
               <ScoreRing
-                score={snapshot.overallScore || benchmark.aggregateScaledScore}
+                score={snapshot.overallScore}
                 maxScore={900}
                 percentile={benchmark.globalPercentile}
                 boardGradeBand={benchmark.boardGradeBand}
@@ -536,7 +536,7 @@ export function ReportDetail() {
                         classLevel={snapshot.classLevel}
                         completedAt={snapshot.completedAt}
                         totalTimeMs={snapshot.totalTimeMs}
-                        overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                        overallScore={snapshot.overallScore}
                         abilityTheta={benchmark.abilityTheta}
                         benchmark={benchmark}
                         studentVariant={studentVariant}
@@ -662,7 +662,7 @@ export function ReportDetail() {
                     <div>
                       <div className="flex items-baseline gap-2">
                         <span className="text-2xl font-bold font-display text-foreground">
-                          {snapshot.overallScore || benchmark.aggregateScaledScore}
+                          {snapshot.overallScore}
                         </span>
                         <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                         <span className="text-xs font-medium text-primary ml-auto font-mono">
@@ -681,14 +681,14 @@ export function ReportDetail() {
                         <span>Score / 900</span>
                       </div>
                       <ShareBarList className="gap-1">
-                        <ShareBarListItem value={Math.round(((snapshot.overallScore || benchmark.aggregateScaledScore) / 900) * 100)}>
+                        <ShareBarListItem value={Math.round((snapshot.overallScore / 900) * 100)}>
                           <ShareBarListFill isHighlight />
                           <ShareBarListContent>
                             <ShareBarListLabel className="font-semibold text-primary">
                               Candidate Scaled Score
                             </ShareBarListLabel>
                             <ShareBarListValue className="text-primary">
-                              {snapshot.overallScore || benchmark.aggregateScaledScore}
+                              {snapshot.overallScore}
                             </ShareBarListValue>
                           </ShareBarListContent>
                         </ShareBarListItem>
@@ -808,7 +808,7 @@ export function ReportDetail() {
                     classLevel={snapshot.classLevel}
                     completedAt={snapshot.completedAt}
                     totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    overallScore={snapshot.overallScore}
                     abilityTheta={benchmark.abilityTheta}
                     benchmark={benchmark}
                     studentVariant={studentVariant}
@@ -837,7 +837,7 @@ export function ReportDetail() {
                     classLevel={snapshot.classLevel}
                     completedAt={snapshot.completedAt}
                     totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    overallScore={snapshot.overallScore}
                     abilityTheta={benchmark.abilityTheta}
                     benchmark={benchmark}
                     studentVariant={studentVariant}
@@ -850,7 +850,7 @@ export function ReportDetail() {
                     classLevel={snapshot.classLevel}
                     completedAt={snapshot.completedAt}
                     totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+                    overallScore={snapshot.overallScore}
                     abilityTheta={benchmark.abilityTheta}
                     benchmark={benchmark}
                     studentVariant={studentVariant}
@@ -882,7 +882,7 @@ export function ReportDetail() {
           {!aiGenerating && activeTab === 'audit' && (
             <ScenarioAudit
               responses={assessmentData.responses || []}
-              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              overallScore={snapshot.overallScore}
               classLevel={snapshot.classLevel}
               nationalPercentile={benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68}
               boardGrade={benchmark.boardGradeBand?.grade || 'A2'}
@@ -908,7 +908,7 @@ export function ReportDetail() {
              (display:none would make it invisible to canvas; off-screen keeps layout intact).
              For real window.print() usage, print:block overrides the fixed position. */}
         <div
-          id="report-printable-area"
+          id="report-print-target"
           className="print-dossier p-0 print:block"
           style={{ position: 'fixed', top: 0, left: '-9999px', width: '794px', zIndex: -10, background: '#fff' }}
         >
@@ -918,7 +918,7 @@ export function ReportDetail() {
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}
-              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              overallScore={snapshot.overallScore}
               abilityTheta={benchmark.abilityTheta}
               benchmark={benchmark}
               studentVariant={studentVariant}
@@ -931,7 +931,7 @@ export function ReportDetail() {
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}
-              overallScore={snapshot.overallScore || benchmark.aggregateScaledScore}
+              overallScore={snapshot.overallScore}
               abilityTheta={benchmark.abilityTheta}
               benchmark={benchmark}
               studentVariant={studentVariant}

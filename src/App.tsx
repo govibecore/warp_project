@@ -118,17 +118,33 @@ function WarpApplication() {
   // Save assessment to Supabase when completed with sufficient responses
   useEffect(() => {
     const responseList = session.responses ? Object.values(session.responses) : [];
-    if (session.phase === 'results' && session.result && !hasAssessmentId && !isGuest && user && responseList.length >= 5) {
+    const currentResult = session.result;
+    if (session.phase === 'results' && currentResult && !hasAssessmentId && !isGuest && user && responseList.length >= 5) {
       const saveAssessment = async () => {
+        const scaledScores = currentResult.competencies
+          ? Object.fromEntries(Object.entries(currentResult.competencies).map(([k, v]) => [k, v.score]))
+          : null;
+        const abilityTheta = currentResult.competencies
+          ? Object.fromEntries(Object.entries(currentResult.competencies).map(([k, v]) => [k, v.zScore]))
+          : null;
+        const percentiles = currentResult.regionalPercentiles
+          ? { global: currentResult.regionalPercentiles.Global, ...currentResult.regionalPercentiles }
+          : null;
+
         const { data: assessment, error } = await supabase.from('assessments').insert({
           student_id: user.id,
           class_level: session.profile?.classLevel || 8,
           difficulty: session.profile?.difficulty?.toLowerCase() || 'standard',
+          subject: session.plan?.subject || 'STEM',
           status: 'completed',
           responses: responseList as any,
+          global_score: currentResult.overallScore ?? null,
+          ability_theta: abilityTheta,
+          scaled_scores: scaledScores,
+          percentiles: percentiles,
           started_at: session.assessmentStartedAt || new Date().toISOString(),
-          completed_at: session.result?.completedAt || new Date().toISOString()
-        }).select().single();
+          completed_at: currentResult.completedAt || new Date().toISOString()
+        } as any).select().single();
 
         if (assessment && !error) {
           window.location.search = `?assessment=${assessment.id}`;
@@ -230,7 +246,13 @@ function WarpApplication() {
 
   return (
     <AppShell
-      scrollable={session.phase === 'landing' || session.phase === 'hub' || isSharedReport || hasAssessmentId}
+      scrollable={
+        session.phase === 'landing' ||
+        session.phase === 'onboarding' ||
+        session.phase === 'hub' ||
+        isSharedReport ||
+        hasAssessmentId
+      }
       hideHeader={(session.phase === 'landing' || session.phase === 'onboarding' || isSharedReport) && !isDashboard}
     >
       <AnimatePresence mode="wait">

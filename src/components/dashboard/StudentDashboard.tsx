@@ -43,15 +43,15 @@ interface HistoryRow {
   completedAt: string;
   classLevel: number;
   difficulty: string;
-  score: number;
-  globalPct: number;
+  score: number | null;
+  globalPct: number | null;
   subject?: string;
 }
 
 const EMPTY_SUMMARY = {
   latestScore: null as number | null,
   scoreDelta: null as number | null,
-  bestGlobalPct: 0,
+  bestGlobalPct: null as number | null,
   totalAssessments: 0,
   recentAssessments: [] as HistoryRow[],
   latestAbilityTheta: null as Record<string, number> | null,
@@ -124,11 +124,14 @@ export function StudentDashboard() {
 
         if (assessments && assessments.length > 0) {
           const totalAssessments = assessments.length;
-          const recentAssessments = assessments.map(a => {
-            const score = a.global_score || (a as any).result?.overallScore || 500;
-            // Ensure global percentile is accurately derived from 3PL IRT scale if absent
-            const rawPct = (a.percentiles as any)?.global || (a.percentiles as any)?.Global || (a as any).result?.regionalPercentiles?.['Global'] || 0;
-            const globalPct = rawPct > 0 ? rawPct : Math.min(99, Math.max(1, Math.round(100 / (1 + Math.exp(-((score - 500) / 100))))));
+          const recentAssessments: HistoryRow[] = assessments.map(a => {
+            const score = typeof a.global_score === 'number'
+              ? a.global_score
+              : typeof (a as any).result?.overallScore === 'number'
+              ? (a as any).result.overallScore
+              : null;
+            const rawPct = (a.percentiles as any)?.global ?? (a.percentiles as any)?.Global ?? (a as any).result?.regionalPercentiles?.['Global'] ?? null;
+            const globalPct = typeof rawPct === 'number' && rawPct > 0 ? rawPct : null;
 
             return {
               id: a.id,
@@ -141,9 +144,17 @@ export function StudentDashboard() {
             };
           });
 
-          const latestScore = recentAssessments[0].score;
-          const scoreDelta = recentAssessments.length > 1 ? latestScore - recentAssessments[1].score : null;
-          const bestGlobalPct = Math.max(...recentAssessments.map(a => a.globalPct));
+          const calibratedAssessments = recentAssessments.filter(
+            (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
+          );
+          const latestScore = calibratedAssessments.length > 0 ? calibratedAssessments[0].score : null;
+          const scoreDelta = calibratedAssessments.length > 1
+            ? calibratedAssessments[0].score - calibratedAssessments[1].score
+            : null;
+          const calibratedPcts = recentAssessments
+            .map(a => a.globalPct)
+            .filter((pct): pct is number => typeof pct === 'number');
+          const bestGlobalPct = calibratedPcts.length > 0 ? Math.max(...calibratedPcts) : null;
           const latestAbilityTheta = 
             (assessments[0].ability_theta as Record<string, number> | null) ||
             (assessments[0] as any).result?.abilityTheta ||
@@ -233,7 +244,10 @@ export function StudentDashboard() {
   }
 
   // Deduplicate and format dates for Longitudinal Performance Arc to prevent axis collision
-  const chartPoints = [...summary.recentAssessments].reverse().map((a, index, arr) => {
+  const calibratedHistory = summary.recentAssessments.filter(
+    (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
+  );
+  const chartPoints = [...calibratedHistory].reverse().map((a, index, arr) => {
     const rawDate = dateFmt.format(new Date(a.completedAt));
     const sameDateMatches = arr.filter(item => dateFmt.format(new Date(item.completedAt)) === rawDate);
     let displayDate = rawDate;
@@ -311,7 +325,7 @@ export function StudentDashboard() {
                       <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                     </div>
                     <div className="mt-1 flex items-center gap-2 flex-wrap">
-                      {summary.recentAssessments[0]?.globalPct > 0 && (
+                      {summary.recentAssessments[0]?.globalPct !== null && summary.recentAssessments[0]?.globalPct !== undefined && summary.recentAssessments[0].globalPct > 0 && (
                         <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-mono font-semibold bg-primary/10 text-primary border border-primary/25 rounded-none">
                           {ordinal(summary.recentAssessments[0].globalPct)} Pct
                         </span>
@@ -343,7 +357,7 @@ export function StudentDashboard() {
             </Stat>
 
             <Stat label="Reference Global Norm">
-              {summary.bestGlobalPct > 0 ? (
+              {summary.bestGlobalPct !== null && summary.bestGlobalPct > 0 ? (
                 <div className="flex items-center justify-between w-full">
                   <div>
                     <span className="font-mono text-3xl sm:text-4xl font-bold tabular tracking-tight text-foreground">
@@ -501,14 +515,14 @@ export function StudentDashboard() {
 
           {/* ── Competency Breakdown (Nordic Lagom: Hairline Cards) ── */}
           {summary.recentAssessments.length > 0 && (() => {
-            const effectiveTheta = summary.latestAbilityTheta || {
-              c1: ((summary.latestScore || 500) - 500) / 120,
-              c2: ((summary.latestScore || 500) - 500) / 120,
-              c3: ((summary.latestScore || 500) - 500) / 120,
-              c4: ((summary.latestScore || 500) - 500) / 120,
-              c5: ((summary.latestScore || 500) - 500) / 120,
-            };
-            const breakdown = computeInternationalBenchmark(effectiveTheta, summary.latestClassLevel, summary.latestSubject);
+            const effectiveTheta = summary.latestAbilityTheta || (summary.latestScore !== null ? {
+              c1: (summary.latestScore - 500) / 120,
+              c2: (summary.latestScore - 500) / 120,
+              c3: (summary.latestScore - 500) / 120,
+              c4: (summary.latestScore - 500) / 120,
+              c5: (summary.latestScore - 500) / 120,
+            } : null);
+            const breakdown = computeInternationalBenchmark(effectiveTheta || {}, summary.latestClassLevel, summary.latestSubject);
             const isEnglish = (summary.latestSubject || '').toLowerCase().includes('english');
             const competencyKeys = isEnglish ? ENGLISH_COMPETENCIES : STEM_COMPETENCIES;
             return (
@@ -533,10 +547,17 @@ export function StudentDashboard() {
                   {competencyKeys.map((key, idx) => {
                     const item = breakdown.competencyBreakdown[key];
                     if (!item) return null;
-                    const pct = item.globalPercentile;
+                    const isAssessed = item.isAssessed !== false && item.scaledScore > 0;
+                    const pct = item.globalPercentile || 0;
                     const barWidth = Math.max(4, pct);
                     const deltaScore = item.scaledScore - 500;
-                    const status = pct >= 75 ? 'Exceeding' : pct >= 45 ? 'Proficient' : 'Developing';
+                    const status = !isAssessed
+                      ? 'Not Assessed'
+                      : pct >= 75
+                      ? 'Exceeding'
+                      : pct >= 45
+                      ? 'Proficient'
+                      : 'Developing';
 
                     return (
                       <div 
@@ -549,7 +570,9 @@ export function StudentDashboard() {
                               {COMPETENCY_LABELS[key]}
                             </p>
                             <span className={`text-[10px] px-2 py-0.5 font-mono font-medium border rounded-none ${
-                              status === 'Exceeding' 
+                              status === 'Not Assessed'
+                                ? 'bg-surface text-foreground-muted border-border'
+                                : status === 'Exceeding' 
                                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
                                 : status === 'Proficient'
                                 ? 'bg-primary/10 text-primary border-primary/25'
@@ -561,38 +584,50 @@ export function StudentDashboard() {
                           <div className="flex items-baseline justify-between mb-3">
                             <div className="flex items-baseline gap-1.5">
                               <span className="font-mono text-2xl font-bold tabular text-foreground">
-                                {item.scaledScore}
+                                {isAssessed ? item.scaledScore : '—'}
                               </span>
                               <span className="text-xs font-mono text-foreground-muted">/ 900</span>
                             </div>
-                            <Delta value={deltaScore} variant="badge">
-                              <DeltaIcon variant="trend" />
-                              <DeltaValue precision={0} suffix=" vs median" showPlus />
-                            </Delta>
+                            {isAssessed ? (
+                              <Delta value={deltaScore} variant="badge">
+                                <DeltaIcon variant="trend" />
+                                <DeltaValue precision={0} suffix=" vs median" showPlus />
+                              </Delta>
+                            ) : (
+                              <span className="text-xs font-mono text-foreground-muted">—</span>
+                            )}
                           </div>
                         </div>
 
                         <div className="space-y-1.5 pt-2 border-t border-border/40">
-                          <div className="relative h-1.5 w-full bg-surface border border-border/50 overflow-hidden rounded-none">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${barWidth}%` }}
-                              transition={{ duration: 0.6, delay: idx * 0.06, ease: [0.2, 0.7, 0.2, 1] }}
-                              className={`h-full ${
-                                status === 'Exceeding' 
-                                  ? 'bg-emerald-500' 
-                                  : status === 'Proficient' 
-                                  ? 'bg-primary' 
-                                  : 'bg-amber-500'
-                              }`}
-                            />
-                            {/* Median benchmark marker at 50% */}
-                            <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-foreground/30 z-10" title="50th Percentile Benchmark" />
-                          </div>
-                          <div className="flex items-center justify-between text-[10px] text-foreground-muted font-mono">
-                            <span>{ordinal(pct)} percentile</span>
-                            <span>Cohort median: 500</span>
-                          </div>
+                          {isAssessed ? (
+                            <>
+                              <div className="relative h-1.5 w-full bg-surface border border-border/50 overflow-hidden rounded-none">
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${barWidth}%` }}
+                                  transition={{ duration: 0.6, delay: idx * 0.06, ease: [0.2, 0.7, 0.2, 1] }}
+                                  className={`h-full ${
+                                    status === 'Exceeding' 
+                                      ? 'bg-emerald-500' 
+                                      : status === 'Proficient' 
+                                      ? 'bg-primary' 
+                                      : 'bg-amber-500'
+                                  }`}
+                                />
+                                {/* Median benchmark marker at 50% */}
+                                <div className="absolute top-0 bottom-0 left-1/2 w-0.5 bg-foreground/30 z-10" title="50th Percentile Benchmark" />
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-foreground-muted font-mono">
+                                <span>{ordinal(pct)} percentile</span>
+                                <span>Cohort median: 500</span>
+                              </div>
+                            </>
+                          ) : (
+                            <div className="py-1 text-[10px] text-foreground-muted font-mono">
+                              Awaiting assessment for this competency
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -625,7 +660,7 @@ export function StudentDashboard() {
                 </div>
               </div>
 
-              {summary.recentAssessments.length >= 2 ? (
+              {chartPoints.length >= 2 ? (
                 <div className="h-64 w-full">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart
@@ -659,7 +694,9 @@ export function StudentDashboard() {
                               <div className="rounded-none border border-border bg-card p-3 shadow-md text-xs space-y-1">
                                 <p className="font-bold text-foreground">{d.date}</p>
                                 <p className="text-primary font-mono font-semibold">Scaled Score: {d.score} / 900</p>
-                                <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
+                                {d.globalPct !== null && d.globalPct !== undefined && (
+                                  <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
+                                )}
                                 <p className="text-foreground-muted font-mono">Class {d.classLevel}</p>
                               </div>
                             );
@@ -683,13 +720,19 @@ export function StudentDashboard() {
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-none bg-surface/50 border border-border text-xs">
                   <div className="space-y-1 text-center sm:text-left">
                     <p className="font-bold text-foreground">
-                      Baseline score: {summary.latestScore} / 900 ({ordinal(summary.bestGlobalPct)} percentile)
+                      {summary.latestScore !== null 
+                        ? `Baseline score: ${summary.latestScore} / 900 ${summary.bestGlobalPct !== null ? `(${ordinal(summary.bestGlobalPct)} percentile)` : ''}`
+                        : 'Calibration pending: complete an assessment to establish baseline'}
                     </p>
                     <p className="text-foreground-secondary">
-                      Complete another assessment in 30 days to generate your comparative trajectory curve.
+                      {summary.latestScore !== null 
+                        ? 'Complete another assessment in 30 days to generate your comparative trajectory curve.'
+                        : 'Complete your first standard assessment with at least 5 questions to establish your baseline curve.'}
                     </p>
                   </div>
-                  <Badge tone="primary" className="rounded-none">Baseline Active</Badge>
+                  <Badge tone={summary.latestScore !== null ? 'primary' : 'neutral'} variant={summary.latestScore !== null ? undefined : 'outline'} className="rounded-none">
+                    {summary.latestScore !== null ? 'Baseline Active' : 'Pending Baseline'}
+                  </Badge>
                 </div>
               )}
 
@@ -817,23 +860,33 @@ export function StudentDashboard() {
                           </Badge>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center gap-1 font-mono font-bold tabular text-xs px-2.5 py-1 border ${
-                            a.globalPct >= 75
-                              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
-                              : a.globalPct >= 40
-                              ? 'bg-primary/10 text-primary border-primary/25'
-                              : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
-                          }`}>
-                            {a.score} <span className="text-[10px] text-foreground-muted font-normal">/ 900</span>
-                          </span>
+                          {a.score !== null ? (
+                            <span className={`inline-flex items-center gap-1 font-mono font-bold tabular text-xs px-2.5 py-1 border ${
+                              (a.globalPct ?? 0) >= 75
+                                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/25'
+                                : (a.globalPct ?? 0) >= 40
+                                ? 'bg-primary/10 text-primary border-primary/25'
+                                : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/25'
+                            }`}>
+                              {a.score} <span className="text-[10px] text-foreground-muted font-normal">/ 900</span>
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 font-mono text-xs px-2.5 py-1 border border-dashed border-border text-foreground-muted bg-surface/50">
+                              Uncalibrated
+                            </span>
+                          )}
                         </td>
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <span className="font-mono tabular text-foreground font-semibold text-xs">
-                              {ordinal(a.globalPct)}
-                            </span>
-                            <OutcomeBadge percentile={a.globalPct} size="sm" />
-                          </div>
+                          {a.globalPct !== null ? (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono tabular text-foreground font-semibold text-xs">
+                                {ordinal(a.globalPct)}
+                              </span>
+                              <OutcomeBadge percentile={a.globalPct} size="sm" />
+                            </div>
+                          ) : (
+                            <span className="font-mono text-xs text-foreground-muted">—</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <Button
@@ -882,7 +935,7 @@ export function StudentDashboard() {
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-foreground">
-                            Class {a.classLevel} {a.subject || 'STEM'} Benchmark Completed
+                            Class {a.classLevel} {a.subject || 'STEM'} Benchmark {a.score !== null ? 'Completed' : 'Recorded'}
                           </span>
                           {idx === 0 && (
                             <span className="text-[10px] px-1.5 py-0.2 bg-primary/15 text-primary border border-primary/30 font-mono font-semibold">
@@ -890,9 +943,15 @@ export function StudentDashboard() {
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-foreground-secondary">
-                          Calibrated score of <span className="font-mono font-bold text-foreground">{a.score}/900</span> placing at the <span className="font-semibold text-foreground">{ordinal(a.globalPct)} percentile</span> globally.
-                        </p>
+                        {a.score !== null ? (
+                          <p className="text-[11px] text-foreground-secondary">
+                            Calibrated score of <span className="font-mono font-bold text-foreground">{a.score}/900</span>{a.globalPct !== null ? <> placing at the <span className="font-semibold text-foreground">{ordinal(a.globalPct)} percentile</span> globally.</> : '.'}
+                          </p>
+                        ) : (
+                          <p className="text-[11px] text-foreground-secondary">
+                            Session recorded. Calibration pending sufficient psychometric observations.
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="text-[11px] text-foreground-muted font-mono">

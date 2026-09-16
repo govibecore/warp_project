@@ -63,8 +63,10 @@ export function ShareButton({
     if (!token) {
       setIsLoading(true);
       try {
-        // Generate a clean 16-character alphanumeric token
-        const randomPart = Math.random().toString(36).substring(2, 10);
+        // Generate a cryptographically secure token
+        const randomBytes = new Uint8Array(8);
+        crypto.getRandomValues(randomBytes);
+        const randomPart = Array.from(randomBytes, b => b.toString(16).padStart(2, '0')).join('');
         const timePart = Date.now().toString(36).slice(-6);
         const newToken = `warp_${randomPart}${timePart}`;
         const expiresAt = new Date();
@@ -109,9 +111,13 @@ export function ShareButton({
           if (!error && data && data.length > 0) updated = true;
         }
 
-        setShareToken(newToken);
-        token = newToken;
-        onTokenGenerated?.(newToken);
+        if (updated) {
+          setShareToken(newToken);
+          token = newToken;
+          onTokenGenerated?.(newToken);
+        } else {
+          console.error('[ShareButton] Failed to persist share token in database');
+        }
       } catch (err) {
         console.error('[ShareButton] Failed to generate share token:', err);
       } finally {
