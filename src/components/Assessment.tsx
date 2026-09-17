@@ -417,7 +417,7 @@ export function Assessment() {
 
 function Centred({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex h-[calc(100vh-4rem)] flex-1 items-center justify-center overflow-hidden p-6 text-center">
+    <main className="flex h-full flex-1 items-center justify-center overflow-hidden p-6 text-center">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

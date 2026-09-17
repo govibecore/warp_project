@@ -35,7 +35,7 @@ export function AppShell({
     <div
       className={
         'flex flex-col bg-background text-foreground ' +
-        (scrollable ? 'min-h-screen overflow-x-hidden' : 'h-screen overflow-hidden')
+        (scrollable ? 'min-h-[100dvh] overflow-x-hidden' : 'h-[100dvh] overflow-hidden')
       }
     >
       {!hideHeader && (
