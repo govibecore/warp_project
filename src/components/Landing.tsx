@@ -181,7 +181,7 @@ export function Landing({ onEnter }: LandingProps) {
 
             {/* HEADLINE */}
             <h1
-              className="w-full min-w-0 hero-stagger font-display text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold leading-none sm:leading-[1.05] tracking-tighter mb-8 sm:mb-10 max-w-6xl mx-auto min-h-40 sm:min-h-36 flex flex-col items-center justify-center gap-y-2 sm:gap-y-3 px-2 sm:px-0"
+              className="w-full min-w-0 hero-stagger font-display text-5xl min-[400px]:text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold leading-[1.1] sm:leading-[1.05] tracking-tighter mb-8 sm:mb-10 max-w-6xl mx-auto min-h-36 flex flex-col items-center justify-center gap-y-2 sm:gap-y-3 px-2 sm:px-0"
             >
               <span className="text-center text-balance">Your child's <br className="sm:hidden" /> potential.</span>
               <span className="text-primary flex items-center justify-center text-center">

@@ -184,7 +184,7 @@ test.describe("English Assessment Pool and Functionality", () => {
     await optionLabels.first().click();
 
     // Verify Lock response button becomes enabled and can be submitted
-    const lockBtn = page.getByRole("button", { name: /Lock response/i });
+    const lockBtn = page.getByRole("button", { name: /^Lock/i }).first();
     await expect(lockBtn).toBeEnabled();
     await lockBtn.click();
 
