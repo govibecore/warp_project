@@ -16,7 +16,7 @@ const RADIUS = (SIZE - STROKE_WIDTH) / 2;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
 export function ScoreRing({
-  score,
+  score = 0,
   maxScore = 900,
   percentile,
   boardGradeBand,
