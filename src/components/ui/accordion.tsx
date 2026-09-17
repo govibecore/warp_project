@@ -6,7 +6,7 @@ import {
   type HTMLAttributes,
 } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Plus } from 'lucide-react';
+import { PlusIcon as Plus } from './aliimam/AliImamIcons';
 import { cn } from '../../lib/utils';
 
 interface AccordionContextType {

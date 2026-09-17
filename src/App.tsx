@@ -3,6 +3,7 @@ import { AppShell } from './components/AppShell';
 import { Assessment } from './components/Assessment';
 import { AssessmentHub } from './components/AssessmentHub';
 import { Landing } from './components/Landing';
+import { MarketingPage } from './components/MarketingPage';
 import { Onboarding } from './components/Onboarding';
 import { StudentDashboard } from './components/dashboard/StudentDashboard';
 import { ReportDetail } from './components/dashboard/ReportDetail';
@@ -10,7 +11,7 @@ import { ProfileSetup } from './components/ProfileSetup';
 import { AdminApp } from './components/admin/AdminApp';
 import { SharedReport } from './components/SharedReport';
 import { AnimatePresence, motion } from 'motion/react';
-import { useAuthStore } from './stores/authStore';
+
 import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { useSupabaseAuth } from './context/SupabaseAuthContext';
@@ -22,13 +23,13 @@ const isAdminRoute = window.location.pathname.startsWith('/admin');
 
 function WarpApplication() {
   const { session, enterApp, setProfile, selectSubject, goHome } = useWarpSession();
-  const { isGuest } = useAuthStore();
   const { isLoaded, isSignedIn, user } = useSupabaseAuth();
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   // URL routing for dashboard/reports
   const params = new URLSearchParams(window.location.search);
   const isDashboard = params.has('dashboard');
+  const pageParam = params.get('page');
   const assessmentParam = params.get('assessment');
   const isNewAssessment = assessmentParam === 'new';
   const shareParam = params.get('share');
@@ -46,10 +47,10 @@ function WarpApplication() {
     }
   }, [isNewAssessment]);
 
-  // Support direct deep links to onboarding/auth (?choose, ?login, ?register, ?guest)
+  // Support direct deep links to onboarding/auth (?choose, ?login, ?register)
   useEffect(() => {
     const searchParams = new URLSearchParams(window.location.search);
-    if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register') || searchParams.has('guest')) {
+    if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register')) {
       if (session.phase !== 'onboarding' && session.phase !== 'hub' && session.phase !== 'assessment') {
         enterApp();
       }
@@ -60,7 +61,7 @@ function WarpApplication() {
   useEffect(() => {
     const handlePopState = () => {
       const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register') || searchParams.has('guest')) {
+      if (searchParams.has('choose') || searchParams.has('login') || searchParams.has('register')) {
         enterApp();
       } else if (!searchParams.has('dashboard') && !searchParams.has('assessment') && !searchParams.has('share')) {
         goHome();
@@ -85,10 +86,6 @@ function WarpApplication() {
   // Synchronize user to Supabase public.users and WarpSession
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
-      if (isGuest) {
-        useAuthStore.setState({ isGuest: false });
-      }
-
       // Store user in Supabase database without overwriting existing current_class
       const syncUser = async () => {
         if (!user.email) return;
@@ -113,13 +110,13 @@ function WarpApplication() {
       };
       syncUser();
     }
-  }, [isLoaded, isSignedIn, user, isGuest]);
+  }, [isLoaded, isSignedIn, user]);
 
   // Save assessment to Supabase when completed with sufficient responses
   useEffect(() => {
     const responseList = session.responses ? Object.values(session.responses) : [];
     const currentResult = session.result;
-    if (session.phase === 'results' && currentResult && !hasAssessmentId && !isGuest && user && responseList.length >= 5) {
+    if (session.phase === 'results' && currentResult && !hasAssessmentId && user && responseList.length >= 5) {
       const saveAssessment = async () => {
         const scaledScores = currentResult.competencies
           ? Object.fromEntries(Object.entries(currentResult.competencies).map(([k, v]) => [k, v.score]))
@@ -152,9 +149,9 @@ function WarpApplication() {
       };
       saveAssessment();
     }
-  }, [session.phase, session.result, hasAssessmentId, isGuest, user, session]);
+  }, [session.phase, session.result, hasAssessmentId, user, session]);
 
-  const handleEnterApp = useCallback((mode?: 'choose' | 'login' | 'register' | 'guest') => {
+  const handleEnterApp = useCallback((mode?: 'choose' | 'login' | 'register') => {
     if (mode && typeof window !== 'undefined') {
       window.history.pushState({}, '', `?${mode}`);
     }
@@ -164,8 +161,16 @@ function WarpApplication() {
   // Determine what body to render
   let body;
 
-  if (isDashboard) {
-    body = <StudentDashboard key="dashboard" />;
+  if (pageParam) {
+    body = <MarketingPage key="marketing" slug={pageParam} onEnter={handleEnterApp} />;
+  } else if (isDashboard) {
+    if (!isLoaded) {
+      body = <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-none animate-spin" /></div>;
+    } else if (isSignedIn) {
+      body = <StudentDashboard key="dashboard" />;
+    } else {
+      body = <Landing key="landing" onEnter={handleEnterApp} />;
+    }
   } else if (isSharedReport && shareParam) {
     body = <SharedReport key="shared" token={shareParam} />;
   } else if (hasAssessmentId) {
@@ -217,7 +222,7 @@ function WarpApplication() {
           // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
           if (typeof window !== 'undefined' && window.location.search) {
             const p = new URLSearchParams(window.location.search);
-            if (p.has('login') || p.has('register') || p.has('choose') || p.has('guest')) {
+            if (p.has('login') || p.has('register') || p.has('choose')) {
               window.history.replaceState({}, '', window.location.pathname);
             }
           }
@@ -237,12 +242,16 @@ function WarpApplication() {
     if (
       isLoaded &&
       !isSignedIn &&
-      !isGuest &&
-      (session.phase === 'hub' || session.phase === 'assessment' || session.phase === 'results')
+      (session.phase === 'hub' || session.phase === 'assessment' || session.phase === 'results' || isDashboard)
     ) {
-      goHome();
+      if (isDashboard) {
+        window.history.replaceState({}, '', '/?login');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      } else {
+        goHome();
+      }
     }
-  }, [isLoaded, isSignedIn, isGuest, session.phase, goHome]);
+  }, [isLoaded, isSignedIn, session.phase, isDashboard, goHome]);
 
   return (
     <AppShell

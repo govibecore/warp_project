@@ -1,5 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
 import { Delta, DeltaIcon, DeltaValue } from '../efferd/delta';
+import { PolarAngleAxis, PolarGrid, Radar, RadarChart, PolarRadiusAxis } from 'recharts';
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '../ui/chart';
 
 interface PillarData {
   domain: string;
@@ -25,224 +31,90 @@ const PILLAR_COLORS = [
   '#B89BD9', // c5 - Systems/Metacognition (violet)
 ];
 
-const SVG_SIZE = 220;
-const CENTER = SVG_SIZE / 2;
-const MAX_R = 80; // max radius for score = 100
-
-function polarToCartesian(cx: number, cy: number, r: number, angleRad: number) {
-  return {
-    x: cx + r * Math.cos(angleRad),
-    y: cy + r * Math.sin(angleRad),
-  };
-}
-
-function buildPolygonPoints(values: number[], maxR: number, cx: number, cy: number, n: number) {
-  return values
-    .map((v, i) => {
-      const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-      const r = (Math.min(100, Math.max(0, v)) / 100) * maxR;
-      const p = polarToCartesian(cx, cy, r, angle);
-      return `${p.x},${p.y}`;
-    })
-    .join(' ');
-}
+const chartConfig = {
+  value: {
+    label: "Score",
+    color: "var(--primary)",
+  },
+} satisfies ChartConfig;
 
 export function ParakhRadarChart({ pillars, baseline = 50, className = '' }: ParakhRadarChartProps) {
-  const [drawn, setDrawn] = useState(false);
-  const reducedMotion = useRef(
-    typeof window !== 'undefined'
-      ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-      : false,
-  );
-
-  useEffect(() => {
-    // Delay radar draw by 400ms to follow card stagger
-    const id = setTimeout(() => setDrawn(true), reducedMotion.current ? 0 : 400);
-    return () => clearTimeout(id);
-  }, []);
-
-  const n = pillars.length; // 4
-
-  // Grid rings at 25%, 50%, 75%, 100%
-  const gridLevels = [25, 50, 75, 100];
-
-  // Axis endpoints
-  const axes = pillars.map((_, i) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    return polarToCartesian(CENTER, CENTER, MAX_R, angle);
-  });
-
-  // Score polygon
-  const scorePoints = buildPolygonPoints(
-    pillars.map((p) => p.value),
-    MAX_R,
-    CENTER,
-    CENTER,
-    n,
-  );
-
-  // Baseline polygon
-  const baselinePoints = buildPolygonPoints(
-    Array(n).fill(baseline),
-    MAX_R,
-    CENTER,
-    CENTER,
-    n,
-  );
-
-  // Label positions (slightly outside MAX_R)
-  const labelPositions = pillars.map((p, i) => {
-    const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-    const r = MAX_R + 22;
-    return { ...polarToCartesian(CENTER, CENTER, r, angle), label: p.label, domain: p.domain };
-  });
-
-  // Polygon perimeter for stroke-dasharray animation
-  // Approximate using number of points × average side length
-  // We use a large number to cover any polygon size
-  const DASH_LEN = 1200;
+  const chartData = pillars.map((p) => ({
+    domain: p.domain,
+    shortLabel: p.label.split(' ').slice(0, 2).join(' '),
+    value: p.value,
+    baseline: baseline,
+  }));
 
   return (
-    <div className={`flex flex-col gap-4 ${className}`}>
-      {/* SVG Radar */}
-      <div className="flex justify-center">
-        <svg
-          width={SVG_SIZE + 60}
-          height={SVG_SIZE + 40}
-          viewBox={`-30 -20 ${SVG_SIZE + 60} ${SVG_SIZE + 40}`}
-          className="block"
-          aria-label="PARAKH 360° competency radar chart"
-          role="img"
-        >
-          {/* Grid rings */}
-          {gridLevels.map((level) => {
-            const pts = buildPolygonPoints(Array(n).fill(level), MAX_R, CENTER, CENTER, n);
-            return (
-              <polygon
-                key={level}
-                points={pts}
-                fill="none"
-                stroke="rgba(255,255,255,0.06)"
-                strokeWidth={1}
-              />
-            );
-          })}
-
-          {/* Axis lines */}
-          {axes.map((end, i) => (
-            <line
-              key={i}
-              x1={CENTER}
-              y1={CENTER}
-              x2={end.x}
-              y2={end.y}
-              stroke="rgba(255,255,255,0.08)"
-              strokeWidth={1}
+    <div className={`flex flex-col gap-8 ${className}`}>
+      {/* Recharts Radar */}
+      <div className="flex justify-center px-4 pt-4">
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-70">
+          <RadarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent 
+                  indicator="dot" 
+                  hideLabel={true}
+                  formatter={(val, name, item) => (
+                    <div className="flex flex-col gap-1">
+                      <span className="font-mono text-[10px] uppercase text-muted-foreground">{item.payload.domain}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold">{val}%</span>
+                        {name === 'value' && <span className="text-muted-foreground ml-1">Achieved</span>}
+                        {name === 'baseline' && <span className="text-muted-foreground ml-1">Baseline</span>}
+                      </div>
+                    </div>
+                  )}
+                />
+              }
             />
-          ))}
-
-          {/* Baseline polygon (dashed) */}
-          <polygon
-            points={baselinePoints}
-            fill="none"
-            stroke="rgba(255,255,255,0.25)"
-            strokeWidth={1.5}
-            strokeDasharray="4 4"
-          />
-
-          {/* Score polygon with animation */}
-          <polygon
-            points={scorePoints}
-            fill="rgba(143,207,232,0.12)"
-            stroke="rgba(143,207,232,0.8)"
-            strokeWidth={2}
-            strokeLinejoin="round"
-            strokeDasharray={DASH_LEN}
-            strokeDashoffset={reducedMotion.current || drawn ? 0 : DASH_LEN}
-            style={{
-              transition: reducedMotion.current
-                ? 'none'
-                : 'stroke-dashoffset 0.8s cubic-bezier(.2,.7,.2,1)',
-              fillOpacity: reducedMotion.current || drawn ? 1 : 0,
-              transitionProperty: 'stroke-dashoffset, fill-opacity',
-            }}
-          />
-
-          {/* Vertex dots */}
-          {pillars.map((p, i) => {
-            const angle = (2 * Math.PI * i) / n - Math.PI / 2;
-            const r = (Math.min(100, Math.max(0, p.value)) / 100) * MAX_R;
-            const pos = polarToCartesian(CENTER, CENTER, r, angle);
-            return (
-              <circle
-                key={i}
-                cx={pos.x}
-                cy={pos.y}
-                r={3.5}
-                fill={PILLAR_COLORS[i % PILLAR_COLORS.length]}
-                stroke="var(--color-ink-7, #0B0E13)"
-                strokeWidth={1.5}
-                style={{
-                  opacity: reducedMotion.current || drawn ? 1 : 0,
-                  transition: reducedMotion.current ? 'none' : 'opacity 0.3s ease 1s',
-                }}
-              />
-            );
-          })}
-
-          {/* Axis labels */}
-          {labelPositions.map((lp, i) => {
-            // Determine text-anchor based on horizontal position
-            const ta =
-              lp.x < CENTER - 5 ? 'end' : lp.x > CENTER + 5 ? 'start' : 'middle';
-            return (
-              <g key={i}>
-                <text
-                  x={lp.x}
-                  y={lp.y - 4}
-                  textAnchor={ta}
-                  fontSize={7}
-                  fontFamily="var(--font-mono, 'JetBrains Mono', monospace)"
-                  fontWeight="700"
-                  fill="rgba(255,255,255,0.4)"
-                  letterSpacing="0.06em"
-                  className="uppercase"
-                >
-                  {lp.domain}
-                </text>
-                <text
-                  x={lp.x}
-                  y={lp.y + 7}
-                  textAnchor={ta}
-                  fontSize={8.5}
-                  fontFamily="var(--font-sans, 'Inter', sans-serif)"
-                  fontWeight="600"
-                  fill="rgba(255,255,255,0.75)"
-                >
-                  {lp.label.split(' ').slice(0, 2).join(' ')}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Center dot */}
-          <circle cx={CENTER} cy={CENTER} r={2} fill="rgba(255,255,255,0.15)" />
-
-          {/* Baseline label */}
-          <text
-            x={CENTER + 4}
-            y={CENTER - (baseline / 100) * MAX_R - 4}
-            fontSize={7}
-            fontFamily="var(--font-mono, monospace)"
-            fill="rgba(255,255,255,0.3)"
-            textAnchor="start"
-          >
-            {baseline}% baseline
-          </text>
-        </svg>
+            <PolarGrid 
+              className="stroke-border/40" 
+              gridType="polygon"
+            />
+            <PolarAngleAxis 
+              dataKey="domain" 
+              tick={{ fill: "var(--foreground)", fontSize: 10, fontFamily: "var(--font-mono, monospace)", fontWeight: 700, opacity: 0.6 }} 
+            />
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, 100]}
+              tick={false}
+              axisLine={false}
+            />
+            <Radar
+              name="baseline"
+              dataKey="baseline"
+              stroke="var(--muted-foreground)"
+              strokeWidth={1.5}
+              strokeDasharray="4 4"
+              fill="transparent"
+            />
+            <Radar
+              name="value"
+              dataKey="value"
+              stroke="var(--color-value)"
+              strokeWidth={2}
+              fill="var(--color-value)"
+              fillOpacity={0.15}
+              dot={{
+                r: 4,
+                fill: "var(--color-value)",
+                strokeWidth: 0,
+              }}
+              activeDot={{
+                r: 6,
+                fill: "var(--color-value)",
+              }}
+            />
+          </RadarChart>
+        </ChartContainer>
       </div>
 
-      {/* 2×2 Legend grid */}
+      {/* 2x2 Legend grid */}
       <div className="grid grid-cols-2 gap-2">
         {pillars.map((p, i) => (
           <div

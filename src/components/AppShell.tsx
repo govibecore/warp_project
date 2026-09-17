@@ -247,18 +247,18 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -4, scale: 0.98 }}
             transition={{ duration: 0.12, ease: [0.2, 0.7, 0.2, 1] }}
-            className="absolute right-0 top-[calc(100%+6px)] z-60 w-64 border border-border bg-card shadow-xl rounded-none overflow-hidden"
+            className="absolute right-0 top-[calc(100%+6px)] z-60 w-72 border border-border bg-card shadow-none rounded-none overflow-hidden"
             role="menu"
           >
             {/* Identity Header */}
-            <div className="border-b border-border p-3.5 bg-surface/50">
+            <div className="border-b border-border p-4 bg-surface/30">
               <div className="flex items-center gap-3">
-                <div className="size-8 shrink-0 overflow-hidden border border-primary/30 bg-primary/10 flex items-center justify-center text-primary font-mono font-bold text-xs">
+                <div className="size-10 shrink-0 overflow-hidden border border-border bg-surface flex items-center justify-center text-foreground-secondary font-mono font-bold text-xs">
                   {resolvedAvatar && !imgError ? (
                     <img
                       src={resolvedAvatar}
                       alt="Profile"
-                      className="size-full object-cover"
+                      className="size-full object-cover grayscale opacity-90 hover:grayscale-0 hover:opacity-100 transition-all duration-300"
                       referrerPolicy="no-referrer"
                       onError={() => setImgError(true)}
                     />
@@ -268,9 +268,11 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
                 </div>
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between gap-1">
-                    <p className="text-xs font-bold font-mono text-foreground truncate">{displayName}</p>
-                    <span className="text-[9px] font-mono px-1.5 py-0.2 border border-emerald-500/30 text-emerald-500 bg-emerald-500/10">
-                      Active
+                    <p className="text-sm font-display font-bold truncate bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
+                      {displayName}
+                    </p>
+                    <span className="text-[9px] font-mono px-1.5 py-0.2 border border-emerald-500/30 text-emerald-500 bg-emerald-500/5">
+                      ACTIVE
                     </span>
                   </div>
                   {user?.email && (
@@ -279,22 +281,22 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
                 </div>
               </div>
 
-              <div className="mt-2.5 pt-2 border-t border-border/50 flex items-center justify-between text-[10px] font-mono text-foreground-secondary">
-                <span>{classDisplay.toUpperCase()} · STEM</span>
-                <span className="text-primary font-semibold">3PL IRT READY</span>
+              <div className="mt-3 pt-2.5 border-t border-border/50 flex items-center justify-between text-[10px] font-mono tracking-widest text-foreground-secondary">
+                <span className="uppercase">{classDisplay} · STEM</span>
+                <span className="text-primary font-bold">3PL IRT READY</span>
               </div>
             </div>
 
             {/* Menu Actions */}
-            <div className="py-1">
+            <div className="py-1.5">
               <DropdownItem
-                icon={<LayoutDashboard className="size-3.5 text-primary" />}
+                icon={<LayoutDashboard className="size-4" />}
                 label="Student Dossier"
                 description="Longitudinal arc & performance"
                 onClick={() => { setOpen(false); window.location.href = '/?dashboard'; }}
               />
               <DropdownItem
-                icon={<User className="size-3.5 text-primary" />}
+                icon={<User className="size-4" />}
                 label="Academic Identity"
                 description="Profile, school & WhatsApp report"
                 onClick={() => {
@@ -305,7 +307,7 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
                 }}
               />
               <DropdownItem
-                icon={<Sliders className="size-3.5 text-primary" />}
+                icon={<Sliders className="size-4" />}
                 label="Calibration Settings"
                 description="IRT difficulty baseline & alerts"
                 onClick={() => {
@@ -316,7 +318,7 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
                 }}
               />
               <DropdownItem
-                icon={<ShieldCheck className="size-3.5 text-primary" />}
+                icon={<ShieldCheck className="size-4" />}
                 label="Account & Consent"
                 description="DPDP 2023 compliance & ID"
                 onClick={() => {
@@ -329,9 +331,9 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
             </div>
 
             {/* Sign Out Action */}
-            <div className="border-t border-border p-1 bg-surface/30">
+            <div className="border-t border-border p-1.5 bg-surface/20">
               <DropdownItem
-                icon={<LogOut className="size-3.5" />}
+                icon={<LogOut className="size-4" />}
                 label="Sign out"
                 onClick={handleSignOut}
                 danger
@@ -362,21 +364,29 @@ function DropdownItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`flex w-full items-start gap-2.5 px-3.5 py-2 text-left transition-colors cursor-pointer ${
+      className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-all cursor-pointer relative ${
         danger
-          ? 'text-foreground-muted hover:text-destructive hover:bg-destructive/10'
-          : 'hover:bg-surface group'
+          ? 'text-foreground-secondary hover:text-destructive hover:bg-destructive/5'
+          : 'text-foreground-secondary hover:text-foreground hover:bg-surface group'
       }`}
     >
-      <span className="mt-0.5 shrink-0">{icon}</span>
+      <div className={`absolute left-0 top-0 bottom-0 w-0.5 transition-colors ${
+        danger ? 'group-hover:bg-destructive' : 'group-hover:bg-primary'
+      }`} />
+      
+      <span className={`mt-0.5 shrink-0 transition-colors ${
+        danger ? '' : 'text-foreground-muted group-hover:text-primary'
+      }`}>
+        {icon}
+      </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-[11px] font-mono font-semibold ${
-          danger ? 'text-destructive' : 'text-foreground group-hover:text-primary transition-colors'
+        <p className={`text-xs font-sans font-medium transition-colors ${
+          danger ? '' : 'group-hover:text-foreground'
         }`}>
           {label}
         </p>
         {description && (
-          <p className="text-[10px] text-foreground-muted truncate mt-0.2">{description}</p>
+          <p className="text-[10px] text-foreground-muted truncate mt-0.5 transition-colors group-hover:text-foreground-secondary">{description}</p>
         )}
       </div>
     </button>

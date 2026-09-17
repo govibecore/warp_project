@@ -10,7 +10,6 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { cn } from '@/lib/utils';
-import { AuroraCurtain } from './ui/pixel-perfect/AuroraCurtain';
 
 interface CinematicHeroProps {
   className?: string;
@@ -109,8 +108,7 @@ export function CinematicHero({ className }: CinematicHeroProps) {
       className={cn('pointer-events-none absolute inset-0 overflow-hidden', className)}
       aria-hidden="true"
     >
-      {/* Dynamic WebGL Aurora Curtain shader ribbons */}
-      <AuroraCurtain intensity={0.7} speed={0.85} />
+      {/* Dynamic WebGL Aurora Curtain shader ribbons removed (violates Nordic Lagom) */}
 
       {/* Aurora ambient radial washes */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_120%_80%_at_20%_80%,oklch(0.35_0.08_230/0.45),transparent_60%)]" />

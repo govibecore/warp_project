@@ -1,19 +1,9 @@
 /**
- * WARP brand mark - the real logo assets from `public/brand/`.
+ * WARP brand mark - Programmable SVG Redesign
  *
- * The mark is a gravity well: a spacetime grid warped by a glowing mass. That
- * is the product in one image - the cohort reference is the well, growth is
- * the bend. In-app we use the sharp-tile (`-square`) variants so the mark
- * matches the angular UI geometry; the rounded originals are kept in
- * `public/brand/` for external use.
- *
- * Variants:
- *   - `lockup`  - icon + wordmark side by side (headers, hero)
- *   - `stacked` - icon above wordmark (footer, empty states)
- *   - `icon`    - the tile alone (avatars, favicons, compact headers)
- *
- * `theme` selects the wordmark ink: `dark` (default) for dark surfaces,
- * `light` for light surfaces. The icon tile is identical on both.
+ * Adhering to the Nordic Lagom and Sharp Geometry contract.
+ * Zero radius corners, strict architectural blueprint grid, 
+ * monochromatic with Fjord Cyan accents.
  */
 
 interface WarpLogoProps {
@@ -22,34 +12,58 @@ interface WarpLogoProps {
   className?: string;
 }
 
-const SRC: Record<NonNullable<WarpLogoProps['variant']>, Record<NonNullable<WarpLogoProps['theme']>, string>> = {
-  lockup: {
-    dark: '/brand/warp-logo-dark-square.svg',
-    light: '/brand/warp-logo-light-square.svg',
-  },
-  stacked: {
-    dark: '/brand/warp-stacked-dark-square.svg',
-    light: '/brand/warp-stacked-light-square.svg',
-  },
-  icon: {
-    dark: '/brand/warp-icon-square.svg',
-    light: '/brand/warp-icon-square.svg',
-  },
-};
+export function WarpLogo({ variant = 'lockup', theme = 'dark', className = 'h-7 w-auto' }: WarpLogoProps) {
+  const isDark = theme === 'dark';
+  const primaryColor = isDark ? '#ffffff' : '#000000';
+  const secondaryColor = '#00B4D8'; // Fjord Cyan
+  const hairlineColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
 
-function currentTheme(): 'dark' | 'light' {
-  return 'dark'; // Site is strictly dark mode now
-}
+  // Geometric blueprint icon
+  const icon = (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-full w-full block">
+      {/* Blueprint Grid */}
+      <rect x="0" y="0" width="100" height="100" stroke={hairlineColor} strokeWidth="1" fill="none" />
+      <line x1="50" y1="0" x2="50" y2="100" stroke={hairlineColor} strokeWidth="1" />
+      <line x1="0" y1="50" x2="100" y2="50" stroke={hairlineColor} strokeWidth="1" />
+      <line x1="0" y1="0" x2="100" y2="100" stroke={hairlineColor} strokeWidth="1" />
+      <line x1="100" y1="0" x2="0" y2="100" stroke={hairlineColor} strokeWidth="1" />
 
-export function WarpLogo({ variant = 'lockup', theme, className = 'h-7 w-auto' }: WarpLogoProps) {
-  const resolved = theme ?? currentTheme();
+      {/* Sharp W structure */}
+      <path
+        d="M 15,25 L 35,80 L 50,55 L 65,80 L 85,25"
+        stroke={primaryColor}
+        strokeWidth="8"
+        strokeLinejoin="miter"
+        strokeLinecap="square"
+      />
+      
+      {/* Cyan data block */}
+      <rect x="42" y="47" width="16" height="16" fill={secondaryColor} />
+    </svg>
+  );
+
+  if (variant === 'icon') {
+    return <div className={className}>{icon}</div>;
+  }
+
+  if (variant === 'stacked') {
+    return (
+      <div className={`flex flex-col items-center justify-center gap-4 ${className}`}>
+        <div className="h-16 w-16">{icon}</div>
+        <div className="font-display font-bold text-2xl tracking-[0.25em] leading-none" style={{ color: primaryColor }}>
+          WARP
+        </div>
+      </div>
+    );
+  }
+
+  // lockup (default)
   return (
-    <img
-      src={SRC[variant][resolved]}
-      alt="WARP"
-      className={className}
-      draggable={false}
-      decoding="async"
-    />
+    <div className={`flex items-center gap-3 ${className}`}>
+      <div className="h-full aspect-square">{icon}</div>
+      <div className="font-display font-bold text-xl tracking-[0.2em] leading-none uppercase pt-0.5" style={{ color: primaryColor }}>
+        WARP
+      </div>
+    </div>
   );
 }

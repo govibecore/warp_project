@@ -27,13 +27,11 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
-  isGuest: boolean;  // true for users who skip login (old offline mode)
 
   // Actions
   setAuth(student: StudentProfile, tokens: Tokens): void;
   setAccessToken(token: string): void;
   clearAuth(): void;
-  setGuest(): void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -43,14 +41,12 @@ export const useAuthStore = create<AuthState>()(
       accessToken:     null,
       refreshToken:    null,
       isAuthenticated: false,
-      isGuest:         false,
 
       setAuth: (student, tokens) => set({
         student,
         accessToken:     tokens.accessToken,
         refreshToken:    tokens.refreshToken,
         isAuthenticated: true,
-        isGuest:         false,
       }),
 
       setAccessToken: (token) => set({ accessToken: token }),
@@ -60,10 +56,7 @@ export const useAuthStore = create<AuthState>()(
         accessToken:     null,
         refreshToken:    null,
         isAuthenticated: false,
-        isGuest:         false,
       }),
-
-      setGuest: () => set({ isGuest: true, isAuthenticated: false }),
     }),
     {
       name:    'warp.auth.v1',
@@ -75,7 +68,6 @@ export const useAuthStore = create<AuthState>()(
         accessToken:     state.accessToken,
         refreshToken:    state.refreshToken,
         isAuthenticated: state.isAuthenticated,
-        isGuest:         state.isGuest,
       }),
     },
   ),

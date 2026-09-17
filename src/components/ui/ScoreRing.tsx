@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { GsapCounter } from '../animations/GsapCounter';
+import { CounterNumber } from './aliimam/CounterNumber';
 import { OutcomeBadge } from './OutcomeBadge';
 
 interface ScoreRingProps {
@@ -83,7 +83,7 @@ export function ScoreRing({
         {/* Center content - rotated back to normal */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <div className="flex items-baseline gap-0.5">
-            <GsapCounter
+            <CounterNumber
               value={score}
               className="font-display text-3xl font-bold tabular tracking-tight text-foreground"
             />

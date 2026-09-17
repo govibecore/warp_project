@@ -1,17 +1,15 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
 import { supabase } from '../lib/supabase';
-import { ArrowRight, ArrowLeft, Sparkles, LogIn, TriangleAlert, Eye, EyeOff } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useWarpSession } from '../context/WarpSessionContext';
-import { useAuthStore } from '../stores/authStore';
 import { Button } from './ui/button';
-import { Input, Select, Field } from './ui/input';
+import { Input, Field } from './ui/input';
 import { WarpLogo } from './WarpLogo';
 
-type FormMode = 'choose' | 'login' | 'register' | 'guest';
-
-const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3);
-const DIFFICULTIES = ['Standard', 'Advanced', 'Olympiad'] as const;
+type FormMode = 'choose' | 'login' | 'register';
 
 function AuthForm({
   type,
@@ -19,7 +17,7 @@ function AuthForm({
   initialNotice,
 }: {
   type: 'login' | 'register';
-  onSwitchMode: (mode: 'login' | 'register' | 'guest', notice?: string) => void;
+  onSwitchMode: (mode: 'login' | 'register', notice?: string) => void;
   initialNotice?: string | null;
 }) {
   const [email, setEmail] = useState('');
@@ -83,13 +81,13 @@ function AuthForm({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-4">
+    <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
       {/* Header Block */}
       <div className="flex flex-col items-center gap-1.5 text-center mb-1">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
           {type === 'login' ? 'Welcome back' : 'Create your account'}
         </h1>
-        <p className="text-muted-foreground text-sm text-balance">
+        <p className="text-muted-foreground text-[11px] text-balance">
           {type === 'login'
             ? 'Enter your credentials to access your profile and assessment reports'
             : 'Benchmark your latent STEAM ability across five core competencies'}
@@ -162,7 +160,7 @@ function AuthForm({
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" disabled={loading} block size="lg" className="w-full mt-1 cursor-pointer">
+      <Button type="submit" disabled={loading} block size="md" className="w-full mt-2 cursor-pointer font-semibold text-xs tracking-wider uppercase">
         {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
       </Button>
 
@@ -183,9 +181,9 @@ function AuthForm({
         type="button"
         variant="outline"
         block
-        size="lg"
+        size="md"
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2.5 cursor-pointer border-border hover:bg-surface"
+        className="w-full flex items-center justify-center gap-2.5 cursor-pointer border-border hover:bg-surface text-sm font-medium"
         onClick={async () => {
           setLoading(true);
           const { error: oauthErr } = await supabase.auth.signInWithOAuth({
@@ -241,17 +239,6 @@ function AuthForm({
           </span>
         )}
       </div>
-
-      {/* Guest Mode fallback */}
-      <div className="text-center pt-1">
-        <button
-          type="button"
-          onClick={() => onSwitchMode('guest')}
-          className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-        >
-          Continue without an account (Guest mode) →
-        </button>
-      </div>
     </form>
   );
 }
@@ -260,18 +247,42 @@ const FADE_SLIDE = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
   exit: { opacity: 0, y: -10 },
-  transition: { duration: 0.25, ease: 'easeOut' as const },
+  transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
 };
 
 export function Onboarding() {
-  const { setProfile, goHome } = useWarpSession();
-  const { setGuest } = useAuthStore();
+  const containerRef = useRef<HTMLElement>(null);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useGSAP(() => {
+    // 1. Initial Left Column Stagger
+    gsap.from('.gsap-stagger-item', {
+      y: 20,
+      opacity: 0,
+      duration: 0.8,
+      stagger: 0.05,
+      ease: 'power3.out',
+      delay: 0.1,
+    });
+
+    // 2. Ambient subtle breath on the blueprint illustration
+    if (imgRef.current) {
+      gsap.to(imgRef.current, {
+        scale: 1.03,
+        duration: 25,
+        ease: 'sine.inOut',
+        yoyo: true,
+        repeat: -1,
+      });
+    }
+  }, { scope: containerRef });
+
+  const { goHome } = useWarpSession();
   const [mode, setMode] = useState<FormMode>(() => {
     if (typeof window !== 'undefined' && window.location.search) {
       const p = new URLSearchParams(window.location.search);
       if (p.has('login')) return 'login';
       if (p.has('register')) return 'register';
-      if (p.has('guest')) return 'guest';
     }
     return 'choose';
   });
@@ -282,7 +293,6 @@ export function Onboarding() {
         const p = new URLSearchParams(window.location.search);
         if (p.has('login')) setMode('login');
         else if (p.has('register')) setMode('register');
-        else if (p.has('guest')) setMode('guest');
         else setMode('choose');
       }
     };
@@ -307,35 +317,16 @@ export function Onboarding() {
     goHome();
   };
 
-  const [name, setName] = useState('');
-  const [classLevel, setClassLevel] = useState('8');
-  const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number]>('Standard');
-  const [schoolName, setSchoolName] = useState('');
-  const [formError, setFormError] = useState<string | null>(null);
-
-  const handleGuest = (e: FormEvent) => {
-    e.preventDefault();
-    if (!name.trim() || !schoolName.trim()) {
-      setFormError('Please fill in your name and school to continue.');
-      return;
-    }
-    setFormError(null);
-    if (typeof window !== 'undefined' && window.location.search) {
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-    setGuest();
-    setProfile({ name: name.trim(), classLevel: Number(classLevel), difficulty, schoolName: schoolName.trim() });
-  };
-
   return (
     <main
+      ref={containerRef}
       className="grid min-h-svh w-full lg:grid-cols-2 bg-background overflow-x-hidden"
       data-testid="onboarding-shell"
     >
       {/* ── Left Column: Form & Brand Navigation ── */}
       <div className="flex flex-col justify-between p-6 sm:p-8 lg:p-10 z-10 min-h-svh w-full max-w-lg mx-auto lg:max-w-none lg:order-2">
         {/* Top brand header */}
-        <div className="flex items-center justify-between">
+        <div className="gsap-stagger-item flex items-center justify-between">
           <button
             type="button"
             onClick={handleBackToHome}
@@ -357,74 +348,59 @@ export function Onboarding() {
         </div>
 
         {/* Center Auth Container */}
-        <div className="flex flex-1 items-center justify-center my-4 sm:my-6">
+        <div className="gsap-stagger-item flex flex-1 items-center justify-center my-4 sm:my-6">
           <div className="w-full max-w-sm">
             <AnimatePresence mode="wait">
               {mode === 'choose' && (
-                <motion.div key="choose" {...FADE_SLIDE} className="flex w-full flex-col gap-5">
-                  <div className="flex flex-col items-center gap-1.5 text-center mb-2">
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                <motion.div key="choose" {...FADE_SLIDE} className="flex w-full flex-col gap-3">
+                  <div className="flex flex-col items-center gap-1.5 text-center mb-3">
+                    <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
                       Get started
                     </h1>
-                    <p className="text-muted-foreground text-sm text-balance">
+                    <p className="text-muted-foreground text-[11px] text-balance max-w-xs mx-auto">
                       Sign in, create an account, or continue as a guest to benchmark your STEAM thinking.
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-3">
-                    <button
+                  <div className="flex flex-col gap-2.5">
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
                       type="button"
                       onClick={() => switchMode('login')}
-                      className="card card-interactive flex w-full items-center justify-between gap-3 p-4 text-left cursor-pointer border border-border hover:border-primary/50"
+                      className="card card-interactive group flex w-full items-center justify-between gap-3 p-4 text-left cursor-pointer border border-border bg-surface hover:border-primary/50 transition-all duration-200"
                     >
                       <span className="flex items-center gap-3">
-                        <LogIn className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                        <LogIn className="size-4 shrink-0 text-primary opacity-80 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
                         <span>
-                          <span className="block font-semibold text-foreground text-sm">Sign in</span>
-                          <span className="block text-xs text-foreground-secondary">
+                          <span className="block font-sans font-medium text-foreground text-sm">Sign in</span>
+                          <span className="block text-[10px] text-foreground-muted group-hover:text-foreground-secondary transition-colors mt-0.5">
                             Continue where you left off
                           </span>
                         </span>
                       </span>
-                      <ArrowRight className="size-4 shrink-0 text-foreground-secondary" aria-hidden="true" />
-                    </button>
+                      <ArrowRight className="size-3.5 shrink-0 text-foreground-muted group-hover:text-primary group-hover:translate-x-1 transition-all" aria-hidden="true" />
+                    </motion.button>
 
-                    <button
+                    <motion.button
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
                       type="button"
                       onClick={() => switchMode('register')}
-                      className="card card-interactive flex w-full items-center justify-between gap-3 p-4 text-left cursor-pointer border border-border hover:border-primary/50"
+                      className="card card-interactive group flex w-full items-center justify-between gap-3 p-4 text-left cursor-pointer border border-border bg-surface hover:border-primary/50 transition-all duration-200"
                     >
                       <span className="flex items-center gap-3">
-                        <Sparkles className="size-5 shrink-0 text-primary" aria-hidden="true" />
+                        <Sparkles className="size-4 shrink-0 text-primary opacity-80 group-hover:opacity-100 transition-opacity" aria-hidden="true" />
                         <span>
-                          <span className="block font-semibold text-foreground text-sm">Create free account</span>
-                          <span className="block text-xs text-foreground-secondary">
+                          <span className="block font-sans font-medium text-foreground text-sm">Create free account</span>
+                          <span className="block text-[10px] text-foreground-muted group-hover:text-foreground-secondary transition-colors mt-0.5">
                             Save longitudinal CAT history & reports
                           </span>
                         </span>
                       </span>
-                      <ArrowRight className="size-4 shrink-0 text-foreground-secondary" aria-hidden="true" />
-                    </button>
+                      <ArrowRight className="size-3.5 shrink-0 text-foreground-muted group-hover:text-primary group-hover:translate-x-1 transition-all" aria-hidden="true" />
+                    </motion.button>
 
-                    <div className="relative my-2">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border" />
-                      </div>
-                      <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground tracking-widest font-mono text-[10px]">
-                          Quick test
-                        </span>
-                      </div>
-                    </div>
-
-                    <Button
-                      variant="outline"
-                      size="lg"
-                      onClick={() => switchMode('guest')}
-                      className="w-full text-xs font-mono border-dashed hover:border-primary cursor-pointer"
-                    >
-                      Continue without an account (Guest mode)
-                    </Button>
                   </div>
                 </motion.div>
               )}
@@ -435,120 +411,24 @@ export function Onboarding() {
                 </motion.div>
               )}
 
-              {mode === 'guest' && (
-                <motion.form
-                  key="guest"
-                  {...FADE_SLIDE}
-                  onSubmit={handleGuest}
-                  className="flex w-full flex-col gap-4"
-                >
-                  <div className="flex flex-col items-center gap-1.5 text-center mb-2">
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                      Quick start
-                    </h1>
-                    <p className="text-muted-foreground text-sm text-balance">
-                      No account needed. Results are saved locally on this device.
-                    </p>
-                  </div>
-
-                  {formError && (
-                    <div className="border border-destructive/30 bg-destructive-subtle p-3 text-xs text-destructive">
-                      {formError}
-                    </div>
-                  )}
-
-                  <div className="flex items-start gap-3 border border-warning/30 bg-warning-subtle p-3">
-                    <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden="true" />
-                    <p className="text-xs leading-relaxed text-foreground-secondary">
-                      Guest mode stores benchmark telemetry locally. Select your grade and difficulty to begin.
-                    </p>
-                  </div>
-
-                  <Field label="Candidate Name" htmlFor="guest-name">
-                    <Input
-                      id="guest-name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Maya Chen"
-                      autoComplete="name"
-                      required
-                    />
-                  </Field>
-
-                  <Field label="School / Institution" htmlFor="guest-school">
-                    <Input
-                      id="guest-school"
-                      value={schoolName}
-                      onChange={(e) => setSchoolName(e.target.value)}
-                      placeholder="e.g. Horizon STEM Academy"
-                      autoComplete="organization"
-                      required
-                    />
-                  </Field>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Class Level" htmlFor="guest-class">
-                      <Select
-                        id="guest-class"
-                        value={classLevel}
-                        onChange={(e) => setClassLevel(e.target.value)}
-                      >
-                        {CLASSES.map((l) => (
-                          <option key={l} value={l}>
-                            Class {l}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-
-                    <Field label="Difficulty" htmlFor="guest-difficulty">
-                      <Select
-                        id="guest-difficulty"
-                        value={difficulty}
-                        onChange={(e) => setDifficulty(e.target.value as (typeof DIFFICULTIES)[number])}
-                      >
-                        {DIFFICULTIES.map((d) => (
-                          <option key={d} value={d}>
-                            {d}
-                          </option>
-                        ))}
-                      </Select>
-                    </Field>
-                  </div>
-
-                  <Button type="submit" size="lg" block className="mt-2 cursor-pointer" data-testid="onboarding-submit">
-                    Begin assessment
-                    <ArrowRight className="size-4 ml-1" />
-                  </Button>
-
-                  <div className="text-center pt-2">
-                    <button
-                      type="button"
-                      onClick={() => switchMode('choose')}
-                      className="text-xs font-mono text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      ← Back to options
-                    </button>
-                  </div>
-                </motion.form>
-              )}
             </AnimatePresence>
           </div>
         </div>
 
         {/* Bottom footer bar */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-4 text-xs font-mono text-muted-foreground">
+        <div className="gsap-stagger-item flex flex-wrap items-center justify-between gap-2 border-t border-border/40 pt-4 text-xs font-mono text-muted-foreground">
           <span>© 2026 WARP Benchmark Systems</span>
           <span>3PL IRT · Nordic Lagom Protocol</span>
         </div>
       </div>
 
       {/* ── Right Column: Illustration ── */}
-      <div className="relative hidden lg:flex flex-col items-center justify-center overflow-hidden lg:order-1 border-r border-border/40">
+      <div className="relative hidden lg:flex flex-col items-center justify-center overflow-hidden lg:order-1 border-r border-border/40 p-8 lg:p-12">
         <img
-          src="/blender-login.jpg"
-          alt="Futuristic Learning Concept"
-          className="absolute inset-0 w-full h-full object-cover opacity-90"
+          ref={imgRef}
+          src="/onboarding-bg.jpg"
+          alt="WARP Assessment Architecture"
+          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 mix-blend-luminosity will-change-transform"
           draggable={false}
         />
         {/* Ambient radial lighting overlay for blending */}
