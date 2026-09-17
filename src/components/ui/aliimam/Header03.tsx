@@ -1,21 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
-  Menu,
-  X,
-  User,
-  LogOut,
-  LayoutDashboard,
-} from 'lucide-react';
+  MenuIcon as Menu,
+  CloseIcon as X,
+  UserIcon as User,
+  LogoutIcon as LogOut,
+  DashboardIcon as LayoutDashboard,
+} from './AliImamIcons';
 import { WarpLogo } from '../../WarpLogo';
 import { Button } from '../button';
 import { useSupabaseAuth } from '../../../context/SupabaseAuthContext';
 import { signOutUser } from '../../../lib/auth';
 
 interface Header03Props {
-  onEnter: (mode?: 'choose' | 'login' | 'register' | 'guest') => void;
+  onEnter: (mode?: 'choose' | 'login' | 'register') => void;
 }
-
 
 const NAV_LINKS = [
   { id: 'evaluation', label: 'Evaluation', href: '#features' },
@@ -23,8 +22,6 @@ const NAV_LINKS = [
   { id: 'frameworks', label: 'Global Norms', href: '#frameworks' },
   { id: 'governance', label: 'Governance', href: '#faq' },
 ];
-
-// ── Header03 Main Component ───────────────────────────────────────────────────
 
 export function Header03({ onEnter }: Header03Props) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -71,29 +68,34 @@ export function Header03({ onEnter }: Header03Props) {
   return (
     <header
       ref={navRef}
-      className="fixed top-0 left-0 z-50 w-full border-b border-border/70 bg-background/80 backdrop-blur-xl transition-colors duration-300"
+      className="fixed top-0 left-0 z-50 w-full border-b border-[#3B3B3B] bg-[#0A0A0A] transition-colors duration-200"
       data-testid="header-03"
     >
-      <div className="mx-auto flex h-18 sm:h-20 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* ── Left Slot: Branded Tile Pill ── */}
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        {/* Left Slot: Programmable Geometric Brandmark */}
         <div className="flex items-center gap-3">
           <a
-            href="#top"
+            href="/"
             onClick={(e) => {
               e.preventDefault();
-              window.scrollTo({ top: 0, behavior: 'smooth' });
+              if (window.location.search || window.location.pathname !== '/') {
+                window.history.pushState({}, '', '/');
+                window.dispatchEvent(new PopStateEvent('popstate'));
+              } else {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
             }}
-            className="group flex h-12 items-center gap-3 rounded border border-border/80 bg-surface/80 px-3.5 backdrop-blur-md transition-all duration-200 hover:border-primary/60 hover:bg-surface cursor-pointer"
+            className="group flex items-center gap-2.5 cursor-pointer"
             aria-label="WARP Home"
           >
-            <WarpLogo variant="lockup" className="h-7 sm:h-8 w-auto transition-transform duration-200 group-hover:scale-[1.02]" />
-            <span className="hidden sm:inline border-l border-border/80 pl-2.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground group-hover:text-foreground transition-colors">
+            <WarpLogo variant="lockup" className="h-6 sm:h-7 w-auto" />
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-[#3B3B3B] bg-transparent font-mono text-[9px] uppercase tracking-widest text-[#ABABAB] group-hover:border-[#00B4D8]/50 group-hover:text-[#00B4D8] transition-colors">
               Adaptive CAT
             </span>
           </a>
         </div>
 
-        {/* ── Center Slot: Desktop Navigation Links ── */}
+        {/* Center Slot: Desktop Navigation Links (Nordic Lagom Sharp Tabs) */}
         <nav className="hidden lg:flex items-center space-x-1" aria-label="Main Navigation">
           {NAV_LINKS.map((link) => (
             <a
@@ -103,42 +105,44 @@ export function Header03({ onEnter }: Header03Props) {
                 e.preventDefault();
                 handleSmoothScroll(link.href);
               }}
-              className="flex h-11 items-center rounded px-3.5 text-sm font-medium text-foreground-secondary transition-colors hover:bg-surface/60 hover:text-foreground cursor-pointer"
+              className="relative flex h-16 items-center px-4 font-mono text-xs uppercase tracking-widest text-[#ABABAB] hover:text-[#00B4D8] transition-colors group cursor-pointer"
             >
               {link.label}
+              {/* Sharp Fjord Cyan Underline */}
+              <div className="absolute bottom-0 left-0 h-0.5 w-full bg-[#00B4D8] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200" />
             </a>
           ))}
         </nav>
 
-        {/* ── Right Slot: Auth ── */}
+        {/* Right Slot: Auth */}
         <div className="hidden lg:flex items-center gap-2.5">
           {isSignedIn ? (
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex size-11 items-center justify-center rounded border border-border/80 bg-surface/80 text-foreground transition-colors hover:border-primary/50 cursor-pointer"
+                className="flex size-9 items-center justify-center rounded-none border border-[#3B3B3B] bg-[#121212] text-white transition-colors hover:border-[#00B4D8] cursor-pointer"
                 aria-label="User menu"
               >
-                <div className="flex size-6 items-center justify-center rounded-full bg-primary/20 text-primary font-mono text-xs">
-                  <User className="size-3.5" />
+                <div className="flex size-5.5 items-center justify-center rounded-none text-[#00B4D8] font-mono text-[11px]">
+                  <User className="size-3" />
                 </div>
               </button>
 
               <AnimatePresence>
                 {userMenuOpen && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: 4 }}
-                    className="absolute right-0 top-full mt-2 w-48 rounded border border-border/80 bg-background/95 p-1.5 shadow-xl backdrop-blur-xl z-50 font-mono text-xs"
+                    exit={{ opacity: 0, y: 2 }}
+                    className="absolute right-0 top-full mt-2 w-48 rounded-none border border-[#3B3B3B] bg-[#0A0A0A] p-1.5 z-50 font-mono text-xs shadow-none"
                   >
                     <a
                       href="/?dashboard"
-                      className="flex items-center gap-2 rounded px-3 py-2 text-foreground hover:bg-surface transition-colors"
+                      className="flex items-center gap-2 rounded-none px-3 py-2 text-white hover:bg-[#181818] transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
-                      <LayoutDashboard className="size-3.5 text-primary" />
+                      <LayoutDashboard className="size-3.5 text-[#00B4D8]" />
                       Dashboard
                     </a>
                     <button
@@ -147,7 +151,7 @@ export function Header03({ onEnter }: Header03Props) {
                         setUserMenuOpen(false);
                         signOutUser();
                       }}
-                      className="flex w-full items-center gap-2 rounded px-3 py-2 text-destructive hover:bg-destructive-subtle transition-colors cursor-pointer"
+                      className="flex w-full items-center gap-2 rounded-none px-3 py-2 text-red-500 hover:bg-[#181818] transition-colors cursor-pointer"
                     >
                       <LogOut className="size-3.5" />
                       Sign out
@@ -159,51 +163,50 @@ export function Header03({ onEnter }: Header03Props) {
           ) : (
             <Button
               id="landing-sign-in-btn"
-              size="md"
+              variant="outline"
+              size="sm"
               onClick={() => onEnter('login')}
-              className="h-11 px-4 sm:px-5 text-xs font-semibold tracking-wide cursor-pointer shadow-md hover:shadow-primary/20"
+              className="h-9 px-6 text-xs font-mono uppercase tracking-widest font-medium rounded-none border border-[#3B3B3B] bg-transparent text-[#ABABAB] hover:text-[#00B4D8] hover:border-[#00B4D8] transition-colors cursor-pointer shadow-none"
             >
               Sign in
             </Button>
           )}
         </div>
 
-        {/* ── Mobile Hamburger Trigger ── */}
+        {/* Mobile Hamburger Trigger */}
         <div className="flex items-center gap-2 lg:hidden">
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex size-10 items-center justify-center rounded border border-border/80 bg-surface/70 text-foreground transition-colors hover:bg-surface cursor-pointer"
+            className="flex size-9 items-center justify-center rounded-none border border-[#3B3B3B] bg-transparent text-white transition-colors hover:border-white cursor-pointer"
             aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="size-5 text-foreground" /> : <Menu className="size-5 text-foreground" />}
+            {mobileOpen ? <X className="size-4.5 text-white" /> : <Menu className="size-4.5 text-white" />}
           </button>
         </div>
       </div>
 
-      {/* ── Mobile Slide-Out Drawer (Ali Imam Sheet + Accordion Pattern) ── */}
+      {/* Mobile Slide-Out Drawer - Strict Black Block */}
       <AnimatePresence>
         {mobileOpen && (
           <>
-            {/* Backdrop overlay */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 top-18 sm:top-20 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+              className="fixed inset-0 top-16 z-40 bg-[#0A0A0A] lg:hidden"
             />
 
-            {/* Slide-out Sheet */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-              className="fixed top-18 sm:top-20 right-0 z-50 h-[calc(100svh-4.5rem)] sm:h-[calc(100svh-5rem)] w-full sm:w-115 border-l border-border bg-background/95 backdrop-blur-2xl p-6 overflow-y-auto lg:hidden shadow-2xl flex flex-col justify-between"
+              className="fixed top-16 right-0 z-50 h-[calc(100svh-4rem)] w-full border-l border-[#3B3B3B] bg-[#0A0A0A] p-6 overflow-y-auto lg:hidden flex flex-col justify-between"
             >
-              <div className="space-y-1">
+              <div className="flex flex-col">
                 {NAV_LINKS.map((link) => (
                   <a
                     key={link.id}
@@ -213,25 +216,25 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       handleSmoothScroll(link.href);
                     }}
-                    className="block rounded px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-surface/80"
+                    className="block border-b border-[#3B3B3B] py-6 text-3xl font-display uppercase tracking-widest text-white hover:text-[#00B4D8] transition-colors"
                   >
                     {link.label}
                   </a>
                 ))}
               </div>
 
-              {/* Drawer Bottom Actions */}
-              <div className="mt-8 border-t border-border/80 pt-6 space-y-3">
+              <div className="mt-8 pt-6">
                 {!isSignedIn ? (
                   <Button
                     id="mobile-landing-sign-in-btn"
-                    size="lg"
+                    variant="outline"
+                    size="md"
                     block
                     onClick={() => {
                       setMobileOpen(false);
                       onEnter('login');
                     }}
-                    className="w-full text-xs font-mono cursor-pointer shadow-md"
+                    className="w-full h-12 text-sm font-mono uppercase tracking-widest rounded-none border border-[#3B3B3B] bg-transparent text-white hover:border-[#00B4D8] cursor-pointer shadow-none"
                   >
                     Sign in to account
                   </Button>
@@ -244,7 +247,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       signOutUser();
                     }}
-                    className="w-full text-xs font-mono text-destructive cursor-pointer"
+                    className="w-full h-12 text-sm font-mono uppercase tracking-widest text-red-500 cursor-pointer rounded-none border border-[#3B3B3B]"
                   >
                     Sign out ({displayName})
                   </Button>

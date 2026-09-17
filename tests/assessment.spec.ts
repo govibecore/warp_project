@@ -1,24 +1,140 @@
 import { test, expect } from "@chromatic-com/playwright";
 
+// Mock token for "Mock User" (mock@example.com) — expires year 2100
+const MOCK_ACCESS_TOKEN =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
+  ".eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMTA0ODgxNDI2LCJpYXQiOjE3ODk1MjE0MjYsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6Im1vY2tAZXhhbXBsZS5jb20iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInVzZXJfbWV0YWRhdGEiOnsiZnVsbF9uYW1lIjoiTW9jayBVc2VyIiwiY3VycmVudF9jbGFzcyI6OCwicGFyZW50X25hbWUiOiJNb2NrIFBhcmVudCIsInNjaG9vbF9uYW1lIjoiTW9jayBTY2hvb2wifSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX19" +
+  ".bW9ja3NpZ25hdHVyZQ";
+
+const FAR_FUTURE_EXPIRES_AT = 2104881426;
+
 test.describe("English Assessment Pool and Functionality", () => {
   test("Assessment Hub displays English Literacy track and launches successfully", async ({ page }) => {
-    // Navigate as guest to setup flow
-    await page.goto("/?guest");
+    // Mock Supabase Auth
+    await page.route('**/auth/v1/user', route => {
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          id: 'test-user-id',
+          aud: 'authenticated',
+          role: 'authenticated',
+          email: 'test@warp.academy'
+        })
+      });
+    });
 
-    // Fill guest profile fields
-    const nameInput = page.locator("#guest-name");
-    await expect(nameInput).toBeVisible({ timeout: 10000 });
-    await nameInput.fill("English Scholar");
+    // Mock Supabase DB: students
+    await page.route('**/rest/v1/students*', async route => {
+      if (route.request().method() === "PATCH" || route.request().method() === "POST") {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) });
+        return;
+      }
+      
+      const student = {
+        id: 'test-user-id',
+        full_name: 'English Scholar',
+        current_class: 12,
+        parent_name: 'Parent',
+        school_name: 'Warp Global Academy'
+      };
 
-    const schoolInput = page.locator("#guest-school");
-    await schoolInput.fill("Warp Global Academy");
+      const accept = route.request().headers()['accept'] || '';
+      if (accept.includes('vnd.pgrst.object+json')) {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify(student)
+        });
+      } else {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify([student])
+        });
+      }
+    });
+    
+    // Mock Supabase DB: assessments
+    await page.route('**/rest/v1/assessments*', async route => {
+      if (route.request().method() === 'POST' || route.request().method() === 'PATCH') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            id: 'mock-assessment-123',
+            student_id: 'test-user-id',
+            status: 'in_progress',
+            class_level: 12,
+            difficulty: 'Standard',
+            subject: 'English Literacy'
+          })
+        });
+        return;
+      }
+      
+      const accept = route.request().headers()['accept'] || '';
+      if (accept.includes('vnd.pgrst.object+json')) {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({}) });
+      } else {
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([]) });
+      }
+    });
 
-    // Select Class 12 to specifically verify highest band that previously had 0 items
-    const classSelect = page.locator("#guest-class");
-    await classSelect.selectOption("12");
+    // Mock RPC next_scenario
+    await page.route('**/rest/v1/rpc/next_scenario*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify([{
+          id: 'mock-scenario-1',
+          prompt: 'This is a long mock question prompt for the English Literacy test.',
+          competency: 'locatingInformation',
+          options: [
+            { text: 'Option A', correct: true },
+            { text: 'Option B', correct: false },
+            { text: 'Option C', correct: false },
+            { text: 'Option D', correct: false }
+          ]
+        }])
+      });
+    });
 
-    // Submit guest onboarding
-    await page.getByTestId("onboarding-submit").click();
+    // Mock RPC record_assessment_response
+    await page.route('**/rest/v1/rpc/record_assessment_response*', async route => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ability_theta: { locatingInformation: 0.5 }
+        })
+      });
+    });
+
+    // Navigate to dashboard with fake auth token in localStorage to bypass initial redirect
+    await page.addInitScript(({ token, expiresAt }) => {
+      window.localStorage.setItem('sb-uanqjksfodudwkakyglt-auth-token', JSON.stringify({
+        access_token: token,
+        token_type: 'bearer',
+        expires_in: 3600,
+        expires_at: expiresAt,
+        refresh_token: 'fake-refresh-token',
+        user: { id: 'test-user-id' }
+      }));
+    }, { token: MOCK_ACCESS_TOKEN, expiresAt: FAR_FUTURE_EXPIRES_AT });
+
+    await page.goto("/?dashboard");
+
+    // Click "New assessment"
+    const newAssessmentBtn = page.getByRole("button", { name: /New assessment/i });
+    await expect(newAssessmentBtn).toBeVisible({ timeout: 10000 });
+    await newAssessmentBtn.click();
+
+    // Confirm class in modal
+    const modal = page.locator('.fixed.inset-0.z-50');
+    const confirmBtn = modal.getByRole("button", { name: "Start Assessment" });
+    await expect(confirmBtn).toBeVisible({ timeout: 5000 });
+    await confirmBtn.click();
 
     // Expect to see Choose Your Assessment Hub
     const hubShell = page.getByTestId("hub-shell");

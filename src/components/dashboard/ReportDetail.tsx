@@ -3,7 +3,7 @@ import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
 import { useState, useEffect } from 'react';
 import { Button } from '../ui/button';
-import { Card } from '../ui/card';
+
 import { WarpLogo } from '../WarpLogo';
 import { Spinner } from '../ui/spinner';
 import { useReportStream } from '../../hooks/useReportStream';
@@ -370,86 +370,98 @@ export function ReportDetail() {
   ];
 
   return (
-    <div className="w-full flex-1 overflow-y-auto pb-12">
-      <div className="mx-auto max-w-5xl" id="report-printable-area">
+    <div className="w-full flex-1 overflow-y-auto pb-32">
+      <div className="mx-auto max-w-5xl border-x border-border bg-background min-h-screen" id="report-printable-area">
         {/* ── Header ── */}
         <header
-          className="border-b border-border bg-surface px-6 pt-4 pb-5 md:px-10 md:pt-5 md:pb-6 screen-only"
+          className="relative border-b border-border px-4 py-16 md:px-8 md:py-24 screen-only overflow-hidden group"
           style={{ animation: 'fadeIn 300ms cubic-bezier(.2,.7,.2,1) both' }}
         >
-          {/* Top bar: nav only */}
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => { window.location.search = '?dashboard'; }}
-                className="gap-2 print:hidden"
-                data-testid="return-to-dashboard"
+          <div
+            className="absolute inset-0 z-0 pointer-events-none opacity-30 transition-opacity duration-700 group-hover:opacity-50"
+            style={{
+              WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
+              backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
+              backgroundSize: '22px 22px',
+              maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
+            }}
+          />
+          <div className="relative z-10">
+            {/* Top bar: nav only */}
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => { window.location.search = '?dashboard'; }}
+                  className="gap-2 print:hidden"
+                  data-testid="return-to-dashboard"
+                >
+                  <ArrowLeft className="size-4" /> Return to Dashboard
+                </Button>
+                <WarpLogo variant="lockup" className="h-7 w-auto print:hidden" />
+                <WarpLogo variant="lockup" theme="light" className="hidden print:block h-7 w-auto" />
+              </div>
+            </div>
+
+            {/* Hero: title + metadata strip on left, score ring on right */}
+            <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
+              <div
+                className="space-y-4"
+                style={{ animation: 'slideUp 350ms 100ms cubic-bezier(.2,.7,.2,1) both' }}
               >
-                <ArrowLeft className="size-4" /> Return to Dashboard
-              </Button>
-              <WarpLogo variant="lockup" className="h-7 w-auto print:hidden" />
-              <WarpLogo variant="lockup" theme="light" className="print-only h-7 w-auto" />
-            </div>
-          </div>
+                <div className="inline-flex items-center gap-2 border border-border bg-surface/50 px-4 py-1.5 text-xs font-mono uppercase tracking-widest rounded-none mb-2">
+                  <Sparkles className="size-3 text-primary" />
+                  <span className="text-foreground-secondary">WARP Global {subjectDisplay} Benchmark</span>
+                </div>
+                <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tighter leading-tight max-w-3xl bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
+                  Diagnostic Executive Summary
+                </h1>
+                {/* Compact metadata strip */}
+                <p className="text-xs font-mono text-foreground-secondary leading-relaxed">
+                  <span className="text-foreground font-semibold">{studentName}</span>
+                  {' · '}
+                  <span>Class {snapshot.classLevel}</span>
+                  {' · '}
+                  <span>{assessmentData.responses?.length || 30} Scenarios</span>
+                  {assessmentData.responses && assessmentData.responses.length > 0 && (
+                    <>
+                      {' · '}
+                      <span className="text-[--color-ok,#7FCBA0]">
+                        {Math.round((assessmentData.responses.filter((r: any) => r.correct === true).length / assessmentData.responses.length) * 100)}% accuracy
+                      </span>
+                    </>
+                  )}
+                  {snapshot.totalTimeMs && snapshot.totalTimeMs > 0 && (
+                    <>
+                      {' · '}
+                      <span><Clock className="inline size-3 -mt-0.5" /> {formatDuration(snapshot.totalTimeMs)}</span>
+                    </>
+                  )}
+                  {' · '}
+                  <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
+                </p>
+              </div>
 
-          {/* Hero: title + metadata strip on left, score ring on right */}
-          <div className="flex flex-col justify-between gap-6 md:flex-row md:items-center">
-            <div
-              className="space-y-2"
-              style={{ animation: 'slideUp 350ms 100ms cubic-bezier(.2,.7,.2,1) both' }}
-            >
-              <p className="text-xs font-medium tracking-wide text-foreground-secondary">
-                WARP Global {subjectDisplay} Benchmark
-              </p>
-              <h1 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
-                Diagnostic Executive Summary
-              </h1>
-              {/* Compact metadata strip */}
-              <p className="text-xs font-mono text-foreground-secondary leading-relaxed">
-                <span className="text-foreground font-semibold">{studentName}</span>
-                {' · '}
-                <span>Class {snapshot.classLevel}</span>
-                {' · '}
-                <span>{assessmentData.responses?.length || 30} Scenarios</span>
-                {assessmentData.responses && assessmentData.responses.length > 0 && (
-                  <>
-                    {' · '}
-                    <span className="text-[--color-ok,#7FCBA0]">
-                      {Math.round((assessmentData.responses.filter((r: any) => r.correct === true).length / assessmentData.responses.length) * 100)}% accuracy
-                    </span>
-                  </>
-                )}
-                {snapshot.totalTimeMs && snapshot.totalTimeMs > 0 && (
-                  <>
-                    {' · '}
-                    <span><Clock className="inline size-3 -mt-0.5" /> {formatDuration(snapshot.totalTimeMs)}</span>
-                  </>
-                )}
-                {' · '}
-                <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
-              </p>
-            </div>
-
-            {/* Score Ring Hero */}
-            <div
-              className="shrink-0 print-keep"
-              style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
-            >
-              <ScoreRing
-                score={snapshot.overallScore}
-                maxScore={900}
-                percentile={benchmark.globalPercentile}
-                boardGradeBand={benchmark.boardGradeBand}
-              />
+              {/* Score Ring Hero */}
+              <div
+                className="shrink-0 print-keep"
+                style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
+              >
+                <ScoreRing
+                  score={snapshot.overallScore}
+                  maxScore={900}
+                  percentile={benchmark.globalPercentile}
+                  boardGradeBand={benchmark.boardGradeBand}
+                />
+              </div>
             </div>
           </div>
         </header>
 
         {/* ── Sticky Tab Navigation ── */}
-        <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-sm">
-          <div className="flex items-center justify-between px-4 md:px-6">
+        <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-md">
+          <div className="mx-auto max-w-5xl flex items-center justify-between px-4 md:px-8 py-2">
             {/* Tab row — text only, no icons */}
             <div className="flex items-center gap-0.5 overflow-x-auto">
               {(['hub', 'onepage', 'student', 'parent', 'audit', 'trajectory'] as TabType[]).map((id) => {
@@ -570,22 +582,22 @@ export function ReportDetail() {
         </div>
 
         {/* ── Screen-Only Interactive Main ── */}
-        <main className="space-y-8 px-6 py-8 md:px-12 md:py-10 screen-only">
+        <main className="mx-auto max-w-5xl space-y-24 px-4 py-16 md:px-8 md:py-24 screen-only">
           {aiGenerating && (
-            <Card className="flex flex-col items-center justify-center py-10 gap-4">
+            <div className="flex flex-col items-center justify-center py-24 gap-4 border border-border bg-card">
               <Spinner size="lg" className="text-primary" />
               <p className="text-sm font-medium">{stream.text}</p>
-            </Card>
+            </div>
           )}
 
           {/* ══════════════════ EXECUTIVE SUMMARY HUB ══════════════════ */}
           {!aiGenerating && activeTab === 'hub' && (
-            <div className="space-y-8 animate-in fade-in duration-200">
+            <div className="space-y-24 animate-in fade-in duration-200">
               {/* Section A — At a Glance */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* CARD 1: Student Cognitive Profile */}
-                <Card className="p-5 md:p-6 border border-border bg-card">
-                  <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                {/* BLOCK 1: Student Cognitive Profile */}
+                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
+                  <div className="space-y-4">
                     <span className="text-xs font-medium text-foreground-secondary tracking-wide">
                       Student Profile
                     </span>
@@ -610,11 +622,11 @@ export function ReportDetail() {
                       </div>
                     </div>
                   </div>
-                </Card>
+                </div>
 
-                {/* CARD 2: Parent Verdict */}
-                <Card className="p-5 md:p-6 border border-border bg-card">
-                  <div className="space-y-3">
+                {/* BLOCK 2: Parent Verdict */}
+                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
+                  <div className="space-y-4">
                     <span className="text-xs font-medium text-foreground-secondary tracking-wide">
                       Parent Blueprint
                     </span>
@@ -650,26 +662,25 @@ export function ReportDetail() {
                       )}
                     </div>
                   </div>
-                </Card>
+                </div>
 
-                {/* CARD 3: Score & Ranking */}
-                <Card className="p-5 md:p-6 border border-border bg-card">
-                  <div className="space-y-3">
+                {/* BLOCK 3: Score & Ranking */}
+                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
+                  <div className="space-y-4">
                     <span className="text-xs font-medium text-foreground-secondary tracking-wide">
                       Psychometric Audit
                     </span>
 
                     <div>
-                      <div className="flex items-baseline gap-2">
+                      <div className="flex flex-col gap-1">
                         <span className="text-2xl font-bold font-display text-foreground">
-                          {snapshot.overallScore}
-                        </span>
-                        <span className="text-xs font-mono text-foreground-muted">/ 900</span>
-                        <span className="text-xs font-medium text-primary ml-auto font-mono">
                           India {ordinal(indiaPercentile)} %ile
                         </span>
+                        <span className="text-xs font-mono text-primary">
+                          Global {ordinal(benchmark.globalPercentile || 50)} %ile
+                        </span>
                       </div>
-                      <p className="text-xs text-foreground-secondary mt-1">
+                      <p className="text-xs text-foreground-secondary mt-2">
                         {correctCount} of {totalCount} scenarios answered correctly ({Math.round((correctCount / totalCount) * 100)}%)
                       </p>
                     </div>
@@ -722,36 +733,50 @@ export function ReportDetail() {
                       </ShareBarList>
                     </div>
                   </div>
-                </Card>
+                </div>
               </div>
 
-              {/* Section B — Deep Diagnostic (PARAKH radar full-width + inline domain vitals) */}
-              <Card className="p-6 md:p-8 border border-border bg-card">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    PARAKH 360° Holistic Assessment — NEP 2020
+              {/* Section B — Deep Diagnostic (Gallery Layout) */}
+              <div className="border border-border bg-card overflow-hidden">
+                <div className="p-8 md:p-12 border-b border-border text-center bg-surface">
+                  <h3 className="text-2xl font-display font-bold text-foreground">
+                    PARAKH 360° Holistic Assessment
                   </h3>
-                  <span className="text-xs text-foreground-muted font-mono">vs Class {snapshot.classLevel} Baseline</span>
+                  <p className="text-sm text-foreground-secondary mt-2">
+                    Contrasting core competencies against the Class {snapshot.classLevel} global baseline.
+                  </p>
                 </div>
-                <ParakhRadarChart pillars={parakhVitals} baseline={50} />
+                
+                <div className="w-full flex items-center justify-center p-8 lg:p-16 relative">
+                  {/* Subtle dot matrix behind the radar chart */}
+                  <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{
+                    backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
+                    backgroundSize: '32px 32px'
+                  }} />
+                  <div className="w-full max-w-xl h-full relative z-10 aspect-square md:aspect-auto">
+                    <ParakhRadarChart pillars={parakhVitals} baseline={50} />
+                  </div>
+                </div>
 
                 {/* Inline domain vitals */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-border">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 md:p-12 border-t border-border bg-surface">
                   {parakhVitals.map((v) => (
                     <div key={v.label} className="space-y-1">
                       <p className="text-xs text-foreground-muted">{v.domain}</p>
                       <p className="text-sm font-semibold text-foreground">{v.label}</p>
                       <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-bold font-display text-foreground">{v.value}{v.suffix}</span>
-                        <span className={`text-xs font-mono ${v.delta >= 0 ? 'text-success' : 'text-destructive'}`}>
-                          {v.delta >= 0 ? '+' : ''}{v.delta.toFixed(1)} pts
+                        <span className="text-lg font-bold font-display text-foreground">
+                          {v.band === 'Not Assessed' ? '---' : `${v.value}${v.suffix}`}
+                        </span>
+                        <span className={`text-xs font-mono ${v.band === 'Not Assessed' ? 'text-foreground-muted' : v.delta >= 0 ? 'text-success' : 'text-foreground-secondary'}`}>
+                          {v.band !== 'Not Assessed' ? `${v.delta >= 0 ? '+' : ''}${v.delta.toFixed(1)} pts` : ''}
                         </span>
                       </div>
                       <p className="text-xs text-foreground-secondary">{v.band}</p>
                     </div>
                   ))}
                 </div>
-              </Card>
+              </div>
             </div>
           )}
 

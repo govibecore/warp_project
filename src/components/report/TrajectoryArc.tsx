@@ -3,7 +3,8 @@ import { Card } from '../ui/card';
 import { TrendingUp, ArrowUpRight, ArrowDownRight, Compass } from 'lucide-react';
 import { Spinner } from '../ui/spinner';
 import { supabase } from '../../lib/supabase';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '../ui/chart';
 
 interface TrajectoryArcProps {
   studentId?: string;
@@ -25,6 +26,13 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', {
   month: 'short',
   day: 'numeric',
 });
+
+const chartConfig = {
+  score: {
+    label: "Score",
+    color: "var(--primary)",
+  },
+} satisfies ChartConfig;
 
 export function TrajectoryArc({
   studentId,
@@ -129,51 +137,55 @@ export function TrajectoryArc({
         <div className="space-y-6">
           {/* Recharts longitudinal line */}
           <div className="h-56 w-full pt-2 min-w-0 min-h-0">
-            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-              <LineChart data={history} margin={{ top: 10, right: 20, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/40" />
+            <ChartContainer config={chartConfig} className="h-full w-full">
+              <LineChart data={history} margin={{ top: 10, right: 20, left: -20, bottom: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" className="opacity-50" />
                 <XAxis
                   dataKey="displayDate"
-                  tick={{ fontSize: 11, fill: 'currentColor' }}
-                  className="text-foreground-secondary"
                   tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                 />
                 <YAxis
                   domain={[200, 900]}
-                  tick={{ fontSize: 11, fill: 'currentColor' }}
-                  className="text-foreground-secondary"
                   tickLine={false}
+                  axisLine={false}
+                  tick={{ fill: 'var(--muted-foreground)', fontSize: 11 }}
                 />
-                <Tooltip
-                  content={({ active, payload }) => {
-                    if (active && payload && payload.length) {
-                      const data = payload[0].payload as AssessmentPoint;
-                      return (
-                        <div className="rounded-none border border-border bg-background p-3 shadow-lg text-xs">
-                          <p className="font-bold text-foreground">{data.displayDate}</p>
-                          <p className="text-primary font-mono font-semibold">Score: {data.score} / 900</p>
-                          <p className="text-foreground-muted">Class {data.classLevel}</p>
-                          {data.isCurrent && (
-                            <span className="text-[10px] text-emerald-500 font-medium mt-1 inline-block">
-                              ★ Current Report
-                            </span>
-                          )}
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent 
+                      indicator="line" 
+                      hideLabel={true}
+                      formatter={(val, _name, item) => (
+                        <div className="flex flex-col gap-1 w-full">
+                          <div className="flex items-center justify-between gap-4 font-mono">
+                            <span className="font-bold text-foreground text-sm">{val} / 900</span>
+                            {item.payload.isCurrent && (
+                              <span className="text-[10px] text-emerald-500 font-medium">★ Current</span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground flex items-center justify-between">
+                            <span>{item.payload.displayDate}</span>
+                            <span>Class {item.payload.classLevel}</span>
+                          </div>
                         </div>
-                      );
-                    }
-                    return null;
-                  }}
+                      )}
+                    />
+                  }
                 />
                 <Line
                   type="monotone"
                   dataKey="score"
-                  stroke="var(--primary, #3b82f6)"
+                  stroke="var(--color-score)"
                   strokeWidth={3}
-                  dot={{ r: 5, fill: 'var(--primary, #3b82f6)' }}
-                  activeDot={{ r: 7 }}
+                  dot={{ r: 4, fill: "var(--color-score)", strokeWidth: 0 }}
+                  activeDot={{ r: 6, fill: "var(--color-score)", strokeWidth: 0 }}
                 />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartContainer>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">

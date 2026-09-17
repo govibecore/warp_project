@@ -4,7 +4,7 @@ import { ArrowRight, AlertTriangle, RotateCcw, Lightbulb, Sparkles } from 'lucid
 import { useAssessment } from '../hooks/useAssessment';
 import { useSupabaseAuth } from '../context/SupabaseAuthContext';
 import { useWarpSession } from '../context/WarpSessionContext';
-import { useAuthStore } from '../stores/authStore';
+
 import { supabase } from '../lib/supabase';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -42,7 +42,6 @@ async function ensureGuestStudent(name: string, classLevel: number, difficulty: 
 
 export function Assessment() {
   const { user } = useSupabaseAuth();
-  const { isGuest } = useAuthStore();
   const { session } = useWarpSession();
   const {
     currentScenario: item,
@@ -90,7 +89,7 @@ export function Assessment() {
       const subject = rawSubject === 'English' ? 'English Literacy' : rawSubject;
       if (user) {
         startAssessment(user.id, classLevel, difficulty, subject);
-      } else if (isGuest) {
+      } else {
         ensureGuestStudent(session.profile?.name || 'Guest Candidate', classLevel, difficulty, session.profile?.schoolName)
           .then((guestId) => startAssessment(guestId, classLevel, difficulty, subject))
           .catch((err) => {
@@ -102,7 +101,7 @@ export function Assessment() {
           });
       }
     }
-  }, [status, user, isGuest, session.profile, startAssessment, showTutorial]);
+  }, [status, user, session.profile, startAssessment, showTutorial]);
 
   const selected = item?.options.find((option: any) => option.text === selectedOptionId);
   const lockedCount = seenScenarios.length;
@@ -167,16 +166,11 @@ export function Assessment() {
               const subject = rawSubject === 'English' ? 'English Literacy' : rawSubject;
               if (user) {
                 startAssessment(user.id, classLevel, difficulty, subject);
-              } else if (isGuest) {
-                ensureGuestStudent(session.profile?.name || 'Guest Candidate', classLevel, difficulty, session.profile?.schoolName)
-                  .then((guestId) => startAssessment(guestId, classLevel, difficulty, subject))
-                  .catch((err) => {
-                    console.error('Failed to retry guest assessment:', err);
-                    useAssessment.setState({ 
-                      status: 'error', 
-                      errorMessage: 'Failed to create guest session. Please verify your details and try again.' 
-                    });
-                  });
+              } else {
+                useAssessment.setState({ 
+                  status: 'error', 
+                  errorMessage: 'Must be logged in to start assessment.' 
+                });
               }
             }}
             size="md"
@@ -198,14 +192,14 @@ export function Assessment() {
   }
 
   // ── Unauthenticated state ────────────────────────────────────────────────
-  if (!user && !isGuest && status === 'idle') {
+  if (!user && status === 'idle') {
     return (
       <Centred>
         <h1 className="mb-2 font-display text-2xl font-bold tracking-tight">
           Sign In Required
         </h1>
         <p className="mb-6 text-sm text-foreground-secondary max-w-sm">
-          Please sign in or continue as a guest to begin your adaptive STEM benchmark assessment.
+          Please sign in to begin your adaptive STEM benchmark assessment.
         </p>
         <Button onClick={() => { window.location.href = '/'; }} size="md">
           Go to Sign In

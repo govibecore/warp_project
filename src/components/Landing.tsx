@@ -1,1728 +1,432 @@
-import { lazy, Suspense, useState, useEffect, useRef } from 'react';
-import { motion } from 'motion/react';
-import { gsap } from 'gsap';
-import {
-  ArrowRight,
-  ShieldCheck,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  GraduationCap,
-  CheckCircle2,
-  Clock,
-} from 'lucide-react';
+import { useState, useRef } from 'react';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { Hexagon } from 'lucide-react';
 import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { BentoGrid, BentoGridItem } from './ui/bento';
-import {
-  Accordion,
-  AccordionItem,
-  AccordionTrigger,
-  AccordionContent,
-} from './ui/accordion';
-import { Typewriter } from './ui/aliimam/Typewriter';
-import { DotPattern } from './ui/aliimam/DotPattern';
-import { GridPattern } from './ui/aliimam/GridPattern';
-import { WarpLogo } from './WarpLogo';
-import { CinematicHero } from './CinematicHero';
-import { TextMatrixDecode, IntersectionScope, ChromeGlowButton } from './ui/pixel-perfect';
-
-/**
- * STEM City is lazy-loaded: three.js lands in its own chunk and never delays
- * first paint.
- */
-const StemCityCanvas = lazy(() => import('./StemCityCanvas'));
+import { ArrowRightIcon, SparklesIcon, PlusIcon, MinusIcon } from './ui/aliimam/AliImamIcons';
+import { Marquee } from './ui/aliimam/Marquee';
+import React, { Suspense } from 'react';
+const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
+import { Typewriter } from './ui/Typewriter';
 
 interface LandingProps {
-  onEnter(mode?: 'choose' | 'login' | 'register' | 'guest'): void;
+  onEnter(mode?: 'choose' | 'login' | 'register'): void;
 }
 
-const STATS = [
-  { value: '5', label: 'Competency domains' },
-  { value: '30', label: 'Adaptive items' },
-  { value: '3–12', label: 'Class levels' },
-  { value: '5', label: 'Global benchmark cohorts' },
-];
-
-
-
-const COMPETENCIES = [
+const FAQS = [
   {
-    n: '01',
-    name: 'Scientific Inquiry',
-    mission: 'Ecology',
-    color: 'var(--chart-1)',
-    body: 'Read the empirical evidence, run the controlled comparison, state what the data actually demonstrates - not what intuition anticipated.',
+    q: "How quickly can WARP identify my child's real skill level?",
+    a: "In as few as 30 questions. WARP's adaptive engine recalibrates after every single answer - serving the next question at precisely the right difficulty. The result is a pinpoint-accurate global benchmark that a traditional 100-question test cannot match, delivered in a fraction of the time.",
   },
   {
-    n: '02',
-    name: 'Computational Thinking',
-    mission: 'Data',
-    color: 'var(--chart-2)',
-    body: 'Deconstruct a non-linear problem into algorithmic, modular steps precise enough that a machine or automated check can verify them.',
+    q: 'What subjects and global standards does WARP cover?',
+    a: "WARP benchmarks STEM (Science, Technology, Engineering, Mathematics) and English proficiency, calibrated against NGSS, PISA 2025, and India's NCF 2023 - the same international standards used to rank countries, award scholarships, and select students for elite programs. Your child competes on the world stage, not just their classroom.",
   },
   {
-    n: '03',
-    name: 'Engineering Design',
-    mission: 'Infrastructure',
-    color: 'var(--chart-3)',
-    body: 'Weigh trade-offs against physical and material constraints, then choose what to build first - and what to deliberately omit.',
+    q: 'What does a WARP report actually tell a parent?',
+    a: "Your parent report maps exactly where your child stands globally - percentile rank across each STEM domain and English, the specific knowledge gaps holding them back, and a concrete action plan for how you can guide them forward. No vague letter grades. A clear GPS to academic excellence.",
   },
   {
-    n: '04',
-    name: 'Mathematical Reasoning',
-    mission: 'Energy',
-    color: 'var(--chart-4)',
-    body: 'Translate an ambiguous operational situation into quantitative models, then convert the calculated outputs back into a decision.',
+    q: "Is my child's data private and safe?",
+    a: "Completely. Registered accounts are protected by bank-grade Row-Level Security. We never sell student data, never share it with third parties, and never use it for advertising of any kind.",
   },
   {
-    n: '05',
-    name: 'Systems Thinking',
-    mission: 'Space',
-    color: 'var(--chart-5)',
-    body: 'Model the complete feedback loop: stocks, flows, delays, and second-order dynamics that cause systemic behaviors to compound.',
+    q: 'How is WARP different from practice apps and tutoring platforms?',
+    a: 'Practice apps repeat content. Tutoring platforms teach what is available. WARP does something fundamentally different: it scientifically measures where your child actually is today, then generates an AI-powered report that maps the shortest path from their current ability to global competitiveness. Measurement first. Action plan second.',
   },
 ];
 
-const STEPS = [
-  {
-    num: '01',
-    title: 'Initialize Session',
-    body: 'Select your class level (Classes 3–12). Guest mode runs completely in-browser on your device; account creation unlocks longitudinal syncing.',
-  },
-  {
-    num: '02',
-    title: 'Work the Scenarios',
-    body: 'Thirty Computerized Adaptive Testing (CAT) items across five STEAM missions - energy, ecology, space, data, and infrastructure. Each asks you to decide under constraints.',
-  },
-  {
-    num: '03',
-    title: 'Read Your Signal',
-    body: 'Instant normative report with latent ability (θ), standard error boundaries, global cohort standing, and one prioritized learning vector for the week.',
-  },
-];
-
-const REPORT_ROWS = [
-  { name: 'Scientific Inquiry', you: 71, cohort: 59, color: 'var(--chart-1)' },
-  { name: 'Computational Thinking', you: 63, cohort: 58, color: 'var(--chart-2)' },
-  { name: 'Engineering Design', you: 52, cohort: 58, color: 'var(--chart-3)' },
-  { name: 'Mathematical Reasoning', you: 66, cohort: 59, color: 'var(--chart-4)' },
-  { name: 'Systems Thinking', you: 57, cohort: 61, color: 'var(--chart-5)' },
-];
-
-const FRAMEWORK_STANDARDS = [
-  {
-    code: 'SG-MOE',
-    title: 'Singapore MOE',
-    description: 'Syllabus & heuristic reasoning framework',
-    domain: 'Math & Science Curricula',
-  },
-  {
-    code: 'OECD-PISA',
-    title: 'OECD PISA',
-    description: 'Scientific & mathematical literacy scale',
-    domain: 'Comparative Global Norms',
-  },
-  {
-    code: 'IEA-TIMSS',
-    title: 'IEA TIMSS',
-    description: 'Cognitive domains: Knowing, Applying, Reasoning',
-    domain: 'International Benchmarks',
-  },
-  {
-    code: 'US-NGSS',
-    title: 'NGSS Science',
-    description: 'Three-dimensional science & engineering design',
-    domain: 'Cross-Cutting Concepts',
-  },
-  {
-    code: 'CAMBRIDGE',
-    title: 'Cambridge STEM',
-    description: 'IGCSE inquiry & analytical validation standards',
-    domain: 'Secondary STEM Standards',
-  },
-  {
-    code: 'IB-SCI',
-    title: 'IB Science',
-    description: 'Systems inquiry, experimental design & ethics',
-    domain: 'Diploma & MYP Framework',
-  },
-];
-
-const FAQ = [
-  {
-    q: 'How long does the assessment take?',
-    a: 'Approximately 10 to 12 minutes: thirty adaptive scenario items calibrated via 3PL Item Response Theory, plus five calibration baseline items. No countdown pressure.',
-  },
-  {
-    q: 'How does cohort norming work across different class levels?',
-    a: 'Students in Classes 3–12 are strictly normed against their specific class-level cohort. A Class 4 student is calibrated against international Class 4 baselines, never secondary cohorts.',
-  },
-  {
-    q: 'What is Computerized Adaptive Testing (CAT)?',
-    a: 'Our server-authoritative 3PL IRT engine recalculates your latent ability estimate (θ) after every item. As you answer correctly, difficulty (b) dynamically scales to find your boundary with mathematical precision.',
-  },
-  {
-    q: 'Can I test without creating an account?',
-    a: 'Yes. Full guest mode is supported. All psychometric calculations run securely, and data remains on this device until you choose to link an account for longitudinal tracking.',
-  },
-  {
-    q: 'Is student data private and protected?',
-    a: 'All data is encrypted in transit and at rest using strict row-level security. We never sell student data or serve ads. Full compliance with student privacy standards.',
-  },
-  {
-    q: 'What subjects or domains are covered by the assessment?',
-    a: 'The core assessment focuses on five competency domains: Systems Thinking, Data Literacy, Ecological Engineering, Energy Dynamics, and Space Infrastructure. These go beyond traditional rote memorization to measure applied problem-solving.',
-  },
-  {
-    q: 'How quickly will I receive my results?',
-    a: 'Instantly. The moment you complete your final item, the IRT engine finalizes your psychometric estimation and generates a comprehensive, interactive report.',
-  },
-  {
-    q: 'Do I need special hardware to run the 3D environments?',
-    a: 'No. The STEM City environment is highly optimized using WebGL to run smoothly on any modern web browser, including standard school-issued laptops and tablets.',
-  },
-  {
-    q: 'How often should a student take the assessment?',
-    a: 'We recommend taking the baseline assessment at the beginning of the academic year, and a follow-up assessment every 3 to 4 months to accurately measure longitudinal growth.',
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    quote:
-      'WARP gives us something standardized tests never could: a true diagnostic of how students think under constraints, rather than what formula they memorized.',
-    name: 'Dr. Khumanthem Roshan',
-    role: 'Head of STEM Curriculum',
-    institution: 'Loktak Valley Academy',
-    badge: 'Curriculum Director',
-  },
-  {
-    quote:
-      'Seeing my gap in Systems Thinking compared to the global cohort showed me exactly what to practice. Two months later my score jumped +14 points.',
-    name: 'Yaiphaba Thokchom',
-    role: 'Class 9 Student',
-    institution: 'Kangleipak International School',
-    badge: 'Student Participant',
-  },
-  {
-    quote:
-      'The parent report was written in clear, actionable language without statistical haze. For once, our staff and parents were on the exact same page.',
-    name: 'Rajkumar Somorendro',
-    role: 'Zonal Education Officer',
-    institution: 'Imphal Regional Education Network',
-    badge: 'District Administrator',
-  },
-];
-
-const fade = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: 'easeOut' as const } },
-};
-
-/** Architectural 45-degree diagonal hatched accent bar (Ali Imam landing-01 inspired) */
-function HatchedAccentBar({ height = 'h-6' }: { height?: string }) {
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className={`relative ${height} w-full overflow-hidden border-y border-border/40 opacity-40`} aria-hidden="true">
-      <div className="absolute inset-0 h-full w-full overflow-hidden">
-        <div className="relative h-full w-full">
-          {Array.from({ length: 180 }).map((_, i) => (
-            <div
-              key={i}
-              className="outline-primary/30 absolute h-3.5 w-full origin-top-left -rotate-45 outline-[0.5px] outline-offset-[-0.25px]"
-              style={{
-                top: `${i * 14 - 80}px`,
-                left: '-100%',
-                width: '300%',
-              }}
-            />
-          ))}
-        </div>
+    <div className="border-b border-border group">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between py-6 text-left cursor-pointer outline-none"
+      >
+        <span className="font-display text-lg sm:text-xl font-medium text-foreground group-hover:text-foreground/80 transition-colors">{q}</span>
+        <span className="text-foreground-secondary shrink-0 ml-4">
+          {open ? <MinusIcon size={20} /> : <PlusIcon size={20} />}
+        </span>
+      </button>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <p className="text-foreground-secondary text-sm leading-relaxed max-w-3xl">{a}</p>
       </div>
     </div>
   );
 }
 
-/** Flanking diagonal hatched wings for technical section headers */
-function HatchedWing() {
-  return (
-    <div className="relative w-4 self-stretch overflow-hidden sm:w-6 md:w-8 lg:w-12 border-x border-border/40" aria-hidden="true">
-      <div className="absolute -top-30 -left-10 flex w-40 flex-col items-start justify-start opacity-30">
-        {Array.from({ length: 50 }).map((_, i) => (
-          <div
-            key={i}
-            className="outline-primary/40 h-4 origin-top-left -rotate-45 self-stretch outline-[0.5px] outline-offset-[-0.25px]"
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
-/** GSAP-powered cinematic hero with centered typography and framed Blender 3D STEAM showcase. */
-function HeroCopy({ onEnter }: { onEnter: () => void }) {
-  const copyRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = copyRef.current;
-    if (!el) return;
-
-    const children = el.querySelectorAll('[data-hero-reveal]');
-    const ctx = gsap.context(() => {
-      gsap.fromTo(
-        children,
-        { opacity: 0, y: 32, filter: 'blur(8px)' },
-        {
-          opacity: 1,
-          y: 0,
-          filter: 'blur(0px)',
-          duration: 0.9,
-          stagger: 0.12,
-          ease: 'power3.out',
-          delay: 0.2,
-        },
-      );
-    }, el);
-
-    return () => ctx.revert();
-  }, []);
-
-  return (
-    <div className="relative z-2 flex flex-1 flex-col items-center justify-center px-4 pt-10 pb-16 sm:px-8 sm:pt-14 sm:pb-20 md:px-12 lg:px-16">
-      <div className="relative flex w-full max-w-5xl flex-col items-center text-center">
-        {/* Soft radial backdrop aura behind hero text block for enhanced legibility */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -inset-10 -z-1 bg-[radial-gradient(ellipse_at_50%_25%,oklch(0.235_0.016_245/0.85)_0%,oklch(0.275_0.018_245/0.45)_50%,transparent_75%)] blur-2xl"
-        />
-
-        <div ref={copyRef} className="flex flex-col items-center w-full">
-          {/* Calibrated scientific badge */}
-          <a
-            href="#stem-city"
-            data-hero-reveal
-            className="group mb-5 inline-flex items-center gap-2.5 border border-border bg-surface/85 px-3.5 py-1.5 shadow-xs backdrop-blur-md transition-all duration-300 hover:border-primary/50 hover:bg-surface"
-          >
-            <span className="relative flex size-2">
-              <span className="absolute inline-flex h-full w-full animate-ping bg-primary opacity-75" />
-              <span className="relative inline-flex size-2 bg-primary" />
-            </span>
-            <TextMatrixDecode
-              trigger="mount"
-              delay={0.3}
-              duration={0.8}
-              className="text-[10px] font-semibold tracking-wider text-primary uppercase"
-            >
-              GLOBAL NORM
-            </TextMatrixDecode>
-            <span className="h-3 w-px bg-border-strong" />
-            <span className="text-xs font-medium text-foreground-secondary">
-              Five competencies · adaptive cohort
-            </span>
-            <ArrowRight className="size-3 text-foreground-muted transition-all duration-200 group-hover:translate-x-0.5 group-hover:text-primary" />
-          </a>
-
-          {/* Heading with fluid single-line typewriter */}
-          <h1
-            data-hero-reveal
-            className="mb-4 font-display text-[clamp(2.5rem,5.5vw,4.5rem)] font-extrabold leading-tight tracking-tight text-foreground min-h-[1.15em] flex items-center justify-center sm:mb-5"
-          >
-            <Typewriter
-              words={[
-                "Close the gap.",
-                "Measure real ability.",
-                "Benchmark your mind.",
-                "Master five domains.",
-              ]}
-              typingSpeed={85}
-              deletingSpeed={40}
-              pauseDuration={2400}
-              loop={true}
-            />
-          </h1>
-
-          {/* Subtitle with balanced cadence */}
-          <p
-            data-hero-reveal
-            className="mb-7 max-w-2xl text-center text-base sm:text-lg leading-relaxed text-foreground-secondary font-normal antialiased"
-          >
-            WARP benchmarks how you think across five STEAM competencies against the
-            global cohort - revealing your exact gap vector and how to close it.
-          </p>
-
-          {/* Harmonized CTA button pair */}
-          <div data-hero-reveal className="flex flex-wrap items-center justify-center gap-3.5">
-            <ChromeGlowButton
-              id="landing-start-btn"
-              size="lg"
-              onClick={onEnter}
-              data-testid="landing-cta"
-            >
-              Start your assessment
-              <ArrowRight className="size-4 transition-transform duration-200 group-hover:translate-x-1" />
-            </ChromeGlowButton>
-            <Button
-              variant="ghost"
-              size="lg"
-              className="h-11 px-6 border border-border bg-surface/85 text-foreground hover:border-primary/50 hover:bg-elevated hover:text-foreground backdrop-blur-sm shadow-xs transition-all duration-200 font-medium cursor-pointer"
-              onClick={() =>
-                document.getElementById('stem-city')?.scrollIntoView({ behavior: 'smooth' })
-              }
-            >
-              <span className="size-2 bg-emerald-400 rounded-full animate-pulse mr-2" />
-              Tour STEM City in 3D
-              <ArrowRight className="size-3.5 text-foreground-secondary ml-1" />
-            </Button>
-          </div>
-
-          {/* Calibrated telemetry footnote strip */}
-          <div
-            data-hero-reveal
-            className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 font-mono text-[11px] text-foreground-muted"
-          >
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="size-3 text-primary" />
-              <TextMatrixDecode trigger="mount" delay={0.6} duration={0.9}>
-                Free & open access
-              </TextMatrixDecode>
-            </span>
-            <span className="text-border-strong">/</span>
-            <span className="flex items-center gap-1.5">
-              <Clock className="size-3 text-primary" />
-              <TextMatrixDecode trigger="mount" delay={0.8} duration={0.9}>
-                ~10 min adaptive benchmark
-              </TextMatrixDecode>
-            </span>
-            <span className="text-border-strong">/</span>
-            <span className="flex items-center gap-1.5">
-              <ShieldCheck className="size-3 text-primary" />
-              <TextMatrixDecode trigger="mount" delay={1.0} duration={0.9}>
-                Zero tracking or ads
-              </TextMatrixDecode>
-            </span>
-          </div>
-
-          {/* ── Blender 3D STEAM Campus Showcase Card ── */}
-          <div
-            data-hero-reveal
-            className="group relative mt-10 w-full overflow-hidden border border-border/80 bg-surface/40 backdrop-blur-sm shadow-2xl transition-all duration-300 hover:border-primary/50"
-          >
-            {/* Technical Scope Corner Markers */}
-            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
-            <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 select-none font-mono text-[9px] text-border/90 group-hover:text-primary transition-colors z-10">+</span>
-
-            {/* Top Telemetry Strip */}
-            <div className="flex h-9 w-full items-center justify-between border-b border-border bg-background/85 px-4 font-mono text-[11px] text-foreground-secondary">
-              <div className="flex items-center gap-2">
-                <span className="size-1.5 bg-primary animate-ping" />
-                <span className="uppercase tracking-wider text-foreground font-semibold">
-                  STEAM CAMPUS // 5-COMPETENCY ARCHITECTURE
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="hidden sm:inline text-foreground-muted">BLENDER 3D CYCLES ENGINE</span>
-                <span className="text-primary font-medium tracking-wide">ISOMETRIC COGNITIVE MODEL</span>
-              </div>
-            </div>
-
-            {/* Image Viewport (Theme Aware) */}
-            <div className="relative aspect-video w-full max-h-130 overflow-hidden bg-background">
-              {/* Dark mode variant */}
-              <img
-                src="/images/hero-blender-dark.jpg"
-                alt="WARP 3D STEAM Educational Laboratory Campus"
-                className="hidden dark:block h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
-                loading="eager"
-              />
-              {/* Light mode variant */}
-              <img
-                src="/images/hero-blender-light.jpg"
-                alt="WARP 3D STEAM Educational Laboratory Campus"
-                className="block dark:hidden h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.01]"
-                loading="eager"
-              />
-
-              {/* Subtle gradient vignette to blend edges smoothly */}
-              <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-background/80 via-transparent to-transparent opacity-60" />
-
-              {/* Floating Quick-Jump to STEM City on bottom right */}
-              <a
-                href="#stem-city"
-                className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10 flex items-center gap-2 border border-border/80 bg-background/90 px-3 py-1.5 text-xs font-mono text-foreground backdrop-blur-md transition-colors hover:border-primary hover:text-primary shadow-lg"
-              >
-                <span className="size-1.5 bg-emerald-400 rounded-full animate-pulse" />
-                <span>Walk in STEM City (WebGL) ↓</span>
-              </a>
-            </div>
-
-            {/* Bottom 5-Domain District Grid Bar */}
-            <div className="grid grid-cols-2 divide-y divide-border border-t border-border bg-background/90 sm:grid-cols-5 sm:divide-y-0 sm:divide-x font-mono text-[10px] text-foreground-secondary">
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="size-2 rounded-full" style={{ background: 'var(--chart-1)' }} />
-                <span className="truncate">01 Ecology · Inquiry</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="size-2 rounded-full" style={{ background: 'var(--chart-2)' }} />
-                <span className="truncate">02 Computation · Data</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="size-2 rounded-full" style={{ background: 'var(--chart-3)' }} />
-                <span className="truncate">03 Engineering · Infra</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2">
-                <span className="size-2 rounded-full" style={{ background: 'var(--chart-4)' }} />
-                <span className="truncate">04 Math · Energy</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-2 col-span-2 sm:col-span-1">
-                <span className="size-2 rounded-full" style={{ background: 'var(--chart-5)' }} />
-                <span className="truncate">05 Systems · Space</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** 
- * Interactive 3-Card Auto-Advancing Feature Spotlight
- * Direct architectural adaptation of Ali Imam's feature-cards.tsx with Nordic Lagom hardening
- */
-function FeatureSpotlight({ onEnter }: { onEnter: () => void }) {
-  const [activeCard, setActiveCard] = useState(0);
-  const [progress, setProgress] = useState(0);
-  const mountedRef = useRef(true);
-
-  useEffect(() => {
-    mountedRef.current = true;
-    const progressInterval = setInterval(() => {
-      if (!mountedRef.current) return;
-      setProgress((prev) => {
-        if (prev >= 100) {
-          if (mountedRef.current) {
-            setActiveCard((curr) => (curr + 1) % 3);
-          }
-          return 0;
-        }
-        return prev + 2; // 2% per 100ms = 5000ms (5 seconds total cycle)
-      });
-    }, 100);
-
-    return () => {
-      clearInterval(progressInterval);
-      mountedRef.current = false;
-    };
-  }, []);
-
-  const handleCardClick = (index: number) => {
-    setActiveCard(index);
-    setProgress(0);
-  };
-
-  return (
-    <section id="features" className="section relative w-full scroll-mt-16 border-t border-border bg-background">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-12 text-center">
-          <Badge variant="outline" className="mb-3 font-mono text-[11px] uppercase tracking-wider text-primary">
-            Psychometric Architecture
-          </Badge>
-          <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl text-foreground">
-            Precision cognitive measurement
-          </h2>
-          <p className="mx-auto max-w-2xl text-balance text-foreground-secondary">
-            No memorization recall drills or arbitrary streak counters. An instrument calibrated to
-            surface your true ability boundary.
-          </p>
-        </div>
-
-        {/* Live Synchronized Telemetry Viewport (480px height) */}
-        <div className="relative mx-auto flex h-120 w-full max-w-5xl flex-col items-start justify-start overflow-hidden border border-border bg-surface/30 shadow-sm">
-          {/* Top Telemetry Header Bar */}
-          <div className="flex h-10 w-full items-center justify-between border-b border-border bg-background/80 px-4 font-mono text-xs text-foreground-secondary">
-            <div className="flex items-center gap-2">
-              <span className="size-2 bg-primary" aria-hidden="true" />
-              <span className="uppercase tracking-[0.15em] text-foreground font-semibold">
-                WARP-CALIBRATION-VIEW // {activeCard === 0 ? 'IRT-3PL-ENGINE' : activeCard === 1 ? '5-DOMAIN-STEAM' : 'NORM-DISTRIBUTION'}
-              </span>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="hidden sm:inline">CYCLE: 5.0s</span>
-              <span className="text-primary font-bold">LIVE TELEMETRY</span>
-            </div>
-          </div>
-
-          {/* Viewport Content with Smooth Blur-Scale Crossfade */}
-          <div className="relative flex flex-1 w-full items-center justify-center p-6">
-            {/* ── Viewport 0: Adaptive 3PL IRT Engine ── */}
-            <div
-              className={`absolute inset-0 flex flex-col justify-between p-6 sm:p-10 transition-all duration-500 ease-out ${
-                activeCard === 0 ? 'scale-100 opacity-100 blur-0' : 'scale-95 opacity-0 blur-sm pointer-events-none'
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
-                <div>
-                  <span className="font-mono text-xs uppercase tracking-wider text-primary">Item Response Theory</span>
-                  <h3 className="font-display text-2xl font-bold">Adaptive Ability Convergence (θ)</h3>
-                </div>
-                <div className="flex items-center gap-3 font-mono text-xs">
-                  <div className="border border-border bg-background px-3 py-1.5">
-                    ESTIMATED θ: <span className="font-bold text-primary">+1.42</span>
-                  </div>
-                  <div className="border border-border bg-background px-3 py-1.5">
-                    SE(θ): <span className="font-bold text-success">0.24</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Simulated IRT Calibration Trajectory Graph */}
-              <div className="my-auto grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-                <div className="md:col-span-2 border border-border bg-background p-5">
-                  <div className="mb-3 flex items-center justify-between font-mono text-[11px] text-foreground-secondary">
-                    <span>ITEM PRESENTATION TRAJECTORY (30 STEPS)</span>
-                    <span className="text-primary">CONVERGED AT ITEM 24</span>
-                  </div>
-                  {/* Step line chart representation */}
-                  <div className="relative h-40 w-full border-b border-l border-border/80 flex items-end">
-                    {/* Background gridlines */}
-                    <div className="absolute inset-0 flex flex-col justify-between opacity-15 pointer-events-none">
-                      <div className="border-b border-dashed border-foreground" />
-                      <div className="border-b border-dashed border-foreground" />
-                      <div className="border-b border-dashed border-foreground" />
-                    </div>
-                    {/* Trajectory points */}
-                    <svg className="h-full w-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 120">
-                      <polyline
-                        fill="none"
-                        stroke="var(--color-ink-3)"
-                        strokeDasharray="4,4"
-                        strokeWidth="1.5"
-                        points="0,60 300,60"
-                      />
-                      <polyline
-                        fill="none"
-                        stroke="var(--color-primary)"
-                        strokeWidth="2.5"
-                        points="10,80 40,55 70,35 100,45 130,25 160,20 190,22 220,18 250,19 280,18"
-                      />
-                      {[
-                        [10,80], [40,55], [70,35], [100,45], [130,25],
-                        [160,20], [190,22], [220,18], [250,19], [280,18]
-                      ].map(([x, y], idx) => (
-                        <circle key={idx} cx={x} cy={y} r="3.5" fill="var(--color-background)" stroke="var(--color-primary)" strokeWidth="2" />
-                      ))}
-                    </svg>
-                  </div>
-                  <div className="mt-3 flex justify-between font-mono text-[10px] text-foreground-secondary">
-                    <span>Item 01 (Baseline)</span>
-                    <span>Item 15 (Calibration)</span>
-                    <span>Item 30 (Asymptotic θ)</span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-3 font-mono text-xs">
-                  <div className="border border-border bg-background p-4">
-                    <p className="text-[11px] text-foreground-secondary uppercase mb-1">Discrimination Parameter (a)</p>
-                    <p className="text-xl font-bold text-foreground">1.48 <span className="text-[11px] text-success">HIGH SIGNAL</span></p>
-                  </div>
-                  <div className="border border-border bg-background p-4">
-                    <p className="text-[11px] text-foreground-secondary uppercase mb-1">Difficulty Floor (b)</p>
-                    <p className="text-xl font-bold text-foreground">+0.82 <span className="text-[11px] text-primary">ADAPTIVE</span></p>
-                  </div>
-                  <div className="border border-border bg-background p-4">
-                    <p className="text-[11px] text-foreground-secondary uppercase mb-1">Pseudo-Guessing (c)</p>
-                    <p className="text-xl font-bold text-foreground">0.20 <span className="text-[11px] text-foreground-secondary">BOUNDED</span></p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between border-t border-border/60 pt-3 text-xs text-foreground-secondary">
-                <span>Algorithm: 3-Parameter Logistic Model with Bayes Modal Estimation</span>
-                <span className="font-mono text-primary cursor-pointer hover:underline" onClick={onEnter}>Run item calibration →</span>
-              </div>
-            </div>
-
-            {/* ── Viewport 1: Five-Domain STEAM Diagnostics ── */}
-            <div
-              className={`absolute inset-0 flex flex-col justify-between p-6 sm:p-10 transition-all duration-500 ease-out ${
-                activeCard === 1 ? 'scale-100 opacity-100 blur-0' : 'scale-95 opacity-0 blur-sm pointer-events-none'
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
-                <div>
-                  <span className="font-mono text-xs uppercase tracking-wider text-primary">STEAM Dimensions</span>
-                  <h3 className="font-display text-2xl font-bold">Competency Domain Matrix</h3>
-                </div>
-                <div className="border border-border bg-background px-3 py-1.5 font-mono text-xs">
-                  COHORT BASELINE: <span className="font-bold text-foreground">CLASS 8 REFERENCE</span>
-                </div>
-              </div>
-
-              <div className="my-auto grid grid-cols-1 sm:grid-cols-5 gap-3">
-                {COMPETENCIES.map((c) => (
-                  <div key={c.n} className="border border-border bg-background p-4 flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="size-2 rounded-none" style={{ background: c.color }} />
-                        <span className="font-mono text-[10px] text-foreground-secondary">{c.n}</span>
-                      </div>
-                      <h4 className="font-display text-sm font-bold leading-snug mb-1">{c.name}</h4>
-                      <p className="font-mono text-[10px] text-primary uppercase">{c.mission}</p>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-border/60 font-mono">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-foreground-secondary">SCORE</span>
-                        <span className="font-bold text-foreground">74%</span>
-                      </div>
-                      <div className="h-1.5 w-full bg-surface">
-                        <div className="h-full" style={{ width: '74%', background: c.color }} />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between border-t border-border/60 pt-3 text-xs text-foreground-secondary">
-                <span>Every scenario item evaluates decision trade-offs, not rote recall</span>
-                <span className="font-mono text-primary">5 Missions · Energy, Ecology, Space, Data, Infrastructure</span>
-              </div>
-            </div>
-
-            {/* ── Viewport 2: Normed Global Reference Benchmarks ── */}
-            <div
-              className={`absolute inset-0 flex flex-col justify-between p-6 sm:p-10 transition-all duration-500 ease-out ${
-                activeCard === 2 ? 'scale-100 opacity-100 blur-0' : 'scale-95 opacity-0 blur-sm pointer-events-none'
-              }`}
-            >
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-4">
-                <div>
-                  <span className="font-mono text-xs uppercase tracking-wider text-primary">Multi-Nation Norms</span>
-                  <h3 className="font-display text-2xl font-bold">International Distribution Comparison</h3>
-                </div>
-                <div className="border border-border bg-background px-3 py-1.5 font-mono text-xs">
-                  PERCENTILE: <span className="font-bold text-success">88th GLOBAL</span>
-                </div>
-              </div>
-
-              {/* Comparative Regional Bars */}
-              <div className="my-auto space-y-3 max-w-2xl mx-auto w-full">
-                {[
-                  { region: 'Your Standing', score: 78, delta: '+19 vs global', highlight: true },
-                  { region: 'Singapore Reference Cohort', score: 74, delta: '+15 vs global' },
-                  { region: 'United States Cohort', score: 62, delta: '+3 vs global' },
-                  { region: 'Europe Region Baseline', score: 61, delta: '+2 vs global' },
-                  { region: 'Global Reference Median', score: 59, delta: '0.0 baseline' },
-                ].map((item) => (
-                  <div key={item.region} className={`p-3 border ${item.highlight ? 'border-primary bg-primary/5' : 'border-border bg-background'}`}>
-                    <div className="flex justify-between items-center text-xs mb-1.5">
-                      <span className={`font-medium ${item.highlight ? 'text-primary font-bold' : 'text-foreground'}`}>{item.region}</span>
-                      <span className="font-mono text-[11px] text-foreground-secondary">{item.delta}</span>
-                    </div>
-                    <div className="relative h-2.5 w-full bg-surface">
-                      <div
-                        className={`h-full ${item.highlight ? 'bg-primary' : 'bg-foreground-secondary'}`}
-                        style={{ width: `${item.score}%` }}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between border-t border-border/60 pt-3 text-xs text-foreground-secondary">
-                <span>Normative benchmarks continuously calibrated against standardized curricula</span>
-                <span className="font-mono text-primary">Class-level specific standardization</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Interactive 3-Tab Card Strip with Active Progress Bar */}
-        <div className="mt-8 flex flex-col md:flex-row border-y border-border">
-          <HatchedWing />
-
-          <div className="flex flex-1 flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border">
-            {/* Tab 0 */}
-            <div
-              onClick={() => handleCardClick(0)}
-              className={`relative flex flex-1 cursor-pointer flex-col p-6 transition-colors ${
-                activeCard === 0 ? 'bg-surface/60' : 'hover:bg-surface/30'
-              }`}
-            >
-              {activeCard === 0 && (
-                <div className="absolute top-0 left-0 h-1 w-full bg-surface">
-                  <div className="h-full bg-primary transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
-                </div>
-              )}
-              <span className="font-mono text-xs uppercase tracking-wider text-primary mb-2">01 · Adaptive Engine</span>
-              <h4 className="font-display text-base font-bold mb-2">3PL Item Response Theory</h4>
-              <p className="text-sm leading-relaxed text-foreground-secondary">
-                Dynamically adjusts scenario difficulty per item to pinpoint cognitive ability with zero ceiling effect.
-              </p>
-            </div>
-
-            {/* Tab 1 */}
-            <div
-              onClick={() => handleCardClick(1)}
-              className={`relative flex flex-1 cursor-pointer flex-col p-6 transition-colors ${
-                activeCard === 1 ? 'bg-surface/60' : 'hover:bg-surface/30'
-              }`}
-            >
-              {activeCard === 1 && (
-                <div className="absolute top-0 left-0 h-1 w-full bg-surface">
-                  <div className="h-full bg-primary transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
-                </div>
-              )}
-              <span className="font-mono text-xs uppercase tracking-wider text-primary mb-2">02 · Multidimensional</span>
-              <h4 className="font-display text-base font-bold mb-2">Five-Domain STEAM Scenarios</h4>
-              <p className="text-sm leading-relaxed text-foreground-secondary">
-                Evaluates Inquiry, Computation, Engineering, Math, and Systems across five authentic mission contexts.
-              </p>
-            </div>
-
-            {/* Tab 2 */}
-            <div
-              onClick={() => handleCardClick(2)}
-              className={`relative flex flex-1 cursor-pointer flex-col p-6 transition-colors ${
-                activeCard === 2 ? 'bg-surface/60' : 'hover:bg-surface/30'
-              }`}
-            >
-              {activeCard === 2 && (
-                <div className="absolute top-0 left-0 h-1 w-full bg-surface">
-                  <div className="h-full bg-primary transition-all duration-100 ease-linear" style={{ width: `${progress}%` }} />
-                </div>
-              )}
-              <span className="font-mono text-xs uppercase tracking-wider text-primary mb-2">03 · Global Standard</span>
-              <h4 className="font-display text-base font-bold mb-2">Normed Reference Cohorts</h4>
-              <p className="text-sm leading-relaxed text-foreground-secondary">
-                Direct comparative analysis against Singapore, US, China, and Europe rather than isolated classroom averages.
-              </p>
-            </div>
-          </div>
-
-          <HatchedWing />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Global Framework Standards Section (Ali Imam logo-section.tsx adaptation)
- * Displays educational frameworks WARP aligns against with flanking hatched wing margins
- */
-function FrameworkStandards() {
-  return (
-    <section id="frameworks" className="section w-full scroll-mt-16 border-t border-border bg-background">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-10 text-center">
-          <Badge variant="outline" className="mb-3 font-mono text-[11px] uppercase tracking-wider text-primary">
-            Curricular Alignment
-          </Badge>
-          <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Calibrated against international standards
-          </h2>
-          <p className="mx-auto max-w-xl text-balance text-foreground-secondary text-sm">
-            Our item response parameters and cognitive dimensions are mapped directly to global curricular benchmarks.
-          </p>
-        </div>
-
-        <div className="flex items-start justify-center border-y border-border">
-          <HatchedWing />
-
-          <div className="grid flex-1 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 divide-x divide-y sm:divide-y-0 divide-border">
-            {FRAMEWORK_STANDARDS.map((f) => (
-              <div key={f.code} className="flex flex-col justify-between p-5 bg-background hover:bg-surface/40 transition-colors">
-                <div className="mb-4">
-                  <span className="font-mono text-[10px] text-primary uppercase tracking-widest">{f.code}</span>
-                  <h4 className="font-display text-sm font-bold mt-1 text-foreground">{f.title}</h4>
-                </div>
-                <div>
-                  <p className="text-xs text-foreground-secondary leading-snug">{f.description}</p>
-                  <p className="mt-3 font-mono text-[10px] text-foreground-muted border-t border-border/60 pt-2">{f.domain}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <HatchedWing />
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Interactive Multi-Slide Telemetry Carousel
- * Adaptation of Ali Imam's documentation-section.tsx showcasing sample reports and artifacts
- */
-function TelemetryCarousel({ onEnter }: { onEnter: () => void }) {
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  const slides = [
-    {
-      title: 'Individual Competency Profile',
-      tag: 'Artifact 01 // Score Signal',
-      description: 'Precise score vector across five dimensions with exact delta to international class-level median.',
-      content: (
-        <div className="space-y-3.5 font-mono text-xs w-full">
-          {REPORT_ROWS.map((row) => {
-            const delta = row.you - row.cohort;
-            return (
-              <div key={row.name} className="border border-border bg-background p-3">
-                <div className="flex justify-between items-center mb-1 text-[11px]">
-                  <span className="font-sans font-semibold text-foreground">{row.name}</span>
-                  <span className={delta >= 0 ? 'text-success font-bold' : 'text-highlight font-bold'}>
-                    {delta >= 0 ? `+${delta}` : delta} PTS
-                  </span>
-                </div>
-                <div className="relative h-2 w-full bg-surface">
-                  <div className="h-full" style={{ width: `${row.you}%`, background: row.color }} />
-                  <div className="absolute -top-1 h-4 w-px bg-foreground" style={{ left: `${row.cohort}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ),
-    },
-    {
-      title: 'Parent Plain-Language Synthesis',
-      tag: 'Artifact 02 // Narrative Analysis',
-      description: 'Actionable evaluation written for parents and educators, detailing cognitive strengths and concrete next steps.',
-      content: (
-        <div className="border border-border bg-background p-5 text-sm space-y-4 font-sans">
-          <div className="flex items-center gap-2 border-b border-border pb-3">
-            <GraduationCap className="size-4 text-primary" />
-            <span className="font-mono text-xs uppercase text-foreground-secondary font-bold">Executive Parent Summary</span>
-          </div>
-          <p className="leading-relaxed text-foreground-secondary">
-            <strong className="text-foreground">Observed Cognitive Style:</strong> Strong intuitive grasp of empirical scientific inquiry (+12 above cohort) combined with high mathematical modeling ability (+7). When presented with ambiguous trade-offs in systems design, the student showed a tendency to optimize local components before verifying overall systemic equilibrium.
-          </p>
-          <div className="border-l-2 border-primary pl-3 py-1 font-mono text-xs text-primary">
-            RECOMMENDED FOCUS: Systems feedback loops & second-order constraint modeling.
-          </div>
-        </div>
-      ),
-    },
-    {
-      title: 'Longitudinal Growth Tracking',
-      tag: 'Artifact 03 // Longitudinal Trajectory',
-      description: 'Historical attempt tracking showing dimensional growth over weeks and months rather than single-exam anxiety.',
-      content: (
-        <div className="border border-border bg-background p-5 space-y-4">
-          <div className="flex justify-between items-center border-b border-border pb-3 font-mono text-xs">
-            <span className="uppercase text-foreground-secondary">THREE ATTEMPTS // 90 DAYS</span>
-            <span className="text-success font-bold">+16.4% AGGREGATE GAIN</span>
-          </div>
-          <div className="space-y-3 font-mono text-xs">
-            <div className="flex justify-between text-foreground-secondary">
-              <span>OCTOBER (BASELINE): 58.2</span>
-              <span>NOVEMBER: 64.8</span>
-              <span className="text-primary font-bold">JANUARY: 74.6</span>
-            </div>
-            <div className="h-2 w-full bg-surface flex">
-              <div className="h-full bg-foreground-muted" style={{ width: '58%' }} />
-              <div className="h-full bg-primary/40" style={{ width: '7%' }} />
-              <div className="h-full bg-primary" style={{ width: '10%' }} />
-            </div>
-          </div>
-          <p className="text-xs text-foreground-secondary leading-relaxed">
-            Persistent psychometric telemetry eliminates exam-day variance and tracks authentic cognitive development.
-          </p>
-        </div>
-      ),
-    },
-    {
-      title: 'Psychometric Reliability & 3PL Parameters',
-      tag: 'Artifact 04 // Calibration Quality',
-      description: 'Item discrimination, difficulty parameters, and Cronbach alpha coefficient verification.',
-      content: (
-        <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-          <div className="border border-border bg-background p-3.5">
-            <span className="text-[10px] text-foreground-secondary">RELIABILITY INDEX</span>
-            <p className="text-2xl font-bold text-success mt-1">α = 0.91</p>
-            <span className="text-[10px] text-foreground-secondary">Excellent psychometric validity</span>
-          </div>
-          <div className="border border-border bg-background p-3.5">
-            <span className="text-[10px] text-foreground-secondary">STANDARD ERROR (SE)</span>
-            <p className="text-2xl font-bold text-primary mt-1">0.24</p>
-            <span className="text-[10px] text-foreground-secondary">Asymptotic convergence</span>
-          </div>
-          <div className="col-span-2 border border-border bg-background p-3.5">
-            <div className="flex justify-between text-[11px] mb-1">
-              <span>TEST INFORMATION PEAK</span>
-              <span className="text-primary font-bold">θ ∈ [-1.5, +2.0]</span>
-            </div>
-            <p className="text-[11px] text-foreground-secondary">
-              Balanced item pool ensures high discrimination across both remediation and gifted talent ranges.
-            </p>
-          </div>
-        </div>
-      ),
-    },
-  ];
-
-  return (
-    <section id="report" className="section relative w-full scroll-mt-16 border-t border-border bg-background">
-      {/* Subtle radial aura behind documentation */}
-      <div
-        className="pointer-events-none absolute inset-0 -z-10 opacity-30"
-        style={{
-          background: 'radial-gradient(ellipse at 50% 50%, var(--primary) 0%, transparent 70%)',
-        }}
-      />
-
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
-          <div>
-            <Badge variant="outline" className="mb-3 font-mono text-[11px] uppercase tracking-wider text-primary">
-              Diagnostic Output
-            </Badge>
-            <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              A report you can act on this week
-            </h2>
-            <p className="mt-2 max-w-xl text-balance text-foreground-secondary text-sm">
-              Not a percentile and a pat on the back. Five scores against the cohort, the gap on each,
-              and one actionable learning path sized to seven days.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-              className="flex size-10 items-center justify-center border border-border bg-background text-foreground hover:bg-surface transition-colors cursor-pointer"
-              aria-label="Previous report slide"
-            >
-              <ChevronLeft className="size-5" />
-            </button>
-            <span className="font-mono text-xs px-2 text-foreground-secondary">
-              {currentSlide + 1} / {slides.length}
-            </span>
-            <button
-              onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-              className="flex size-10 items-center justify-center border border-border bg-background text-foreground hover:bg-surface transition-colors cursor-pointer"
-              aria-label="Next report slide"
-            >
-              <ChevronRight className="size-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Carousel Showcase Card */}
-        <div className="border border-border bg-surface/30 p-6 sm:p-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-5 flex flex-col justify-between h-full space-y-4">
-              <div>
-                <span className="font-mono text-xs uppercase tracking-wider text-primary block mb-2">
-                  {slides[currentSlide].tag}
-                </span>
-                <h3 className="font-display text-2xl font-bold text-foreground mb-3">
-                  {slides[currentSlide].title}
-                </h3>
-                <p className="text-sm leading-relaxed text-foreground-secondary">
-                  {slides[currentSlide].description}
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-border">
-                <Button size="md" onClick={onEnter} className="w-full sm:w-auto">
-                  Generate sample assessment
-                  <ArrowRight className="size-4" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="lg:col-span-7">
-              {slides[currentSlide].content}
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Cohort & Educator Voices (Ali Imam testimonials-section.tsx adaptation)
- * Smooth blur-filtered cycling quotes from students and STEM department heads
- */
-function CohortVoices() {
-  const [activeTestimonial, setActiveTestimonial] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      handleNav(1);
-    }, 12000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleNav = (step: number) => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setActiveTestimonial((prev) => (prev + step + TESTIMONIALS.length) % TESTIMONIALS.length);
-      setTimeout(() => {
-        setIsTransitioning(false);
-      }, 100);
-    }, 250);
-  };
-
-  return (
-    <section className="section w-full border-t border-border bg-background">
-      <div className="mx-auto max-w-5xl px-4">
-        <div className="mb-12 text-center">
-          <Badge variant="outline" className="mb-3 font-mono text-[11px] uppercase tracking-wider text-primary">
-            Cohort & Educator Perspectives
-          </Badge>
-          <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Trusted by schools and students
-          </h2>
-          <p className="mx-auto max-w-lg text-balance text-foreground-secondary text-sm">
-            Independent evaluation feedback from pilot classrooms and student participants.
-          </p>
-        </div>
-
-        <div className="border border-border bg-surface/20 p-6 sm:p-12 relative overflow-hidden">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-            <div className="flex-1 space-y-6">
-              <div
-                className="text-xl sm:text-2xl font-display font-medium leading-relaxed tracking-tight text-foreground transition-all duration-500 ease-out"
-                style={{
-                  filter: isTransitioning ? 'blur(6px)' : 'blur(0px)',
-                  opacity: isTransitioning ? 0.3 : 1,
-                  transform: isTransitioning ? 'scale(0.98)' : 'scale(1)',
-                }}
-              >
-                "{TESTIMONIALS[activeTestimonial].quote}"
-              </div>
-
-              <div
-                className="flex items-center gap-3 transition-all duration-500 ease-out"
-                style={{
-                  filter: isTransitioning ? 'blur(4px)' : 'blur(0px)',
-                  opacity: isTransitioning ? 0.4 : 1,
-                }}
-              >
-                <div>
-                  <h4 className="font-display font-bold text-foreground text-sm">
-                    {TESTIMONIALS[activeTestimonial].name}
-                  </h4>
-                  <p className="text-xs text-foreground-secondary font-mono">
-                    {TESTIMONIALS[activeTestimonial].role} · {TESTIMONIALS[activeTestimonial].institution}
-                  </p>
-                </div>
-                <Badge variant="outline" className="ml-auto font-mono text-[10px]">
-                  {TESTIMONIALS[activeTestimonial].badge}
-                </Badge>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2 shrink-0 self-end md:self-center">
-              <button
-                onClick={() => handleNav(-1)}
-                className="flex size-10 items-center justify-center border border-border bg-background text-foreground hover:bg-surface transition-colors cursor-pointer"
-                aria-label="Previous quote"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-              <button
-                onClick={() => handleNav(1)}
-                className="flex size-10 items-center justify-center border border-border bg-background text-foreground hover:bg-surface transition-colors cursor-pointer"
-                aria-label="Next quote"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Access Spectrum & Institutional Tiers (Ali Imam pricing-section.tsx adaptation)
- * Clear distinction between free student explorer, classroom cohort, and district pro
- */
-function AccessSpectrum({ onEnter }: { onEnter: () => void }) {
-  const [billingPeriod, setBillingPeriod] = useState<'term' | 'annual'>('annual');
-
-  const tiers = [
-    {
-      name: 'Student Explorer',
-      badge: 'Free Forever',
-      description: 'Individual diagnostics for any student in Classes 3–12 worldwide.',
-      price: { term: 0, annual: 0 },
-      cta: 'Start Free Assessment',
-      features: [
-        'Full 30-item adaptive CAT assessment',
-        'Five competency scores & radar vector',
-        'Normed against global cohort median',
-        'One weekly targeted learning step',
-        'Guest mode or synced personal account',
-        'Zero advertisements or data tracking',
-      ],
-      featured: false,
-    },
-    {
-      name: 'Classroom & Cohort Studio',
-      badge: 'Popular for Schools',
-      description: 'For STEM educators managing class-wide diagnostic benchmarking.',
-      price: { term: 18, annual: 14 },
-      cta: 'Pilot in Your Classroom',
-      features: [
-        'Everything in Student Explorer',
-        'Teacher dashboard with class distributions',
-        'Parent executive summaries in plain English',
-        'Item response difficulty breakdown',
-        'Longitudinal pre/post semester comparisons',
-        'Exportable CSV & printable PDF reports',
-        'Dedicated educator support desk',
-      ],
-      featured: true,
-    },
-    {
-      name: 'Institutional District Pro',
-      badge: 'District License',
-      description: 'Full-scale normative infrastructure for school systems and research.',
-      price: { term: 48, annual: 38 },
-      cta: 'Request District Briefing',
-      features: [
-        'Everything in Classroom Studio',
-        'Custom regional norming baselines',
-        'Direct SIS & LMS automated roster sync',
-        '3PL IRT Item parameter data API',
-        'Longitudinal cohort analytics dashboard',
-        'FERPA, COPPA & GDPR compliance guarantees',
-        'Custom psychometric calibration review',
-      ],
-      featured: false,
-    },
-  ];
-
-  return (
-    <section id="access" className="section w-full scroll-mt-16 border-t border-border bg-background">
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mb-10 text-center">
-          <Badge variant="outline" className="mb-3 font-mono text-[11px] uppercase tracking-wider text-primary">
-            Access Spectrum
-          </Badge>
-          <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Transparent access for students & schools
-          </h2>
-          <p className="mx-auto max-w-xl text-balance text-foreground-secondary text-sm">
-            Student testing is always 100% free. Classrooms and districts scale with advanced cohort telemetry.
-          </p>
-
-          {/* Term / Annual billing toggle */}
-          <div className="mt-6 inline-flex items-center border border-border bg-surface/50 p-1">
-            <button
-              onClick={() => setBillingPeriod('annual')}
-              className={`px-4 py-1.5 font-mono text-xs font-semibold transition-colors cursor-pointer ${
-                billingPeriod === 'annual' ? 'bg-background text-primary shadow-xs' : 'text-foreground-secondary hover:text-foreground'
-              }`}
-            >
-              Annual Cohort (-20%)
-            </button>
-            <button
-              onClick={() => setBillingPeriod('term')}
-              className={`px-4 py-1.5 font-mono text-xs font-semibold transition-colors cursor-pointer ${
-                billingPeriod === 'term' ? 'bg-background text-primary shadow-xs' : 'text-foreground-secondary hover:text-foreground'
-              }`}
-            >
-              Single Term
-            </button>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
-          {tiers.map((tier) => (
-            <div
-              key={tier.name}
-              className={`relative flex flex-col justify-between p-6 sm:p-8 border ${
-                tier.featured
-                  ? 'border-primary bg-primary/3 shadow-sm'
-                  : 'border-border bg-background'
-              }`}
-            >
-              {tier.featured && (
-                <div className="absolute -top-3 right-6 bg-primary px-2.5 py-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-background">
-                  RECOMMENDED
-                </div>
-              )}
-
-              <div>
-                <div className="mb-4">
-                  <span className="font-mono text-[11px] text-primary uppercase font-bold">{tier.badge}</span>
-                  <h3 className="font-display text-xl font-bold text-foreground mt-1">{tier.name}</h3>
-                  <p className="text-xs text-foreground-secondary mt-1.5 leading-relaxed">{tier.description}</p>
-                </div>
-
-                {/* Animated Numeric Price Display */}
-                <div className="my-6 border-y border-border/60 py-4 font-mono">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">
-                      ${tier.price[billingPeriod]}
-                    </span>
-                    <span className="text-xs text-foreground-secondary">
-                      {tier.price[billingPeriod] === 0 ? 'no fees' : '/ student / term'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-2.5 mb-8">
-                  {tier.features.map((feat) => (
-                    <div key={feat} className="flex items-start gap-2.5 text-xs text-foreground-secondary">
-                      <Check className="size-4 text-primary shrink-0 mt-0.5" />
-                      <span className="leading-snug">{feat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                size="md"
-                variant={tier.featured ? 'primary' : 'outline'}
-                onClick={onEnter}
-                className="w-full"
-              >
-                {tier.cta}
-              </Button>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Atmospheric Repeating Conic-Ray Closing CTA (Ali Imam cta-section.tsx adaptation)
- */
-function ClosingCTA({ onEnter }: { onEnter: () => void }) {
-  return (
-    <section className="section relative w-full overflow-hidden border-t border-border bg-background py-20 px-4 text-center">
-      {/* Repeating conic-ray background with vertical fade */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        <div
-          className="relative h-full w-full"
-          style={{
-            background:
-              'linear-gradient(to bottom, var(--background) 0%, var(--background) 25%, transparent 100%), radial-gradient(ellipse at 50% 100%, var(--primary) 0%, transparent 60%)',
-          }}
-        >
-          <div
-            style={{
-              WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
-              backgroundImage:
-                'repeating-conic-gradient(from 0deg at 50% 100%, var(--primary) 0deg, var(--primary) 1deg, transparent 1deg, transparent 9deg)',
-              bottom: '-10%',
-              height: '120%',
-              left: '50%',
-              maskImage: 'linear-gradient(to bottom, transparent 0%, black 100%)',
-              opacity: 0.12,
-              pointerEvents: 'none',
-              position: 'absolute',
-              transform: 'translateX(-50%)',
-              width: '200%',
-            }}
-          />
-        </div>
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-2xl">
-        <WarpLogo variant="icon" className="mx-auto mb-6 size-12" />
-        <h2 className="mb-4 font-display text-4xl font-bold tracking-tight sm:text-5xl text-foreground">
-          Ready to close the gap?
-        </h2>
-        <p className="mx-auto mb-8 max-w-md text-balance text-base text-foreground-secondary leading-relaxed">
-          Join students and schools who know exactly where they stand - and what to do next.
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <ChromeGlowButton size="lg" onClick={onEnter} className="w-full sm:w-auto">
-            Start free assessment
-            <ArrowRight className="size-4" />
-          </ChromeGlowButton>
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full sm:w-auto"
-            onClick={() => document.getElementById('report')?.scrollIntoView({ behavior: 'smooth' })}
-          >
-            Review sample report
-          </Button>
-        </div>
-
-        <p className="mt-5 font-mono text-xs text-foreground-muted">
-          No sign up required for guest trial · Instant cognitive report
-        </p>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Multi-Column Instrument Footer (Ali Imam footer-section.tsx adaptation)
- */
-function InstrumentFooter({ onEnter }: { onEnter: () => void }) {
-  return (
-    <footer className="border-t border-border bg-surface/30">
-      <div className="mx-auto max-w-6xl px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-border">
-          {/* Brand Col */}
-          <div className="md:col-span-4 space-y-4">
-            <WarpLogo variant="lockup" className="h-9 w-auto" />
-            <p className="text-xs text-foreground-secondary leading-relaxed max-w-sm">
-              Standardized Computerized Adaptive Testing (CAT) for STEM competencies in Classes 3–12.
-              Calibrated against international curricula and reference cohorts.
-            </p>
-            <div className="pt-2">
-              <Badge variant="outline" dot className="font-mono text-[11px] text-foreground-secondary">
-                All systems operational · 3PL IRT active
-              </Badge>
-            </div>
-          </div>
-
-          {/* Col 1: Telemetry */}
-          <div className="md:col-span-2 space-y-3 font-mono text-xs">
-            <h5 className="font-sans font-bold text-foreground text-sm uppercase tracking-wider">Signal</h5>
-            <ul className="space-y-2 text-foreground-secondary">
-              <li><a href="#features" className="hover:text-primary transition-colors">Adaptive 3PL</a></li>
-              <li><a href="#stem-city" className="hover:text-primary transition-colors">STEM City 3D</a></li>
-              <li><a href="#competencies" className="hover:text-primary transition-colors">5 Competencies</a></li>
-              <li><a href="#report" className="hover:text-primary transition-colors">Signal Report</a></li>
-            </ul>
-          </div>
-
-          {/* Col 2: Frameworks */}
-          <div className="md:col-span-2 space-y-3 font-mono text-xs">
-            <h5 className="font-sans font-bold text-foreground text-sm uppercase tracking-wider">Norms</h5>
-            <ul className="space-y-2 text-foreground-secondary">
-              <li><a href="#frameworks" className="hover:text-primary transition-colors">Singapore MOE</a></li>
-              <li><a href="#frameworks" className="hover:text-primary transition-colors">OECD PISA</a></li>
-              <li><a href="#frameworks" className="hover:text-primary transition-colors">IEA TIMSS</a></li>
-              <li><a href="#frameworks" className="hover:text-primary transition-colors">NGSS Science</a></li>
-            </ul>
-          </div>
-
-          {/* Col 3: Privacy */}
-          <div className="md:col-span-2 space-y-3 font-mono text-xs">
-            <h5 className="font-sans font-bold text-foreground text-sm uppercase tracking-wider">Governance</h5>
-            <ul className="space-y-2 text-foreground-secondary">
-              <li><span className="hover:text-primary transition-colors cursor-pointer">Student Privacy</span></li>
-              <li><span className="hover:text-primary transition-colors cursor-pointer">Zero Ads Policy</span></li>
-              <li><span className="hover:text-primary transition-colors cursor-pointer">Data Export</span></li>
-              <li><span className="hover:text-primary transition-colors cursor-pointer">RLS Encryption</span></li>
-            </ul>
-          </div>
-
-          {/* Col 4: Access */}
-          <div className="md:col-span-2 space-y-3 font-mono text-xs">
-            <h5 className="font-sans font-bold text-foreground text-sm uppercase tracking-wider">Access</h5>
-            <ul className="space-y-2 text-foreground-secondary">
-              <li><button onClick={onEnter} className="hover:text-primary transition-colors text-left cursor-pointer">Start Test</button></li>
-              <li><a href="#access" className="hover:text-primary transition-colors">Classroom Pilot</a></li>
-              <li><a href="#access" className="hover:text-primary transition-colors">District SLA</a></li>
-              <li><a href="#faq" className="hover:text-primary transition-colors">FAQ</a></li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Bottom bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-8 text-xs font-mono text-foreground-secondary">
-          <p>© 2026 WARP Benchmark Systems. All rights reserved.</p>
-          <p>Designed & engineered by Oliver Oinam for Arra-Core</p>
-        </div>
-      </div>
-    </footer>
-  );
-}
+gsap.registerPlugin(ScrollTrigger);
 
 export function Landing({ onEnter }: LandingProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      // Hero Load Stagger
+      gsap.fromTo(
+        '.hero-stagger',
+        { y: 30, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          stagger: 0.1,
+          ease: 'power3.out',
+        }
+      );
+
+      // ScrollTrigger for Feature Cards
+      gsap.utils.toArray<HTMLElement>('.feature-card').forEach((card) => {
+        gsap.fromTo(
+          card,
+          { y: 50, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.8,
+            ease: 'power3.out',
+            scrollTrigger: {
+              trigger: card,
+              start: 'top 85%',
+            },
+          }
+        );
+      });
+
+      // ScrollTrigger for Schematics (subtle parallax)
+      gsap.utils.toArray<HTMLElement>('.schematic-parallax').forEach((el) => {
+        gsap.to(el, {
+          y: -40,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true,
+          },
+        });
+      });
+
+      // CTA Reveal
+      gsap.fromTo(
+        '.cta-reveal',
+        { y: 40, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: '.cta-section',
+            start: 'top 80%',
+          },
+        }
+      );
+    },
+    { scope: containerRef }
+  );
+
   return (
-    <main className="relative flex w-full flex-col overflow-x-hidden pt-18 sm:pt-20" data-testid="landing-shell">
-      {/* ── Fixed Floating Instrument Navigation (Ali Imam Header-03) ── */}
+    <div ref={containerRef} className="min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground font-sans overflow-x-hidden border-x border-border max-w-7xl mx-auto">
+
+      {/* NAVIGATION */}
       <Header03 onEnter={onEnter} />
 
-      {/* ── Dual Architectural Margins (Ali Imam landing-01 inspired) ── */}
-      <div className="pointer-events-none absolute top-0 left-4 z-0 h-full w-px bg-border/40 sm:left-6 md:left-8 lg:left-12" aria-hidden="true" />
-      <div className="pointer-events-none absolute top-0 right-4 z-0 h-full w-px bg-border/40 sm:right-6 md:right-8 lg:right-12" aria-hidden="true" />
-
-      {/* Top hatched bar */}
-      <HatchedAccentBar height="h-5" />
-
-      {/* ── Hero - centered editorial architecture with Blender 3D showcase ── */}
-      <section
-        className="relative flex min-h-screen flex-col overflow-hidden"
-        data-testid="landing-hero"
-      >
-        {/* Cinematic GSAP-powered aurora / orb overlay */}
-        <CinematicHero className="z-0 opacity-60 pointer-events-none" />
-
-        {/* Subtle radial & vertical scrims */}
+      {/* HERO */}
+      <main className="overflow-hidden border-b border-border relative">
         <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 z-1 bg-[radial-gradient(ellipse_at_50%_20%,var(--primary)/0.08_0%,transparent_70%)]"
+          className="absolute inset-0 z-0 pointer-events-none"
+          style={{
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)',
+            backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)',
+            opacity: 0.65
+          }}
         />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 top-0 z-1 h-28 bg-linear-to-b from-background/90 to-transparent"
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-0 bottom-0 z-1 h-40 bg-linear-to-t from-background to-transparent"
-        />
-        <DotPattern className="opacity-15 mix-blend-overlay pointer-events-none" />
 
-        {/* Copy - cinematic block with GSAP staggered reveal */}
-        <HeroCopy onEnter={onEnter} />
+        <section className="relative mx-auto px-4 pb-0 pt-24 lg:pt-32 z-10">
+          <div className="mx-auto max-w-5xl text-center">
+
+            <div className="hero-stagger inline-flex items-center gap-2 border border-border bg-surface/50 px-4 py-1.5 text-xs font-mono mb-8 uppercase tracking-widest rounded-none mx-auto">
+              <SparklesIcon size={14} className="text-primary" />
+              <span className="text-foreground-secondary">Forging Tomorrow's Global Champions</span>
+            </div>
+
+            <h1
+              className="hero-stagger font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-8 max-w-4xl mx-auto min-h-30 flex flex-col items-center justify-center gap-y-2"
+            >
+              <span className="text-center">Your child's potential.</span>
+              <span className="text-primary flex items-center justify-center text-center">
+                <Typewriter words={["Measured.", "Proven.", "Unleashed."]} speed={60} delayBetweenWords={2500} />
+              </span>
+            </h1>
+
+            <p className="hero-stagger text-lg text-foreground-secondary max-w-2xl mb-12 font-medium mx-auto">
+              Benchmark STEM and English skills against global standards. 30 questions. A lifetime of advantage.
+            </p>
+
+            <div className="hero-stagger flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+              <Button
+                onClick={() => onEnter('choose')}
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none h-10 px-8 font-mono uppercase tracking-widest font-medium text-sm border-none w-full sm:w-auto cursor-pointer"
+              >
+                Start Benchmark
+              </Button>
+            </div>
+
+            <div className="hero-stagger border border-border bg-card py-4 overflow-hidden mx-auto max-w-3xl rounded-none relative z-20 shadow-xl">
+              <Marquee className="text-foreground-secondary font-mono text-xs uppercase tracking-widest" repeat={6} pauseOnHover={false}>
+                <span className="px-8 flex items-center gap-2">■ NGSS GLOBAL STANDARD</span>
+                <span className="px-8 flex items-center gap-2">■ PISA 2025 ALIGNED</span>
+                <span className="px-8 flex items-center gap-2">■ INDIA NCF 2023</span>
+                <span className="px-8 flex items-center gap-2">■ ZERO DATA SOLD</span>
+                <span className="px-8 flex items-center gap-2">■ AI-POWERED REPORTS</span>
+                <span className="px-8 flex items-center gap-2">■ EMERGING TECH READY</span>
+              </Marquee>
+            </div>
+          </div>
+
+          <div className="relative mt-8 overflow-hidden rounded-none pt-12 pb-24 max-w-5xl mx-auto border-x-0 sm:border-x border-t border-border">
+            <img
+              src="/hero_background_safe_1789598312867.jpg"
+              alt="WARP Benchmark Environment"
+              className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-screen"
+            />
+            <div className="relative z-10 flex justify-center">
+              <div className="absolute inset-0 mx-auto max-w-72 aspect-9/16 border border-border bg-card/90 after:absolute after:-inset-4 after:border after:border-border/50 rounded-none"></div>
+              <div aria-hidden className="relative mx-auto max-w-72 w-full aspect-9/16 overflow-hidden border border-border bg-background rounded-none z-10">
+                <img
+                  src="/diagnostic_interface_safe_1789598324845.jpg"
+                  alt="Student Diagnostic Interface"
+                  className="w-full h-full object-cover opacity-100"
+                />
+                <div className="absolute top-0 left-0 right-0 p-4 border-b border-border bg-card">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-[10px] tracking-widest text-foreground-secondary uppercase">WARP // BENCHMARKING</span>
+                    <span className="w-2 h-2 bg-primary animate-pulse rounded-none"></span>
+                  </div>
+                </div>
+                <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-background to-transparent">
+                  <div className="h-1 w-1/3 bg-border mb-4"></div>
+                  <div className="font-mono text-xs text-foreground-secondary">Mapping global rank...</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* METRICS */}
+      <section id="features" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left divide-y md:divide-y-0 md:divide-x divide-border">
+          <div className="feature-card px-6">
+            <div className="font-display text-6xl sm:text-7xl font-bold text-foreground mb-4 tracking-tighter">30<span className="text-3xl text-foreground-muted">Qs</span></div>
+            <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-widest">Pinpoint Accuracy</h4>
+            <p className="text-xs text-foreground-secondary leading-relaxed">30 adaptive questions deliver a global benchmark more accurate than a 100-item traditional exam. Precision without exhaustion.</p>
+          </div>
+          <div className="feature-card px-6 pt-12 md:pt-0">
+            <div className="font-display text-6xl sm:text-7xl font-bold text-foreground mb-4 tracking-tighter">5</div>
+            <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-widest">STEM + English Domains</h4>
+            <p className="text-xs text-foreground-secondary leading-relaxed">Science, Technology, Engineering, Mathematics, and English the five pillars of global academic competitiveness, measured in a single session.</p>
+          </div>
+          <div className="feature-card px-6 pt-12 md:pt-0">
+            <div className="font-display text-6xl sm:text-7xl font-bold text-foreground mb-4 tracking-tighter">2x</div>
+            <h4 className="text-sm font-semibold text-foreground mb-2 uppercase tracking-widest">Dual AI Reports</h4>
+            <p className="text-xs text-foreground-secondary leading-relaxed">Every benchmark generates two reports: one for the student (motivational, actionable) and one for the parent (analytical, strategic).</p>
+          </div>
+        </div>
       </section>
 
-      {/* ── Stats band: Dashed metric grid with IntersectionScope technical framing ── */}
-      <section className="border-y border-dashed border-border bg-surface/40">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-dashed divide-border sm:grid-cols-4">
-          {STATS.map((stat, idx) => (
-            <IntersectionScope
-              key={stat.label}
-              variant="crosshair"
-              className="border-none bg-transparent flex flex-col items-center justify-center gap-1 p-6 sm:p-8"
-            >
-              <span className="font-display text-3xl font-bold tabular sm:text-4xl text-foreground">
-                <TextMatrixDecode trigger="in-view" delay={idx * 0.1} duration={0.75}>
-                  {stat.value}
-                </TextMatrixDecode>
-              </span>
-              <span className="text-center font-mono text-[10px] uppercase tracking-[0.15em] text-foreground-secondary">
-                {stat.label}
-              </span>
-            </IntersectionScope>
+      {/* GALLERY */}
+      <section id="competencies" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+        <div className="mb-16 text-center max-w-2xl mx-auto">
+          <h2 className="font-display text-4xl font-bold text-foreground mb-4">Built for the World Stage</h2>
+          <p className="text-foreground-secondary text-sm leading-relaxed">Local grades do not predict global success. WARP competes on NGSS, PISA 2025, and NCF 2023 the international benchmarks that universities, scholarship boards, and future employers actually use.</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
+            <div className="aspect-4/3 bg-surface relative overflow-hidden">
+              <img src="/adaptive_convergence_1789597259469.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+            </div>
+            <div className="p-5 flex justify-between items-start border-t border-border">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Adaptive Intelligence</h3>
+                <p className="text-xs text-foreground-secondary">Every question recalibrates to your child's exact ability level</p>
+              </div>
+              <ArrowRightIcon size={16} className="text-foreground-muted group-hover:text-foreground transition-colors mt-0.5" />
+            </div>
+          </div>
+
+          <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
+            <div className="aspect-4/3 bg-surface relative overflow-hidden">
+              <img src="/misconception_mapping_1789597272215.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+            </div>
+            <div className="p-5 flex justify-between items-start border-t border-border">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Precision Gap Mapping</h3>
+                <p className="text-xs text-foreground-secondary">Not just what they got wrong exactly why, and the shortest path to correct it</p>
+              </div>
+              <ArrowRightIcon size={16} className="text-foreground-muted group-hover:text-foreground transition-colors mt-0.5" />
+            </div>
+          </div>
+
+          <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
+            <div className="aspect-4/3 bg-surface relative overflow-hidden">
+              <img src="/global_rank_engine_1789597284659.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-center" />
+            </div>
+            <div className="p-5 flex justify-between items-start border-t border-border">
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-1">Global Rank Engine</h3>
+                <p className="text-xs text-foreground-secondary">See exactly where your child stands against peers worldwide not just their classroom</p>
+              </div>
+              <ArrowRightIcon size={16} className="text-foreground-muted group-hover:text-foreground transition-colors mt-0.5" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* STEM CITY */}
+      <section id="frameworks" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+        <div className="mb-16 text-center max-w-2xl mx-auto">
+          <h2 className="font-display text-4xl font-bold text-foreground mb-4">The Blueprint of Global Competence</h2>
+          <p className="text-foreground-secondary text-sm leading-relaxed">WARP maps your child's 5 core competencies into an interactive STEM City blueprint, contrasting their proficiency directly against the global cohort standard.</p>
+        </div>
+        <div className="w-full h-125 border border-border bg-card overflow-hidden relative group">
+          <Suspense fallback={<div className="w-full h-full bg-surface flex items-center justify-center font-mono text-xs text-foreground-muted">INITIALIZING SCENE...</div>}>
+            <StemCityCanvas className="w-full h-full" />
+          </Suspense>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="py-32 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+        <div className="mb-16 text-left">
+          <h2 className="font-display text-4xl font-bold text-foreground mb-4">Questions Parents Ask</h2>
+          <p className="text-foreground-secondary text-sm">Everything you need to know before starting your child's global benchmark.</p>
+        </div>
+        <div className="border-t border-border">
+          {FAQS.map((faq, idx) => (
+            <FAQItem key={idx} q={faq.q} a={faq.a} />
           ))}
         </div>
       </section>
 
-      {/* ── Feature Spotlight: Auto-advancing 3-card spotlight with synchronized live viewports ── */}
-      <FeatureSpotlight onEnter={onEnter} />
+      {/* CTA */}
+      <section className="cta-section border-y border-border">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-center text-center relative overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <div
+              style={{
+                WebkitMaskImage: 'linear-gradient(to bottom, #000 0%, transparent 70%)',
+                backgroundImage: 'linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px)',
+                backgroundSize: '40px 40px',
+                height: '100%',
+                left: '0',
+                maskImage: 'linear-gradient(to bottom, #000 0%, transparent 70%)',
+                opacity: '0.5',
+                pointerEvents: 'none',
+                position: 'absolute',
+                top: '0',
+                width: '100%'
+              }}
+            />
+          </div>
+          <h2 className="cta-reveal font-display text-3xl sm:text-4xl font-bold text-foreground mb-6 tracking-tight relative z-10">
+            Your child's global rank starts here.
+          </h2>
+          <p className="cta-reveal text-foreground-secondary max-w-lg mx-auto mb-10 text-sm leading-relaxed relative z-10">
+            Join families worldwide using WARP to discover hidden potential, close critical gaps, and forge students ready to lead in STEM, technology, and the AI-driven world ahead.
+          </p>
+          <div className="cta-reveal relative z-10">
+            <Button
+              onClick={() => onEnter('choose')}
+              className="bg-foreground text-background hover:opacity-90 rounded-none h-12 px-8 font-medium text-base border-none shadow-[0_0_30px_rgba(var(--foreground-rgb),0.15)] cursor-pointer"
+            >
+              Start Free Benchmark
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      {/* ── STEM City: the gap, built in 3D ── */}
-      <section id="stem-city" className="section w-full scroll-mt-16 border-t border-border bg-background">
-        <div className="mx-auto w-full max-w-5xl px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 16 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: '-60px' }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
-          >
-            <div className="mb-6 flex flex-wrap items-end justify-between gap-x-8 gap-y-3">
-              <div>
-                <Badge variant="outline" className="mb-2 font-mono text-[11px] uppercase tracking-wider text-primary">
-                  Interactive Spatial Engine
-                </Badge>
-                <h2 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                  Your cohort, as a city you can walk around
-                </h2>
-                <p className="mt-3 max-w-2xl text-balance text-foreground-secondary text-sm">
-                  Five competencies, scored against the global reference cohort. Each district raises
-                  a tower to your result; a ring on that tower marks the cohort average. Above the ring
-                  you are ahead. Below it, that is the gap.
-                </p>
-              </div>
-              <a
-                href="#competencies"
-                className="group inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider font-semibold text-primary"
-              >
-                What each tower measures
-                <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+      {/* FOOTER */}
+      <footer className="w-full pb-16">
+        <div className="max-w-5xl mx-auto flex h-auto flex-col items-stretch justify-between md:flex-row pt-16 pb-12 px-4 sm:px-6 lg:px-8 gap-12 md:gap-8 border-x-0 sm:border-x border-t border-border">
+          <div className="flex h-auto flex-col items-start justify-start gap-8 md:pr-8">
+            <div className="flex items-center gap-2 font-display tracking-widest uppercase text-xl font-semibold text-foreground">
+              <Hexagon className="text-foreground w-6 h-6" />
+              WARP
+            </div>
+            <div>
+              <h2 className="text-lg font-medium text-foreground mb-2 font-display tracking-tight">Forge the next generation.</h2>
+              <p className="text-foreground-secondary max-w-sm text-xs leading-relaxed font-mono">
+                WARP benchmarks STEM and English skills against global standards, then maps the exact path for your child to outperform peers worldwide and lead in an emerging-tech future.
+              </p>
+            </div>
+            <div className="flex items-start gap-6 text-foreground-secondary">
+              <a href="#" className="hover:text-foreground transition-colors" aria-label="LinkedIn">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path><rect x="2" y="9" width="4" height="12"></rect><circle cx="4" cy="4" r="2"></circle></svg>
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors" aria-label="X">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+              </a>
+              <a href="#" className="hover:text-foreground transition-colors" aria-label="GitHub">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></svg>
               </a>
             </div>
-
-            <figure className="relative border border-border bg-background shadow-xl">
-              {/* Technical scope corner markers */}
-              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border/80 z-10 select-none">+</span>
-              <Suspense
-                fallback={
-                  <div className="flex h-112 items-center justify-center font-mono text-sm text-foreground-secondary sm:h-136">
-                    Assembling STEM City…
-                  </div>
-                }
-              >
-                <StemCityCanvas className="h-112 sm:h-136" />
-              </Suspense>
-              <figcaption className="flex flex-wrap items-center justify-between gap-2 border-t border-border px-4 py-3 text-xs uppercase tracking-[0.15em] text-foreground-secondary">
-                <span>Your position vs the reference cohort</span>
-                <span className="font-mono normal-case tracking-normal text-foreground-secondary">
-                  procedural · zero external 3D assets · illustrative sample
-                </span>
-              </figcaption>
-            </figure>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Five Competencies Bento Grid with GridPattern Background ── */}
-      <section id="competencies" className="section relative w-full scroll-mt-16 border-t border-border bg-background">
-        <GridPattern width={48} height={48} className="opacity-15 pointer-events-none" />
-
-        <div className="relative z-1 mx-auto max-w-5xl px-4">
-          <div className="mb-8 flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <Badge variant="outline" className="mb-2 font-mono text-[11px] uppercase tracking-wider text-primary">
-                Cognitive Matrix
-              </Badge>
-              <h2 className="mb-2 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-                Five ways of thinking, measured
-              </h2>
-              <p className="max-w-xl text-balance text-foreground-secondary text-sm">
-                Every item is a scenario with a decision in it. Each decision feeds one of
-                five competencies - and one of five missions.
-              </p>
-            </div>
           </div>
 
-          <BentoGrid cols={{ base: 1, sm: 2, lg: 6 }} gap={{ base: 3, md: 4 }}>
-            {COMPETENCIES.map((c, index) => {
-              const colSpan = index < 2 ? ({ base: 1, sm: 1, lg: 3 } as const) : ({ base: 1, sm: 1, lg: 2 } as const);
-              return (
-                <BentoGridItem
-                  key={c.n}
-                  colSpan={colSpan}
-                  className="group relative flex flex-col justify-between border border-border bg-background/80 p-6 shadow-xs hover:border-primary/50 hover:bg-surface/40 transition-all duration-300"
-                >
-                  {/* Technical scope corner markers */}
-                  <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-                  <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-                  <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-                  <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <span
-                        className="size-3"
-                        style={{ background: c.color }}
-                        aria-hidden="true"
-                      />
-                      <Badge variant="outline" className="font-mono text-[10px] tracking-wider">
-                        {c.n} · {c.mission}
-                      </Badge>
-                    </div>
-                    <h3 className="mb-2 font-display text-lg font-bold leading-snug">{c.name}</h3>
-                  </div>
-                  <p className="text-sm leading-relaxed text-foreground-secondary mt-2">{c.body}</p>
-                </BentoGridItem>
-              );
-            })}
-          </BentoGrid>
+          <div className="flex flex-col flex-wrap items-start gap-12 self-stretch sm:flex-row sm:justify-between md:gap-16 font-mono">
+            <div className="flex min-w-32 flex-1 flex-col gap-4">
+              <div className="text-xs font-bold text-foreground uppercase tracking-widest">Platform</div>
+              <div className="flex flex-col gap-3">
+                <a href="?page=stem-benchmark" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">STEM Benchmark</a>
+                <a href="?page=english-assessment" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">English Assessment</a>
+                <a href="?page=ai-reports" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">AI Reports</a>
+                <a href="?page=global-rankings" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Global Rankings</a>
+              </div>
+            </div>
+            <div className="flex min-w-32 flex-1 flex-col gap-4">
+              <div className="text-xs font-bold text-foreground uppercase tracking-widest">For Families</div>
+                <div className="flex flex-col gap-3">
+                  <a href="?page=parent-reports" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Parent Reports</a>
+                  <a href="?dashboard" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Student Dashboard</a>
+                  <a href="?page=pricing" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Pricing</a>
+                </div>
+            </div>
+            <div className="flex min-w-32 flex-1 flex-col gap-4">
+              <div className="text-xs font-bold text-foreground uppercase tracking-widest">Company</div>
+              <div className="flex flex-col gap-3">
+                <a href="?page=about" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">About WARP</a>
+                <a href="?page=research" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Research</a>
+                <a href="?page=privacy-policy" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Privacy Policy</a>
+                <a href="?page=terms-of-use" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Terms of Use</a>
+              </div>
+            </div>
+          </div>
         </div>
-      </section>
 
-      {/* ── International Frameworks & Standards Grid ── */}
-      <FrameworkStandards />
+        <div className="max-w-5xl mx-auto relative h-12 overflow-hidden border-x-0 sm:border-x border-t border-border">
+          <div className="absolute inset-0 h-full w-full overflow-hidden">
+            <div className="relative h-full w-full opacity-30">
+              {Array.from({ length: 300 }).map((_, i) => (
+                <div key={i} className="absolute h-4 w-full origin-top-left -rotate-45 border-t border-border" style={{ top: `${i * 16 - 120}px`, left: '-100%', width: '300%' }}></div>
+              ))}
+            </div>
+          </div>
+        </div>
 
-      {/* ── How it works: 3-step sequence ── */}
-      <section id="how-it-works" className="section mx-auto w-full max-w-5xl scroll-mt-16 px-4">
-        <div className="mb-14 text-center">
-          <Badge variant="outline" className="mb-2 font-mono text-[11px] uppercase tracking-wider text-primary">
-            Session Protocol
-          </Badge>
-          <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-            Three steps to your signal
-          </h2>
-          <p className="mx-auto max-w-xl text-balance text-foreground-secondary text-sm">
-            A short, rigorous process: one sitting, one report, something to act on next.
+        <div className="max-w-5xl mx-auto py-6 flex items-center justify-center border-x-0 sm:border-x border-b border-border">
+          <p className="text-foreground-secondary text-xs font-mono uppercase tracking-widest text-center px-4">
+            Built with ☕, 💻, and a lot of love by <span className="text-foreground font-bold">Oliver Oinam (Arra-Core)</span>
           </p>
         </div>
+      </footer>
 
-        <motion.div
-          initial="hidden"
-          whileInView="show"
-          viewport={{ once: true, margin: '-80px' }}
-          variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-          className="relative grid grid-cols-1 gap-6 md:grid-cols-3"
-        >
-          {STEPS.map((step) => (
-            <motion.div
-              key={step.num}
-              variants={fade}
-              className="group relative flex flex-col items-center text-center p-6 border border-border bg-background hover:border-primary/40 hover:bg-surface/30 transition-all duration-200"
-            >
-              {/* Technical scope corner markers */}
-              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -top-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -left-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-              <span aria-hidden="true" className="pointer-events-none absolute -bottom-1 -right-1 font-mono text-[9px] text-border group-hover:text-primary transition-colors">+</span>
-              <div className="relative z-1 mb-5 flex size-12 items-center justify-center border border-border bg-surface font-mono text-sm font-bold tabular text-primary">
-                {step.num}
-              </div>
-              <h3 className="mb-2 font-display text-lg font-bold">{step.title}</h3>
-              <p className="text-balance text-sm leading-relaxed text-foreground-secondary">
-                {step.body}
-              </p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* ── Telemetry Carousel: Multi-Slide Interactive Report Showcase ── */}
-      <TelemetryCarousel onEnter={onEnter} />
-
-      {/* ── Cohort & Educator Voices ── */}
-      <CohortVoices />
-
-      {/* ── Access Spectrum (Pricing & Tiers) ── */}
-      <AccessSpectrum onEnter={onEnter} />
-
-      {/* ── FAQ: Accordion ── */}
-      <section id="faq" className="section w-full scroll-mt-16 border-t border-border bg-background">
-        <div className="mx-auto max-w-3xl px-4">
-          <div className="mb-12 text-center">
-            <Badge variant="outline" className="mb-2 font-mono text-[11px] uppercase tracking-wider text-primary">
-              Clarifications
-            </Badge>
-            <h2 className="mb-3 font-display text-3xl font-bold tracking-tight sm:text-4xl">
-              Straight answers
-            </h2>
-            <p className="text-sm text-foreground-secondary">
-              Everything you need to know about methodology, security, and scoring.
-            </p>
-          </div>
-
-          <Accordion type="multiple" defaultValue={['item-0']}>
-            {FAQ.map((item, index) => (
-              <AccordionItem key={item.q} value={`item-${index}`}>
-                <AccordionTrigger>{item.q}</AccordionTrigger>
-                <AccordionContent>{item.a}</AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-
-          {/* Security Guarantee Card */}
-          <div className="mt-8 flex items-start gap-4 border border-dashed border-border bg-surface/50 p-5">
-            <div className="inline-flex p-2 bg-background border border-border shrink-0">
-              <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
-            </div>
-            <div>
-              <p className="mb-1 text-sm font-semibold">Your data stays strictly yours</p>
-              <p className="text-xs leading-relaxed text-foreground-secondary">
-                Assessment data is encrypted in transit and at rest using Supabase Row-Level Security. We never sell data or monetize advertising. Export or erase your session data at any time.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Closing CTA: Conic Ray Backdrop ── */}
-      <ClosingCTA onEnter={onEnter} />
-
-      {/* Bottom hatched bar */}
-      <HatchedAccentBar height="h-6" />
-
-      {/* ── Instrument Footer ── */}
-      <InstrumentFooter onEnter={onEnter} />
-    </main>
+    </div>
   );
 }

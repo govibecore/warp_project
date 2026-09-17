@@ -18,6 +18,7 @@ vite.config.ts.timestamp-*.mjs
 .env.local
 
 # Local tooling
+.convex/local/
 .agents/
 .workbuddy-ai/
 .superpowers/
@@ -26,6 +27,7 @@ vite.config.ts.timestamp-*.mjs
 .superdesign/
 .DS_Store
 *.log
+build-archive.log
 npm-debug.log*
 scratch/
 

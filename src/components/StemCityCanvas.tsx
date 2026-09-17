@@ -41,8 +41,6 @@ export default function StemCityCanvas({
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const cityRef = useRef<StemCityHandle | null>(null);
   const labelRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [hours, setHours] = useState(9.5);
-  const [playing, setPlaying] = useState(true);
   const [view, setView] = useState('overview');
   const [supported, setSupported] = useState(true);
 
@@ -51,7 +49,6 @@ export default function StemCityCanvas({
     if (!canvas) return;
 
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let lastPush = 0;
 
     const city = createStemCity(canvas, scores, {
       reducedMotion: reduced,
@@ -63,12 +60,6 @@ export default function StemCityCanvas({
           el.style.transform = `translate(-50%, -100%) translate(${l.x}px, ${l.y}px)`;
           el.style.opacity = l.visible ? '1' : '0';
         }
-      },
-      onClock: (h) => {
-        const now = performance.now();
-        if (now - lastPush < 250) return;
-        lastPush = now;
-        setHours(h);
       },
     });
 
@@ -98,19 +89,6 @@ export default function StemCityCanvas({
   useEffect(() => {
     cityRef.current?.setView(view);
   }, [view]);
-
-  useEffect(() => {
-    cityRef.current?.setPlaying(playing);
-  }, [playing]);
-
-  const setTime = (h: number) => {
-    setHours(h);
-    cityRef.current?.setTime(h);
-  };
-
-  const clock = `${String(Math.floor(hours)).padStart(2, '0')}:${String(
-    Math.floor((hours % 1) * 60),
-  ).padStart(2, '0')}`;
 
   return (
     <div
@@ -175,32 +153,34 @@ export default function StemCityCanvas({
         })}
       </div>
 
-      {/* ── Legend: how to read the city ── */}
-      <div className="pointer-events-none absolute top-3 left-3 border border-border bg-background px-3.5 py-2.5">
-        <div className="flex items-center justify-between gap-4">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-foreground-secondary">
-            How to read it
-          </p>
-          <span className="hidden font-mono text-[10px] tracking-wide text-primary sm:inline-block">
-            Drag to orbit · scroll to zoom
-          </span>
-        </div>
-        <ul className="mt-2 space-y-1.5 text-[11px] leading-tight text-foreground-secondary">
-          <li className="flex items-center gap-2">
-            <span className="inline-block size-2.5" style={{ background: 'var(--chart-1)' }} />
+      {/* 🧭 Controls Hint (Top Left) 🧭 */}
+      <div className="pointer-events-none absolute top-3 left-3 border border-border bg-background/85 backdrop-blur-sm px-3.5 py-2.5">
+        <span className="font-mono text-[10px] tracking-wide text-primary">
+          Drag to orbit · scroll to zoom
+        </span>
+      </div>
+
+      {/* 🧭 Legend (Top Right) 🧭 */}
+      <div className="pointer-events-none absolute top-3 right-3 border border-border bg-background/85 backdrop-blur-sm px-3.5 py-2.5">
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-foreground-secondary text-right mb-2">
+          How to read it
+        </p>
+        <ul className="space-y-1.5 text-[11px] leading-tight text-foreground-secondary flex flex-col items-end text-right">
+          <li className="flex items-center gap-2 justify-end w-full">
             Column height = your score
+            <span className="inline-block size-2.5" style={{ background: 'var(--chart-1)' }} />
           </li>
-          <li className="flex items-center gap-2">
-            <span className="inline-block size-2.5 border" style={{ borderColor: CITY_COLORS.cohort }} />
+          <li className="flex items-center gap-2 justify-end w-full">
             Ring = global cohort
+            <span className="inline-block size-2.5 border" style={{ borderColor: CITY_COLORS.cohort }} />
           </li>
-          <li className="flex items-center gap-2">
-            <span className="inline-block size-2.5" style={{ background: CITY_COLORS.ahead }} />
+          <li className="flex items-center gap-2 justify-end w-full">
             Above the ring - ahead
+            <span className="inline-block size-2.5" style={{ background: CITY_COLORS.ahead }} />
           </li>
-          <li className="flex items-center gap-2">
-            <span className="inline-block size-2.5" style={{ background: CITY_COLORS.behind }} />
+          <li className="flex items-center gap-2 justify-end w-full">
             Below the ring - the gap
+            <span className="inline-block size-2.5" style={{ background: CITY_COLORS.behind }} />
           </li>
         </ul>
       </div>
@@ -222,27 +202,6 @@ export default function StemCityCanvas({
               {v.label}
             </button>
           ))}
-        </div>
-
-        <div className="flex items-center gap-2.5 border border-border bg-background px-3 py-1.5">
-          <button
-            onClick={() => setPlaying(!playing)}
-            className="flex h-7 w-8 items-center justify-center border border-border px-1.5 text-[10px] font-bold uppercase text-foreground-secondary hover:border-border-strong hover:text-foreground"
-            aria-label={playing ? 'Pause the day cycle' : 'Play the day cycle'}
-          >
-            {playing ? 'II' : '▶'}
-          </button>
-          <input
-            type="range"
-            min={0}
-            max={24}
-            step={0.1}
-            value={hours}
-            onChange={(e) => setTime(Number(e.target.value))}
-            className="accent-primary w-28 cursor-pointer"
-            aria-label="Time of day"
-          />
-          <span className="font-mono text-[11px] tabular text-foreground-secondary">{clock}</span>
         </div>
       </div>
     </div>

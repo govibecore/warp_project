@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { TriangleAlert, Plus, Trophy, Trash2, TrendingUp, Brain, Sparkles, FileText, ArrowRight, Play, Zap, ChevronDown } from 'lucide-react';
+import { useEffect, useState, useRef } from 'react';
+import { Plus, Trophy, Trash2, TrendingUp, Brain, Sparkles, FileText, ArrowRight, Play, Zap, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { useAuthStore } from '../../stores/authStore';
+import gsap from 'gsap';
+import { useGSAP } from '@gsap/react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { useWarpSession } from '../../context/WarpSessionContext';
 import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 import { supabase } from '../../lib/supabase';
@@ -17,6 +18,18 @@ import { Gauge } from '../ui/aliimam/Gauge';
 import { OutcomeBadge } from '../ui/OutcomeBadge';
 import { Delta, DeltaIcon, DeltaValue } from '../efferd/delta';
 import { computeInternationalBenchmark, COMPETENCY_LABELS, STEM_COMPETENCIES, ENGLISH_COMPETENCIES } from '../../lib/irt/globalBenchmark';
+import {
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from '../ui/chart';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 function ordinal(n: number): string {
   const suffixes = ['th', 'st', 'nd', 'rd'];
@@ -61,24 +74,58 @@ const EMPTY_SUMMARY = {
   firstAssessmentAt: null as string | null,
 };
 
+const chartConfig = {
+  score: {
+    label: "Score",
+    color: "var(--primary)",
+  },
+} satisfies ChartConfig;
+
 function Stat({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="relative h-full flex flex-col justify-between p-5 bg-card border border-border/50 rounded-none transition-colors hover:border-border">
-      <p className="text-[10px] font-mono font-semibold uppercase tracking-[0.18em] text-foreground-muted">
-        {label}
-      </p>
-      <div className="mt-3 flex items-center justify-between gap-3 w-full">{children}</div>
+    <div className="group relative h-full flex flex-col justify-between p-5 bg-card border border-border/50 rounded-none transition-all duration-300 hover:border-border-strong cursor-pointer overflow-hidden">
+      <div className="absolute inset-0 z-0 bg-linear-to-br from-surface to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+      <div className="relative z-10">
+        <p className="text-[10px] font-mono font-semibold uppercase tracking-[0.18em] text-foreground-muted group-hover:text-foreground-secondary transition-colors">
+          {label}
+        </p>
+        <div className="mt-3 flex items-center justify-between gap-3 w-full">{children}</div>
+      </div>
     </div>
   );
 }
 
 export function StudentDashboard() {
-  const { isGuest } = useAuthStore();
   const { user, isLoaded } = useSupabaseAuth();
   const { setProfile, enterApp } = useWarpSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);
+  const [timeRange, setTimeRange] = useState("all");
+  const containerRef = useRef<HTMLElement>(null);
+  const headerBgRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // 1. Dash Cascade (System Boot-up)
+    gsap.from('.dash-cascade', {
+      y: 20,
+      opacity: 0,
+      duration: 0.6,
+      stagger: 0.05,
+      ease: 'power2.out',
+      delay: 0.1,
+    });
+
+    // 2. Ambient header telemetry
+    if (headerBgRef.current) {
+      gsap.to(headerBgRef.current, {
+        backgroundPosition: '220px 220px',
+        duration: 30,
+        ease: 'none',
+        repeat: -1,
+      });
+    }
+  }, { scope: containerRef });
 
   const [isLoading, setIsLoading] = useState(true);
   const [summary, setSummary] = useState(EMPTY_SUMMARY);
@@ -92,12 +139,10 @@ export function StudentDashboard() {
       return;
     }
 
-    if (isGuest || !user?.id) {
-      if (!isGuest) {
-        // Not a guest and no user ID => force login overlay/redirect unless currently logging out
-        if (typeof window !== 'undefined' && !window.sessionStorage.getItem('logged_out')) {
-          window.location.search = '?login';
-        }
+    if (!user?.id) {
+      // No user ID => force login overlay/redirect unless currently logging out
+      if (typeof window !== 'undefined' && !window.sessionStorage.getItem('logged_out')) {
+        window.location.search = '?login';
       }
       setIsLoading(false);
       return;
@@ -191,11 +236,7 @@ export function StudentDashboard() {
       }
     }
     fetchSummary();
-  }, [user, isGuest, isLoaded]);
-
-  const handleLogout = async () => {
-    await signOutUser();
-  };
+  }, [user, isLoaded]);
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -230,24 +271,6 @@ export function StudentDashboard() {
     return remaining > 0 ? remaining : 0;
   })();
 
-  if (isGuest) {
-    return (
-      <main className="flex flex-1 flex-col items-center justify-center p-6 text-center sm:p-12">
-        <div className="card flex w-full max-w-lg flex-col items-center gap-4 p-8 border border-border bg-card">
-          <TriangleAlert className="size-8 text-amber-500" aria-hidden="true" />
-          <h2 className="font-display text-2xl font-bold tracking-tight">Guest session active</h2>
-          <p className="text-balance text-sm text-foreground-secondary leading-relaxed">
-            You completed the assessment as a guest. Your provisional score is saved in your local session.
-            Create an account to preserve your longitudinal curve and unlock the continuous calibration dossier.
-          </p>
-          <Button className="mt-4" onClick={handleLogout}>
-            Create an account
-          </Button>
-        </div>
-      </main>
-    );
-  }
-
   // Deduplicate and format dates for Longitudinal Performance Arc to prevent axis collision
   const calibratedHistory = summary.recentAssessments.filter(
     (a): a is HistoryRow & { score: number } => typeof a.score === 'number'
@@ -265,33 +288,59 @@ export function StudentDashboard() {
       score: a.score,
       globalPct: a.globalPct,
       classLevel: a.classLevel,
+      rawDate: a.completedAt,
     };
   });
 
+  const filteredData = chartPoints.filter((item) => {
+    if (timeRange === "all") return true;
+    const date = new Date(item.rawDate);
+    const referenceDate = new Date();
+    let daysToSubtract = 90;
+    if (timeRange === "30d") {
+      daysToSubtract = 30;
+    } else if (timeRange === "7d") {
+      daysToSubtract = 7;
+    }
+    const startDate = new Date(referenceDate);
+    startDate.setDate(startDate.getDate() - daysToSubtract);
+    return date >= startDate;
+  });
+
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-y-auto p-4 sm:p-8 md:p-10">
-      {/* ── Dossier Header (Nordic Lagom: Restrained, Precise) ── */}
-      <header className="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end border-b border-border pb-6">
-        <div>
+    <main ref={containerRef} className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-y-auto p-4 sm:p-8 md:p-10">
+      {/* ── Dossier Header (Nordic Lagom: Cinematic) ── */}
+      <header className="dash-cascade relative mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end border-b border-border pb-6 pt-6 px-6 -mx-6 sm:px-8 sm:-mx-8 md:px-10 md:-mx-10 overflow-hidden group">
+        <div
+          ref={headerBgRef}
+          className="absolute inset-0 z-0 pointer-events-none opacity-40 transition-opacity duration-700 group-hover:opacity-60"
+          style={{
+            WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
+            backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
+            backgroundSize: '22px 22px',
+            maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
+          }}
+        />
+        <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground-muted">
               STUDENT DOSSIER / CLASS {summary.latestClassLevel} · {summary.latestSubject}
             </span>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl font-medium tracking-tight text-foreground">
+            <h1 className="text-2xl font-display font-bold tracking-tight bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
               {displayName}
             </h1>
             <span className="text-[10px] font-mono uppercase tracking-wider text-primary border border-primary/20 bg-primary/5 px-2 py-0.5 rounded-none">
               {timeGreeting()}
             </span>
           </div>
-          <p className="text-xs text-foreground-secondary mt-1">
+          <p className="text-xs text-foreground-secondary mt-1 max-w-2xl">
             Continuous adaptive psychometric calibration under 3PL IRT protocol
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button className="rounded-none border-primary/50 text-xs font-mono font-semibold" onClick={async () => {
+        <div className="relative z-10 flex gap-3">
+          <Button className="rounded-none border border-foreground/20 hover:border-foreground bg-foreground text-background text-xs font-mono font-semibold px-6 shadow-[0_0_20px_rgba(var(--foreground-rgb),0.1)] transition-all uppercase tracking-widest" onClick={async () => {
             if (user) {
               const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
               if (!userData?.full_name || !userData?.current_class || !userData?.parent_name || !userData?.school_name) {
@@ -318,7 +367,7 @@ export function StudentDashboard() {
       ) : (
         <div className="flex flex-col gap-8">
           {/* ── Metric Stat Tiles (1px Hairline, Corner Marks, Tabular Numerals) ── */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="dash-cascade grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Stat label="Latest Scaled Score">
               {summary.latestScore !== null ? (
                 <div className="flex items-center justify-between w-full">
@@ -406,8 +455,10 @@ export function StudentDashboard() {
           </div>
 
           {/* ── Quick Actions (Sharp 0px geometry) ── */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
-            <button
+          <div className="dash-cascade grid grid-cols-1 gap-4 sm:grid-cols-4">
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={async () => {
                 if (user) {
                   const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
@@ -439,9 +490,11 @@ export function StudentDashboard() {
                 </p>
                 <p className="text-[11px] text-foreground-secondary mt-0.5">Adaptive CAT calibration</p>
               </div>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 if (summary.recentAssessments[0]?.id) {
                   window.location.href = `/?assessment=${summary.recentAssessments[0].id}`;
@@ -465,9 +518,11 @@ export function StudentDashboard() {
                 </p>
                 <p className="text-[11px] text-foreground-secondary mt-0.5">Executive hub & PTM guide</p>
               </div>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 if (summary.recentAssessments[0]?.id) {
                   window.location.href = `/?assessment=${summary.recentAssessments[0].id}&tutor=true`;
@@ -491,9 +546,11 @@ export function StudentDashboard() {
                 </p>
                 <p className="text-[11px] text-foreground-secondary mt-0.5">Deconstruct distractor traps</p>
               </div>
-            </button>
+            </motion.button>
 
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
                 const arcEl = document.getElementById('longitudinal-arc-card');
                 if (arcEl) arcEl.scrollIntoView({ behavior: 'smooth' });
@@ -515,7 +572,7 @@ export function StudentDashboard() {
                 </p>
                 <p className="text-[11px] text-foreground-secondary mt-0.5">Longitudinal growth curve</p>
               </div>
-            </button>
+            </motion.button>
           </div>
 
           {/* ── Competency Breakdown (Nordic Lagom: Hairline Cards) ── */}
@@ -531,7 +588,7 @@ export function StudentDashboard() {
             const isEnglish = (summary.latestSubject || '').toLowerCase().includes('english');
             const competencyKeys = isEnglish ? ENGLISH_COMPETENCIES : STEM_COMPETENCIES;
             return (
-              <Card className="p-6 rounded-none border border-border bg-card">
+              <Card className="dash-cascade p-6 rounded-none border border-border bg-card">
                 <div className="flex items-center justify-between border-b border-border pb-4 mb-5">
                   <div className="flex items-center gap-2">
                     <Brain className="size-4 text-primary" />
@@ -644,12 +701,20 @@ export function StudentDashboard() {
 
           {/* ── Longitudinal Performance Arc (Deduplicated X-Axis Dates, Clean Fjord Area) ── */}
           {summary.recentAssessments.length > 0 && (
-            <Card className="p-6 rounded-none border border-border bg-card" id="longitudinal-arc-card">
+            <Card className="dash-cascade p-6 rounded-none border border-border bg-card" id="longitudinal-arc-card">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border pb-4 mb-4">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="size-4 text-primary" />
-                  <h3 className="font-display text-base font-bold">Longitudinal Performance Arc</h3>
+                <div className="grid flex-1 gap-1">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="size-4 text-primary" />
+                    <h3 className="font-display text-base font-bold">Longitudinal Performance Arc</h3>
+                  </div>
+                  <p className="text-xs text-foreground-secondary font-mono">
+                    {summary.recentAssessments.length === 1
+                      ? 'Baseline benchmark recorded'
+                      : `${summary.recentAssessments.length} checkpoints calibrated`}
+                  </p>
                 </div>
+                
                 <div className="flex items-center gap-3">
                   {summary.recentAssessments.length >= 2 && summary.scoreDelta !== null && (
                     <Delta value={summary.scoreDelta} variant="badge">
@@ -657,70 +722,98 @@ export function StudentDashboard() {
                       <DeltaValue precision={0} suffix=" pts since last checkpoint" showPlus />
                     </Delta>
                   )}
-                  <span className="text-xs text-foreground-secondary font-mono">
-                    {summary.recentAssessments.length === 1
-                      ? 'Baseline benchmark recorded'
-                      : `${summary.recentAssessments.length} checkpoints calibrated`}
-                  </span>
+                  <Select value={timeRange} onValueChange={(val) => val && setTimeRange(val)}>
+                    <SelectTrigger
+                      className="w-35 rounded-none sm:ml-auto"
+                      aria-label="Select a value"
+                    >
+                      <SelectValue placeholder="All history" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-none">
+                      <SelectItem value="all" className="rounded-none">
+                        All history
+                      </SelectItem>
+                      <SelectItem value="90d" className="rounded-none">
+                        Last 3 months
+                      </SelectItem>
+                      <SelectItem value="30d" className="rounded-none">
+                        Last 30 days
+                      </SelectItem>
+                      <SelectItem value="7d" className="rounded-none">
+                        Last 7 days
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
-              {chartPoints.length >= 2 ? (
-                <div className="h-64 w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                      data={chartPoints}
-                      margin={{ top: 10, right: 20, left: -20, bottom: 0 }}
-                    >
-                      <defs>
-                        <linearGradient id="dashboardScoreGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="var(--primary)" stopOpacity={0.25} />
-                          <stop offset="95%" stopColor="var(--primary)" stopOpacity={0.0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" stroke="currentColor" className="text-border/30" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 11, fill: 'currentColor' }}
-                        className="text-foreground-secondary font-mono"
-                        tickLine={false}
-                      />
-                      <YAxis
-                        domain={[200, 900]}
-                        tick={{ fontSize: 11, fill: 'currentColor' }}
-                        className="text-foreground-secondary font-mono"
-                        tickLine={false}
-                      />
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (active && payload && payload.length) {
-                            const d = payload[0].payload;
-                            return (
-                              <div className="rounded-none border border-border bg-card p-3 shadow-md text-xs space-y-1">
-                                <p className="font-bold text-foreground">{d.date}</p>
-                                <p className="text-primary font-mono font-semibold">Scaled Score: {d.score} / 900</p>
-                                {d.globalPct !== null && d.globalPct !== undefined && (
-                                  <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
-                                )}
-                                <p className="text-foreground-muted font-mono">Class {d.classLevel}</p>
-                              </div>
-                            );
-                          }
-                          return null;
-                        }}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="score"
-                        stroke="var(--primary)"
-                        strokeWidth={2}
-                        fill="url(#dashboardScoreGrad)"
-                        dot={{ r: 3, fill: 'var(--primary)', strokeWidth: 1, stroke: 'var(--card)' }}
-                        activeDot={{ r: 5, fill: 'var(--primary)' }}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
+              {filteredData.length >= 2 ? (
+                <ChartContainer
+                  config={chartConfig}
+                  className="aspect-auto h-62.5 w-full"
+                >
+                  <AreaChart data={filteredData}>
+                    <defs>
+                      <linearGradient id="fillScore" x1="0" y1="0" x2="0" y2="1">
+                        <stop
+                          offset="5%"
+                          stopColor="var(--color-score)"
+                          stopOpacity={0.8}
+                        />
+                        <stop
+                          offset="95%"
+                          stopColor="var(--color-score)"
+                          stopOpacity={0.1}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" className="text-border/30" />
+                    <XAxis
+                      dataKey="date"
+                      tickLine={false}
+                      axisLine={false}
+                      tickMargin={8}
+                      minTickGap={32}
+                      tick={{ fontSize: 11, fill: 'currentColor' }}
+                      className="text-foreground-secondary font-mono"
+                    />
+                    <YAxis
+                      domain={[200, 900]}
+                      tick={{ fontSize: 11, fill: 'currentColor' }}
+                      className="text-foreground-secondary font-mono"
+                      tickLine={false}
+                      axisLine={false}
+                    />
+                    <ChartTooltip
+                      cursor={false}
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const d = payload[0].payload;
+                          return (
+                            <div className="rounded-none border border-border bg-card p-3 shadow-md text-xs space-y-1">
+                              <p className="font-bold text-foreground">{d.date}</p>
+                              <p className="text-primary font-mono font-semibold">Scaled Score: {d.score} / 900</p>
+                              {d.globalPct !== null && d.globalPct !== undefined && (
+                                <p className="text-foreground-secondary">Rank: {ordinal(d.globalPct)} percentile</p>
+                              )}
+                              <p className="text-foreground-muted font-mono">Class {d.classLevel}</p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Area
+                      dataKey="score"
+                      type="monotone"
+                      fill="url(#fillScore)"
+                      stroke="var(--color-score)"
+                      strokeWidth={2}
+                      dot={{ r: 3, fill: 'var(--color-score)', strokeWidth: 1, stroke: 'var(--card)' }}
+                      activeDot={{ r: 5, fill: 'var(--color-score)' }}
+                    />
+                  </AreaChart>
+                </ChartContainer>
               ) : (
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-none bg-surface/50 border border-border text-xs">
                   <div className="space-y-1 text-center sm:text-left">
@@ -828,7 +921,7 @@ export function StudentDashboard() {
           )}
 
           {/* ── Assessment History (Tabular Numbers, Calm Diagnostic Pills) ── */}
-          <Card>
+          <Card className="dash-cascade">
             <div className="border-b border-border px-6 py-4 flex items-center justify-between">
               <h3 className="font-display text-base font-bold">Assessment History</h3>
               <span className="text-xs text-foreground-muted font-mono">
@@ -914,7 +1007,7 @@ export function StudentDashboard() {
 
           {/* ── Chronological Activity Timeline (Crisp nodes, no glow) ── */}
           {summary.recentAssessments.length > 0 && (
-            <Card className="p-6">
+            <Card className="dash-cascade p-6">
               <div className="border-b border-border pb-4 mb-4 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Zap className="size-4 text-primary" />
@@ -982,7 +1075,7 @@ export function StudentDashboard() {
           <Leaderboard />
 
           {/* ── Discreet Danger Zone Accordion ── */}
-          <div className="border border-border bg-card overflow-hidden">
+          <div className="dash-cascade border border-border bg-card overflow-hidden">
             <button
               onClick={() => {
                 if (dangerOpen) setConfirmDelete(false);

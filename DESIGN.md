@@ -1,161 +1,122 @@
-# Nordic Lagom Design System
+# Nordic Lagom Design System (2026 Edition)
 
-> _"Lagom"_ - not too much, not too little. The right amount.
+> _"Lagom"_ — not too much, not too little. The right amount.
 
-A design system for WARP, a STEM competency assessment platform for students in Classes 3–12. The system prioritises legibility, calm, and trust. It is not decorative.
+A design system for **WARP**, a STEM competency assessment platform for students in Classes 3–12. The system prioritizes legibility, calm, intellectual trust, and mathematical precision. It is strictly non-decorative.
 
 ---
 
 ## 1. Philosophy
 
-**Restraint over decoration.** A student taking a timed assessment does not need confetti. A parent reading a report does not need glassmorphism. The design system uses one accent colour, warm-paper neutrals, and a single hairline for elevation. Everything else is typography and space.
+### Restraint Over Decoration
+A student solving a complex systems problem does not need confetti, particle storms, or neon halos. A parent reading an assessment report does not need glassmorphism. The design system uses one accent color, warm mineral-paper neutrals, and a single 1px hairline for elevation. Everything else is typography, grid, and space.
 
-**Light is primary.** The scene is a student at a desk in daytime, a parent reading a printed report, a classroom projector. Dark mode is a complete second theme for evening and low-glare use - not an afterthought override.
+### Light is Primary
+The primary operating environment is daytime desk study, printed parental reports, and classroom projectors. Dark mode (Twilight Mineral Slate) is a complete, low-glare second theme for evening use—never an afterthought override.
 
-**Depth from alignment, not shadow.** No stacked shadows. No glow. No blur. Depth comes from whitespace, section rhythm, and a single 1px border on cards.
+### Depth from Alignment, Not Shadow
+No stacked drop shadows. No glowing neon bloom. Depth is achieved through whitespace, section rhythm, and a crisp **1px hairline border** (`1px solid var(--border)`).
+
+### Sharp Geometry Contract
+Every border radius is **`0px`**. Surfaces meet at clean 90-degree corners. Bubbly pills, rounded buttons, and curved card frames are strictly forbidden.
 
 ---
 
-## 2. Colour
+## 2. Color System
 
-### Light theme (default)
+### Light Theme (Daytime & Projector Standard)
 
-| Token | OKLCH | Purpose |
-|---|---|---|
-| `--background` | `oklch(0.985 0.003 90)` | Page - warm paper |
-| `--surface` | `oklch(0.968 0.004 90)` | Subtle sections |
-| `--elevated` | `oklch(1 0 0)` | Cards, popovers |
-| `--foreground` | `oklch(0.21 0.008 260)` | Body text |
-| `--foreground-secondary` | `oklch(0.5 0.008 260)` | Captions, labels |
-| `--foreground-muted` | `oklch(0.62 0.008 260)` | Placeholders |
-| `--primary` (Fjord) | `oklch(0.52 0.11 230)` | The single accent - action, focus, selection |
-| `--success` (Moss) | `oklch(0.55 0.1 150)` | Positive semantic |
-| `--warning` (Amber) | `oklch(0.58 0.12 40)` | Caution semantic |
-| `--highlight` (Terracotta) | `oklch(0.68 0.13 75)` | Attention semantic |
-| `--destructive` | `oklch(0.55 0.19 25)` | Error semantic |
-| `--border` | `oklch(0.9 0.005 90)` | Hairline |
-| `--border-strong` | `oklch(0.82 0.007 90)` | Emphasised hairline |
-
-### Dark theme (Nordic Night)
-
-A complete parallel set with inverted luminance, tuned chroma for dark surfaces, and the same semantic mapping. See `src/styles/global.css` `.dark` block.
-
-### Data visualisation tokens
-
-Five distinguishable, contrast-safe hues for charts:
-
-| Token | Light | Dark | Use |
+| Token | OKLCH | Purpose | WCAG Contrast |
 |---|---|---|---|
-| `--chart-1` | Fjord (primary) | Fjord light | Student's own standing / primary series |
-| `--chart-2` | Moss | Moss light | Secondary series |
-| `--chart-3` | Terracotta | Terracotta light | Tertiary series |
-| `--chart-4` | Amber | Amber light | Quaternary series |
-| `--chart-5` | Violet | Violet light | Quinary series |
+| `--background` | `oklch(0.982 0.006 205)` | Page canvas (warm mineral paper) | Canvas |
+| `--surface` | `oklch(0.956 0.010 205)` | Subtle sections / sub-surfaces | Layer 1 |
+| `--elevated` | `oklch(1.000 0 0)` | Cards, panels, elevated surfaces | Layer 2 |
+| `--foreground` | `oklch(0.24 0.03 240)` | Body text (deep mineral slate) | >12:1 (AAA) |
+| `--foreground-secondary` | `oklch(0.46 0.03 235)` | Captions, secondary labels | >5.5:1 (AA) |
+| `--foreground-muted` | `oklch(0.58 0.025 230)` | Placeholders, inactive hints | >3:1 (Large/UI) |
+| `--primary` (Fjord Cyan) | `oklch(0.52 0.14 215)` | Primary action, focus, selection | >4.5:1 (AA) |
+| `--primary-foreground` | `oklch(1.000 0 0)` | Text on primary button | >4.5:1 (AA) |
+| `--success` (Moss) | `oklch(0.56 0.14 150)` | Positive diagnostic outcome | >4.5:1 (AA) |
+| `--warning` (Amber) | `oklch(0.62 0.15 65)` | Caution / timing threshold | >3:1 (Large/UI) |
+| `--highlight` (Terracotta) | `oklch(0.62 0.15 45)` | Attention / misconception callout | >4.5:1 (AA) |
+| `--destructive` | `oklch(0.56 0.19 25)` | Error semantic | >4.5:1 (AA) |
+| `--border` | `oklch(0.88 0.012 210)` | Hairline boundary | Non-text 3:1 |
+| `--border-strong` | `oklch(0.76 0.020 215)` | Emphasized hairline / active | Non-text 3:1 |
 
-**Rule:** Use `--chart-1` for the data point the user cares about (their score, their region). All other series use `--chart-2` through `--chart-5`. Never use all five at once if fewer will do.
+### Dark Theme (Twilight Mineral Slate Standard)
+
+| Token | OKLCH | Purpose | WCAG Contrast |
+|---|---|---|---|
+| `--background` | `oklch(0.215 0.022 235)` | Canvas — mineral slate (#18202C) | Canvas |
+| `--surface` | `oklch(0.255 0.024 235)` | Inputs, sub-surface panels (#212B3A) | Layer 1 |
+| `--elevated` | `oklch(0.295 0.026 235)` | Elevated cards, modals (#2A3649) | Layer 2 |
+| `--foreground` | `oklch(0.95 0.010 230)` | Body text (crisp mineral white) | >13:1 (AAA) |
+| `--foreground-secondary` | `oklch(0.80 0.018 230)` | Captions, secondary labels | >8:1 (AAA) |
+| `--foreground-muted` | `oklch(0.66 0.022 230)` | Placeholders, inactive hints | >5:1 (AA) |
+| `--primary` (Fjord Cyan) | `oklch(0.74 0.16 215)` | Luminous Fjord Cyan CTA (#38BDF8) | >10:1 (AAA) |
+| `--primary-foreground` | `oklch(0.14 0.03 235)` | Deep midnight slate text on cyan | >8:1 (AAA) |
+| `--border` | `oklch(0.36 0.025 235)` | Hairline boundary | Non-text 3:1 |
+| `--border-strong` | `oklch(0.48 0.030 235)` | Emphasized hairline / active | Non-text 3:1 |
+
+### 5 STEAM Competency Spectral Tokens
+
+| Token | Light (OKLCH) | Dark (OKLCH) | Competency Domain |
+|---|---|---|---|
+| `--chart-1` | `0.52 0.14 215` (Glacier Cyan) | `0.74 0.16 215` | Scientific Inquiry (Ecology) |
+| `--chart-2` | `0.52 0.15 270` (Cobalt Petrol) | `0.70 0.17 270` | Computational Thinking (Data) |
+| `--chart-3` | `0.52 0.13 170` (Pine Teal) | `0.74 0.14 168` | Engineering Design (Infrastructure) |
+| `--chart-4` | `0.60 0.15 65` (Solar Amber) | `0.80 0.14 68` | Mathematical Reasoning (Energy) |
+| `--chart-5` | `0.54 0.16 315` (Aurora Amethyst) | `0.74 0.17 315` | Systems Thinking (Space) |
 
 ---
 
 ## 3. Typography
 
-Two families plus one mono:
-
 | Token | Family | Use |
 |---|---|---|
-| `--font-display` | Space Grotesk Variable | Headings, scores, prominent numbers |
-| `--font-sans` | Inter Variable | Body, UI, everything else |
-| `--font-mono` | JetBrains Mono Variable | Tabular numbers, keyboard hints, timers |
+| `--font-display` | Space Grotesk Variable | Headings, score callouts, prominent figures |
+| `--font-sans` | Inter Variable | Body, UI controls, explanatory text |
+| `--font-mono` | JetBrains Mono Variable | Tabular numbers, metadata, coordinates, timers |
 
-**Scale:** Tailwind's default modular scale. No custom sizes.
-
-**Weight:** 400 for body, 600 for emphasis, 700 for headings. Never 800 or above - it shouts.
-
-**Tabular numerals:** Applied via the `.tabular` utility class wherever numbers appear in columns (scores, percentiles, timers, progress counts).
+- **Modular Scale:** Clean geometric scale. Sentence-case headings in weights 500–600.
+- **Tabular Numerals:** Class `.tabular` (`font-variant-numeric: tabular-nums`) applied wherever numbers align vertically.
 
 ---
 
-## 4. Spacing & Radius
+## 4. Spacing & Sharp Corner Geometry
 
-| Token | Value | Use |
+| Token | Value | Applied To |
 |---|---|---|
-| `--radius-control` | `0` | Buttons, inputs, small chips |
-| `--radius-card` | `0` | Cards, panels |
-| `--radius-pill` | `0` | Badges, tags |
+| `--radius` | `0px` | Global default |
+| `--radius-control` | `0px` | Buttons, inputs, search fields |
+| `--radius-card` | `0px` | Cards, modals, dialogs, drawers |
+| `--radius-pill` | `0px` | Badges, tags, status indicators |
 
-**Sharp geometry.** Every radius is zero. The brand's spacetime grid is angular - surfaces meet at corners, never curves. The one organic form in the brand language is the logo's sphere (the mass that warps the grid). Loading states tick a square edge (`.spinner-square`) rather than sweeping an arc.
-
----
-
-## 5. Components
-
-### Card
-
-A surface with one hairline. It does not glow or float.
-
-```css
-.card {
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-}
-```
-
-Interactive variant: border darkens to `--border-strong`, background shifts to `--surface`. No scale transform, no shadow.
-
-### Button
-
-Three variants (`primary`, `secondary`, `ghost`), three sizes (`sm`, `default`, `lg`). Solid Fjord fill for primary; surface fill for secondary; transparent for ghost. No gradients, no glass.
-
-### Badge
-
-Pill-shaped, semantic-toned. Used for status (Calibration, Mission, Class level), never for decoration.
-
-### Progress
-
-A 4px track with a fill. Fill colour follows semantics: `--primary` for the user's own progress, `--border-strong` for neutral comparison.
-
-### Tooltip (chart)
-
-A plain card. No `backdrop-filter: blur()`, no `box-shadow: 0 10px 30px rgba(0,0,0,0.5)`, no `font-weight: 800`. Background is `--surface`, border is `--border`, text is `--foreground`.
+Every element has sharp rectangular edges. When elements interact, borders darken to `--border-strong` and backgrounds subtly shift. No zoom scale transforms.
 
 ---
 
-## 6. Motion
+## 5. Components & Registries
 
-| Token | Easing | Use |
-|---|---|---|
-| `--ease-lagom` | `cubic-bezier(0.2, 0, 0, 1)` | Default transitions (150–300ms) |
-| `--ease-out` | `cubic-bezier(0.16, 1, 0.3, 1)` | Enter animations |
-
-Motion is calm, short, and single-purpose. Staggered children animate in over 50–100ms each. No bounce, no spring physics, no parallax. `prefers-reduced-motion: reduce` zeroes all durations.
-
----
-
-## 7. Application Rules
-
-1. **One accent.** Fjord is the only colour that marks action. Moss, Amber, Terracotta, and Destructive are semantics with meaning - never decoration.
-2. **Hairline elevation.** Cards get `1px solid var(--border)`. No `box-shadow` except the scrollbar thumb.
-3. **No glass.** No `backdrop-filter`, no `blur()`, no translucent overlays.
-4. **No rainbow.** Charts use `--chart-*` tokens, not raw colour values. The primary series uses `--chart-1`; others use neutrals or the remaining chart tokens.
-5. **Tabular numbers.** Scores, percentiles, timers, and progress counts use `.tabular`.
-6. **Section rhythm.** Sections use `padding-block: 5rem` (3.5rem on mobile). More space above a heading than below it.
-7. **Print-ready.** Reports are printed. The `@media print` block flattens to paper, drops chrome (`.no-print`), and uses black-on-white fallbacks.
+### Approved Component Foundation
+- **shadcn/ui:** Clean, headless Radix primitives styled with zero border radius and 1px hairlines.
+- **Ali Imam Ecosystem (`old.aliimam.in`):**
+  - `Header03`: Ultra-crisp fixed navigation with brand logo, section anchors, and action CTA.
+  - `BentoGrid` / `BentoGridItem`: Rectilinear layout system for competency showcase and technical features.
+  - `DotPattern` / `GridPattern`: Lightweight SVG geometric backgrounds without glowing sci-fi bloat.
+  - `CounterNumber`: Calm numerical transitions for stat counters.
+  - `Accordion`: Semantic hairline disclosure items.
+  - `Typewriter`: Subtle terminal decoding text for technical subtitles.
 
 ---
 
-## 8. File Map
+## 6. Illustration & Visual Assets
 
-| File | Responsibility |
-|---|---|
-| `src/styles/global.css` | Token definitions, base layer, composed `.card` / `.kbd` / `.section` classes |
-| `src/components/ui/button.tsx` | Button component (CVA variants) |
-| `src/components/ui/badge.tsx` | Badge component |
-| `src/components/ui/card.tsx` | Card + EmptyState |
-| `src/components/ui/progress.tsx` | Progress bar |
-| `src/components/ui/spinner.tsx` | Loading spinner + SpinnerBlock |
-| `src/components/ui/input.tsx` | Text input |
-| `src/components/CompetencyChart.tsx` | Regional standings bar chart (Recharts, `--chart-*` tokens) |
+### Technical Blueprint & Editorial Line-Art
+- Isometric and orthogonal technical schematics illustrating Item Response Theory (IRT), multidimensional coordinate spaces, and normative population distributions.
+- Warm mineral paper canvas (`#FAFAF7`), deep charcoal drafting hairlines (`#1A1A1A`), and quiet Fjord Cyan accents.
+- All media enclosed in sharp 0px 1px hairline frames.
 
 ---
 
-_Version: 1.0 · Last updated: 2026-09-08_
+_Version: 2.0 (Nordic Lagom Sharp) · Updated: September 2026_

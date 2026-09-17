@@ -35,5 +35,5 @@ export function CounterNumber({
     });
   }, [springValue]);
 
-  return <span className={cn("inline-block", className)} ref={ref} />;
+  return <span className={cn("inline-block", className)} ref={ref}>{Intl.NumberFormat("en-US").format(direction === "down" ? value : 0)}</span>;
 }
