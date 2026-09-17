@@ -95,5 +95,6 @@ export default defineConfig(({ mode }) => {
     },
     proxy: { '/api': 'http://localhost:3000' },
   },
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } }
+  };
 });
