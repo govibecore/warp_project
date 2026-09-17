@@ -277,17 +277,18 @@ export function Assessment() {
   return (
     <main className="relative flex h-full w-full flex-1 flex-col" data-testid="assessment-shell">
       {/* ── Progress header ── */}
-      <header className="sticky top-0 z-20 flex shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4 py-3">
+      <header className="sticky top-0 z-20 flex shrink-0 items-center justify-between gap-2 sm:gap-4 border-b border-border bg-background px-3 py-3 sm:px-4">
         <div className="flex items-center gap-2">
-          <Badge tone="primary">Adaptive Phase</Badge>
+          <Badge tone="primary" className="hidden sm:inline-flex">Adaptive Phase</Badge>
+          <Badge tone="primary" className="inline-flex sm:hidden px-2">Adaptive</Badge>
         </div>
 
-        <div className="flex flex-col items-center gap-1.5">
-          <span className="font-mono text-xs font-medium tabular text-foreground-secondary">
+        <div className="flex flex-1 flex-col items-center gap-1.5 mx-2 sm:mx-0 max-w-48">
+          <span className="font-mono text-[10px] font-medium tabular text-foreground-secondary sm:text-xs">
             Question {lockedCount + 1} of {totalItems}
           </span>
           {/* 2px hairline progress in accent - replaces the chunky <Progress> bar */}
-          <div className="relative w-48 h-0.5 bg-border overflow-hidden">
+          <div className="relative w-full h-0.5 bg-border overflow-hidden">
             <div
               className="absolute inset-y-0 left-0 bg-primary transition-[width] duration-300"
               style={{ width: `${progressPercent}%`, transitionTimingFunction: 'var(--ease-lagom)' }}
@@ -295,12 +296,13 @@ export function Assessment() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Quiet mono elapsed-time - no pulse, no icon animation */}
-          <span className="font-mono text-xs tabular text-foreground-muted">
+          <span className="font-mono text-[10px] tabular text-foreground-muted sm:text-xs">
             {formatTimer(elapsedSeconds)}
           </span>
-          <Button variant="ghost" size="sm" onClick={finishAssessment}>Finish Early</Button>
+          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={finishAssessment}>Finish Early</Button>
+          <Button variant="ghost" size="sm" className="inline-flex sm:hidden h-6 px-2 text-[10px]" onClick={finishAssessment}>Finish</Button>
         </div>
       </header>
 
@@ -315,12 +317,12 @@ export function Assessment() {
             transition={{ duration: 0.25, ease: [0.2, 0.7, 0.2, 1] }}
             className="mx-auto w-full max-w-180 p-4 pb-8 sm:p-6 md:p-8"
           >
-            <div className="mb-8 flex flex-col gap-4">
+            <div className="mb-6 sm:mb-8 flex flex-col gap-3 sm:gap-4">
               <span className="text-[10px] font-bold uppercase tracking-widest text-primary">
                 {COMPETENCY_LABELS[item.competency as CompetencyKey] || item.competency}
               </span>
 
-              <h1 className="text-balance text-xl font-medium leading-normal md:text-2xl">
+              <h1 className="text-balance text-lg sm:text-xl font-medium leading-normal md:text-2xl">
                 {item.prompt}
               </h1>
 
@@ -385,7 +387,7 @@ export function Assessment() {
       </div>
 
       {/* ── Action bar ── */}
-      <footer className="z-10 flex shrink-0 items-center justify-between border-t border-border bg-background p-4 px-6">
+      <footer className="z-10 flex shrink-0 items-center justify-between border-t border-border bg-background p-3 px-4 sm:p-4 sm:px-6">
         <div className="hidden items-center gap-2 text-[11px] text-foreground-secondary md:flex">
           <span>Select</span>
           <span className="kbd">A</span>
@@ -401,7 +403,10 @@ export function Assessment() {
         </div>
 
         <div className="ml-auto flex items-center gap-3">
-          <Button disabled={!selected || loading} onClick={lock} size="lg">
+          <Button disabled={!selected || loading} onClick={lock} size="md" className="sm:hidden">
+            {loading ? 'Wait...' : 'Lock'} <ArrowRight className="size-4 ml-1" />
+          </Button>
+          <Button disabled={!selected || loading} onClick={lock} size="lg" className="hidden sm:inline-flex">
             {loading ? 'Processing...' : 'Lock response'} <ArrowRight className="size-4" />
           </Button>
         </div>

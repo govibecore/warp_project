@@ -97,7 +97,7 @@ export function AdminOverview() {
         <SpinnerBlock label="Loading platform metrics" />
       ) : (
         <>
-          <div className="mb-8 grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="mb-8 grid grid-cols-1 sm:grid-cols-2 gap-4 md:grid-cols-4">
             <Stat
               label="Students"
               value={stats.totalStudents.toLocaleString()}

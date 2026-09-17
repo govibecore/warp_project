@@ -681,7 +681,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                             onChange={v => setLocalProfile(p => ({ ...p, full_name: v }))}
                           />
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div>
                               <label htmlFor="profile-current-class" className="block text-[10px] font-mono uppercase tracking-wider text-foreground-muted mb-1">
                                 Current Class
@@ -727,7 +727,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
                             onChange={v => setLocalProfile(p => ({ ...p, school_name: v }))}
                           />
 
-                          <div className="grid grid-cols-2 gap-3">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <ProfileInput
                               label="City"
                               icon={<MapPin className="size-3.5" />}

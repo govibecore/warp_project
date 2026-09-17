@@ -759,7 +759,7 @@ export function ReportDetail() {
                 </div>
 
                 {/* Inline domain vitals */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 p-8 md:p-12 border-t border-border bg-surface">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 p-8 md:p-12 border-t border-border bg-surface">
                   {parakhVitals.map((v) => (
                     <div key={v.label} className="space-y-1">
                       <p className="text-xs text-foreground-muted">{v.domain}</p>

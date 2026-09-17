@@ -185,7 +185,7 @@ const RESPONSIVE_ROW_SPAN = {
   },
 } as const;
 
-export const RESPONSIVE_GAP = {
+const RESPONSIVE_GAP = {
   base: {
     0: 'gap-0',
     1: 'gap-1',
