@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Lottie, LottieProps } from 'lottie-react';
 import { cn } from '../../lib/utils';
 
-export interface WarpLottieProps extends Omit<LottieProps, 'animationData'> {
+export interface WarpLottieProps extends Omit<LottieProps, 'src'> {
   animationData: unknown;
   className?: string;
   loop?: boolean;
@@ -49,7 +49,7 @@ export function WarpLottie({
     <div className={cn('pointer-events-none', className)}>
       <Lottie
         {...props}
-        animationData={animationData as any}
+        src={animationData as any}
         loop={prefersReducedMotion ? false : loop}
         autoplay={prefersReducedMotion ? false : autoplay}
         speed={computedSpeed}

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -147,7 +147,7 @@ export function Landing({ onEnter }: LandingProps) {
   return (
     <div ref={containerRef} className="min-h-screen bg-background text-foreground flex flex-col font-sans relative overflow-hidden max-w-7xl mx-auto border-x border-border">
       {showLogoutAnim && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/95 pointer-events-none">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 pointer-events-none">
           <WarpLottie animationData={starburstData} className="w-48 h-48 opacity-80 mix-blend-screen" loop={false} durationMs={3000} />
         </div>
       )}

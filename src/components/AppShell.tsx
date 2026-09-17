@@ -9,8 +9,6 @@ import { LayoutDashboard, LogOut, User, ShieldCheck, Sliders } from 'lucide-reac
 import { AnimatePresence, motion } from 'motion/react';
 import { ProfilePanel } from './ProfilePanel';
 import { signOutUser } from '../lib/auth';
-import { WarpLottie } from './ui/warp-lottie';
-import starburstData from '../assets/lottie/star burst animation.json';
 
 /**
  * The frame every student screen lives in.
