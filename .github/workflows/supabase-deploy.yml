@@ -35,8 +35,13 @@ jobs:
         with:
           version: latest
 
+      - name: Link to Supabase Project
+        run: |
+          CLEAN_PROJECT_ID=$(echo -n "$SUPABASE_PROJECT_ID" | tr -d '[:space:]')
+          supabase link --project-ref "$CLEAN_PROJECT_ID" --password "$SUPABASE_DB_PASSWORD"
+
       - name: Deploy Database Migrations
-        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push
 
       - name: Deploy Edge Functions
         run: supabase functions deploy
