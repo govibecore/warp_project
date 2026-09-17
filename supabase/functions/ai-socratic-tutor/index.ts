@@ -75,7 +75,7 @@ Conversational & Platform Guidance:
 - WARP PROJECT & PLATFORM: If the user asks about WARP, what this project is, or how it works, explain clearly: WARP is a next-generation diagnostic benchmark platform that closes the learning gap between standard school exams and international analytical standards (Singapore SASMO, AMC 8, PISA). It uses adaptive psychometrics (3PL Item Response Theory) to measure latent ability, and pairs diagnostics with Socratic AI coaching.
 - BENCHMARK PROBLEM INQUIRIES: When the user asks about the scenario, their choice, or the concepts, apply the Socratic Teaching Guidelines below.`;
 
-    const STRICT_INSTRUCTIONS = `\n\nIMPORTANT: DO NOT output your internal thinking process, planning steps, or preface your response with phrases like "Here's a thinking process:". Respond DIRECTLY and ONLY with the final message to the user in your designated persona.`;
+    const STRICT_INSTRUCTIONS = `\n\nIMPORTANT: You MUST NOT output any internal monologue, reasoning, 'Analyze User Input', 'Draft', or 'Let's outline' steps. Output ONLY the final response to the user in your designated persona.`;
 
     let systemPrompt = '';
     if (isHint) {
@@ -171,6 +171,11 @@ Guide the student using the Socratic method and first-principles reasoning. Neve
           const thinkingProcessMatch = content.match(/Here's a thinking process:[\s\S]*?(?=\n#|\n\n-|\n\n\*\*|\n\n[A-Z]|\n\n[0-9]+\.)/i);
           if (thinkingProcessMatch && thinkingProcessMatch.index === 0) {
             content = content.substring(thinkingProcessMatch[0].length).trim();
+          }
+
+          const leakedReasoningMatch = content.match(/^(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process)[\s\S]*?(?=### |👋|Hello)/i);
+          if (leakedReasoningMatch && leakedReasoningMatch.index === 0) {
+            content = content.substring(leakedReasoningMatch[0].length).trim();
           }
           
           return new Response(JSON.stringify({ reply: content, model: model.id }), {

@@ -41,8 +41,17 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
           window.sessionStorage.removeItem('logged_out');
         } catch {}
       }
-      setSession(session);
-      setUser(session?.user ?? null);
+      
+      // Delay the UI state update on sign in to allow the success animation to play
+      if (_event === 'SIGNED_IN') {
+        setTimeout(() => {
+          setSession(session);
+          setUser(session?.user ?? null);
+        }, 3000);
+      } else {
+        setSession(session);
+        setUser(session?.user ?? null);
+      }
     });
 
     return () => subscription.unsubscribe();

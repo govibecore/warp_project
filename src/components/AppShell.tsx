@@ -9,6 +9,8 @@ import { LayoutDashboard, LogOut, User, ShieldCheck, Sliders } from 'lucide-reac
 import { AnimatePresence, motion } from 'motion/react';
 import { ProfilePanel } from './ProfilePanel';
 import { signOutUser } from '../lib/auth';
+import { WarpLottie } from './ui/warp-lottie';
+import starburstData from '../assets/lottie/star burst animation.json';
 
 /**
  * The frame every student screen lives in.
@@ -39,7 +41,7 @@ export function AppShell({
       }
     >
       {!hideHeader && (
-        <header className="no-print sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-card/80 backdrop-blur-xs px-4 md:px-8 transition-colors">
+        <header className="no-print sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4 md:px-8 transition-colors">
           {/* ── Left Brand Lockup & Technical Telemetry ── */}
           <div className="flex items-center gap-3">
             <button
@@ -124,6 +126,7 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
   const [open, setOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { session } = useWarpSession();
   const profile = session.profile;
@@ -203,14 +206,22 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
   }, [open]);
 
   async function handleSignOut() {
+    setIsSigningOut(true);
     setOpen(false);
-    await signOutUser();
+    setTimeout(async () => {
+      await signOutUser();
+    }, 3000);
   }
 
   const classDisplay = profile?.classLevel ? `Class ${profile.classLevel}` : 'Standard';
 
   return (
     <div ref={ref} className="relative">
+      {isSigningOut && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 pointer-events-none">
+          <WarpLottie animationData={starburstData} className="w-48 h-48 opacity-80 mix-blend-screen" loop={false} durationMs={3000} />
+        </div>
+      )}
       {/* Trigger Button (Minimal single profile icon: no name, no badge, no chevron) */}
       <button
         id="user-menu-trigger"

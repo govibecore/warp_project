@@ -68,7 +68,7 @@ export function Header03({ onEnter }: Header03Props) {
   return (
     <header
       ref={navRef}
-      className="fixed top-0 left-0 z-50 w-full border-b border-[#3B3B3B] bg-[#0A0A0A] transition-colors duration-200"
+      className="fixed top-0 left-0 z-50 w-full border-b border-border bg-background transition-colors duration-200"
       data-testid="header-03"
     >
       <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
@@ -89,7 +89,7 @@ export function Header03({ onEnter }: Header03Props) {
             aria-label="WARP Home"
           >
             <WarpLogo variant="lockup" className="h-6 sm:h-7 w-auto" />
-            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-[#3B3B3B] bg-transparent font-mono text-[9px] uppercase tracking-widest text-[#ABABAB] group-hover:border-[#00B4D8]/50 group-hover:text-[#00B4D8] transition-colors">
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-border bg-transparent font-mono text-[9px] uppercase tracking-widest text-[#ABABAB] group-hover:border-[#00B4D8]/50 group-hover:text-[#00B4D8] transition-colors">
               Adaptive CAT
             </span>
           </a>
@@ -121,7 +121,7 @@ export function Header03({ onEnter }: Header03Props) {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex size-9 items-center justify-center rounded-none border border-[#3B3B3B] bg-[#121212] text-white transition-colors hover:border-[#00B4D8] cursor-pointer"
+                className="flex size-9 items-center justify-center rounded-none border border-border bg-[#121212] text-white transition-colors hover:border-[#00B4D8] cursor-pointer"
                 aria-label="User menu"
               >
                 <div className="flex size-5.5 items-center justify-center rounded-none text-[#00B4D8] font-mono text-[11px]">
@@ -135,11 +135,11 @@ export function Header03({ onEnter }: Header03Props) {
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 2 }}
-                    className="absolute right-0 top-full mt-2 w-48 rounded-none border border-[#3B3B3B] bg-[#0A0A0A] p-1.5 z-50 font-mono text-xs shadow-none"
+                    className="absolute right-0 top-full mt-2 w-48 rounded-none border border-border bg-background p-1.5 z-50 font-mono text-xs shadow-none"
                   >
                     <a
                       href="/?dashboard"
-                      className="flex items-center gap-2 rounded-none px-3 py-2 text-white hover:bg-[#181818] transition-colors"
+                      className="flex items-center gap-2 rounded-none px-3 py-2 text-foreground hover:bg-surface transition-colors"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <LayoutDashboard className="size-3.5 text-[#00B4D8]" />
@@ -151,7 +151,7 @@ export function Header03({ onEnter }: Header03Props) {
                         setUserMenuOpen(false);
                         signOutUser();
                       }}
-                      className="flex w-full items-center gap-2 rounded-none px-3 py-2 text-red-500 hover:bg-[#181818] transition-colors cursor-pointer"
+                      className="flex w-full items-center gap-2 rounded-none px-3 py-2 text-red-500 hover:bg-surface transition-colors cursor-pointer"
                     >
                       <LogOut className="size-3.5" />
                       Sign out
@@ -166,7 +166,7 @@ export function Header03({ onEnter }: Header03Props) {
               variant="outline"
               size="sm"
               onClick={() => onEnter('login')}
-              className="h-9 px-6 text-xs font-mono uppercase tracking-widest font-medium rounded-none border border-[#3B3B3B] bg-transparent text-[#ABABAB] hover:text-[#00B4D8] hover:border-[#00B4D8] transition-colors cursor-pointer shadow-none"
+              className="h-9 px-6 text-xs font-mono uppercase tracking-widest font-medium rounded-none border border-border bg-transparent text-[#ABABAB] hover:text-[#00B4D8] hover:border-[#00B4D8] transition-colors cursor-pointer shadow-none"
             >
               Sign in
             </Button>
@@ -178,7 +178,7 @@ export function Header03({ onEnter }: Header03Props) {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex size-9 items-center justify-center rounded-none border border-[#3B3B3B] bg-transparent text-white transition-colors hover:border-white cursor-pointer"
+            className="flex size-9 items-center justify-center rounded-none border border-border bg-transparent text-white transition-colors hover:border-white cursor-pointer"
             aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileOpen}
           >
@@ -196,7 +196,7 @@ export function Header03({ onEnter }: Header03Props) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="fixed inset-0 top-16 z-40 bg-[#0A0A0A] lg:hidden"
+              className="fixed inset-0 top-16 z-40 bg-background lg:hidden"
             />
 
             <motion.div
@@ -204,7 +204,7 @@ export function Header03({ onEnter }: Header03Props) {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 26, stiffness: 240 }}
-              className="fixed top-16 right-0 z-50 h-[calc(100svh-4rem)] w-full border-l border-[#3B3B3B] bg-[#0A0A0A] p-6 overflow-y-auto lg:hidden flex flex-col justify-between"
+              className="fixed top-16 right-0 z-50 h-[calc(100svh-4rem)] w-full border-l border-border bg-background p-6 overflow-y-auto lg:hidden flex flex-col justify-between"
             >
               <div className="flex flex-col">
                 {NAV_LINKS.map((link) => (
@@ -216,7 +216,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       handleSmoothScroll(link.href);
                     }}
-                    className="block border-b border-[#3B3B3B] py-6 text-3xl font-display uppercase tracking-widest text-white hover:text-[#00B4D8] transition-colors"
+                    className="block border-b border-border py-6 text-3xl font-display uppercase tracking-widest text-white hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
@@ -234,7 +234,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       onEnter('login');
                     }}
-                    className="w-full h-12 text-sm font-mono uppercase tracking-widest rounded-none border border-[#3B3B3B] bg-transparent text-white hover:border-[#00B4D8] cursor-pointer shadow-none"
+                    className="w-full h-12 text-sm font-mono uppercase tracking-widest rounded-none border border-border bg-transparent text-white hover:border-primary cursor-pointer shadow-none"
                   >
                     Sign in to account
                   </Button>
@@ -247,7 +247,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       signOutUser();
                     }}
-                    className="w-full h-12 text-sm font-mono uppercase tracking-widest text-red-500 cursor-pointer rounded-none border border-[#3B3B3B]"
+                    className="w-full h-12 text-sm font-mono uppercase tracking-widest text-red-500 cursor-pointer rounded-none border border-border"
                   >
                     Sign out ({displayName})
                   </Button>

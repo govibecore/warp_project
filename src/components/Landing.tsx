@@ -10,6 +10,8 @@ import { Marquee } from './ui/aliimam/Marquee';
 import React, { Suspense } from 'react';
 const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
 import { Typewriter } from './ui/Typewriter';
+import { WarpLottie } from './ui/warp-lottie';
+import gridLoopData from '../assets/lottie/Grid Loop background.json';
 
 interface LandingProps {
   onEnter(mode?: 'choose' | 'login' | 'register'): void;
@@ -148,6 +150,9 @@ export function Landing({ onEnter }: LandingProps) {
             opacity: 0.65
           }}
         />
+        <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10 mix-blend-screen" style={{ maskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)' }}>
+          <WarpLottie animationData={gridLoopData} className="w-full h-full min-w-300" />
+        </div>
 
         <section className="relative mx-auto px-4 pb-0 pt-24 lg:pt-32 z-10">
           <div className="mx-auto max-w-5xl text-center">

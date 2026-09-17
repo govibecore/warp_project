@@ -113,7 +113,7 @@ Socratic Teaching Guidelines:
 3. DISTRACTOR TRAP ANALYSIS: If the student picked a distractor choice, analyze why that choice was tempting and what physical or logical constraint it violated.
 4. OLYMPIAD HEURISTICS: Apply Pólya's problem-solving method, boundary/extreme condition checks (e.g., zero, infinity, equal values), and Singapore CPA (Concrete-Pictorial-Abstract) bar modeling.
 5. FORMATTING: Use crisp Markdown headers, numbered steps (1., 2., 3.), bullet points, and LaTeX math formatting (\( ... \) for inline, \\[ ... \\] for block math).
-6. NO THINKING PROCESS: CRITICAL - Do NOT output your internal thinking process, reasoning steps, or "Here's a thinking process" text. Output ONLY the final response intended for the user.`;
+6. NO THINKING PROCESS: CRITICAL - You MUST NOT output any internal monologue, reasoning, 'Analyze User Input', 'Draft', or 'Let's outline' steps. Output ONLY the final response to the user.`;
 
             // Build message list preserving multi-turn history
             let outgoingMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [];
@@ -213,10 +213,16 @@ Socratic Teaching Guidelines:
                       // Post-process to remove chain-of-thought blocks if they leak
                       let cleanedText = text.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
                       
-                      // Strip "Here's a thinking process:" sections that some reasoning models inject
+                      // Strip "Here's a thinking process:" and similar leaked reasoning sections
                       const thinkingProcessMatch = cleanedText.match(/Here's a thinking process:[\s\S]*?(?=\n#|\n\n-|\n\n\*\*|\n\n[A-Z]|\n\n[0-9]+\.)/i);
                       if (thinkingProcessMatch && thinkingProcessMatch.index === 0) {
                         cleanedText = cleanedText.substring(thinkingProcessMatch[0].length).trim();
+                      }
+
+                      // Strip generic reasoning like "Analyze User Input:" that appears before the actual heading
+                      const leakedReasoningMatch = cleanedText.match(/^(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process)[\s\S]*?(?=### |👋|Hello)/i);
+                      if (leakedReasoningMatch && leakedReasoningMatch.index === 0) {
+                        cleanedText = cleanedText.substring(leakedReasoningMatch[0].length).trim();
                       }
 
                       reply = cleanedText;

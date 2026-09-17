@@ -13,6 +13,8 @@ import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { Card, EmptyState } from '../ui/card';
 import { SpinnerBlock } from '../ui/spinner';
+import { WarpLottie } from '../ui/warp-lottie';
+import gridLoopData from '../../assets/lottie/Grid Loop background.json';
 import { CounterNumber } from '../ui/aliimam/CounterNumber';
 import { Gauge } from '../ui/aliimam/Gauge';
 import { OutcomeBadge } from '../ui/OutcomeBadge';
@@ -313,14 +315,16 @@ export function StudentDashboard() {
       <header className="dash-cascade relative mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end border-b border-border pb-6 pt-6 px-6 -mx-6 sm:px-8 sm:-mx-8 md:px-10 md:-mx-10 overflow-hidden group">
         <div
           ref={headerBgRef}
-          className="absolute inset-0 z-0 pointer-events-none opacity-40 transition-opacity duration-700 group-hover:opacity-60"
+          className="absolute inset-0 z-0 pointer-events-none opacity-40 transition-opacity duration-700 group-hover:opacity-60 flex items-center justify-center overflow-hidden"
           style={{
             WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
             backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
             backgroundSize: '22px 22px',
             maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
           }}
-        />
+        >
+          <WarpLottie animationData={gridLoopData} className="w-full h-full min-w-200 opacity-15 mix-blend-screen" />
+        </div>
         <div className="relative z-10">
           <div className="flex items-center gap-2 mb-3">
             <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-foreground-muted">
@@ -340,7 +344,7 @@ export function StudentDashboard() {
           </p>
         </div>
         <div className="relative z-10 flex gap-3">
-          <Button className="rounded-none border border-foreground/20 hover:border-foreground bg-foreground text-background text-xs font-mono font-semibold px-6 shadow-[0_0_20px_rgba(var(--foreground-rgb),0.1)] transition-all uppercase tracking-widest" onClick={async () => {
+          <Button size="sm" className="rounded-none border border-foreground/20 hover:border-foreground bg-foreground text-background text-xs font-mono font-semibold px-4 h-8 shadow-[0_0_20px_rgba(var(--foreground-rgb),0.1)] transition-all uppercase tracking-widest" onClick={async () => {
             if (user) {
               const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
               if (!userData?.full_name || !userData?.current_class || !userData?.parent_name || !userData?.school_name) {
@@ -473,7 +477,7 @@ export function StudentDashboard() {
                   window.location.search = '';
                 }
               }}
-              className="relative overflow-hidden border border-primary/30 bg-primary/5 p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-primary/50 text-left group"
+              className="relative overflow-hidden border border-primary/30 bg-primary/5 p-3 flex flex-col justify-between gap-2.5 rounded-none transition-colors hover:border-primary/50 text-left group"
             >
               <div className="flex items-center justify-between w-full">
                 <div className="size-8 bg-primary/20 flex items-center justify-center text-primary rounded-none">
@@ -501,7 +505,7 @@ export function StudentDashboard() {
                 }
               }}
               disabled={summary.recentAssessments.length === 0}
-              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
+              className="relative overflow-hidden border border-border/50 bg-card p-3 flex flex-col justify-between gap-2.5 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
             >
               <div className="flex items-center justify-between w-full">
                 <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">
@@ -529,7 +533,7 @@ export function StudentDashboard() {
                 }
               }}
               disabled={summary.recentAssessments.length === 0}
-              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
+              className="relative overflow-hidden border border-border/50 bg-card p-3 flex flex-col justify-between gap-2.5 rounded-none transition-colors hover:border-border text-left group disabled:opacity-40"
             >
               <div className="flex items-center justify-between w-full">
                 <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">
@@ -555,7 +559,7 @@ export function StudentDashboard() {
                 const arcEl = document.getElementById('longitudinal-arc-card');
                 if (arcEl) arcEl.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="relative overflow-hidden border border-border/50 bg-card p-4 flex flex-col justify-between gap-3 rounded-none transition-colors hover:border-border text-left group"
+              className="relative overflow-hidden border border-border/50 bg-card p-3 flex flex-col justify-between gap-2.5 rounded-none transition-colors hover:border-border text-left group"
             >
               <div className="flex items-center justify-between w-full">
                 <div className="size-8 bg-surface border border-border flex items-center justify-center text-foreground-secondary rounded-none">

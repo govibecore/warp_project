@@ -7,7 +7,7 @@ export function SaveStatus() {
 
   const config = {
     saved: {
-      text: 'SYNCED · CLOUD & LOCAL',
+      text: 'SYNCED · SUPABASE CLOUD',
       shortText: 'SYNCED',
       dotClass: 'bg-emerald-500',
       icon: Check,
