@@ -39,13 +39,19 @@ export function WarpLottie({
   // We do NOT use the built-in `autoplay` prop because lottie-react hardcodes a console 
   // warning for any autoplay > 5s in development mode, even for purely decorative animations.
   // Instead, we manually call play() if autoplay was requested.
-  useEffect(() => {
-    if (isClient && lottieRef.current) {
+  const applyPlaybackPolicy = () => {
+    if (lottieRef.current) {
       if (!prefersReducedMotion && autoplay) {
         lottieRef.current.play();
       } else {
         lottieRef.current.pause();
       }
+    }
+  };
+
+  useEffect(() => {
+    if (isClient) {
+      applyPlaybackPolicy();
     }
   }, [isClient, prefersReducedMotion, autoplay]);
 
@@ -73,6 +79,15 @@ export function WarpLottie({
           // @ts-expect-error: ariaHidden is supported in lottie-web 5.12+ but missing from lottie-react types
           ariaHidden: true,
           ...props.rendererSettings,
+        }}
+        subscriptions={{
+          ...props.subscriptions,
+          ready: () => {
+            applyPlaybackPolicy();
+            if (props.subscriptions?.ready) {
+              props.subscriptions.ready();
+            }
+          },
         }}
         role="presentation"
         aria-hidden="true"
