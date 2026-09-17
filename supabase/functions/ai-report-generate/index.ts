@@ -4,6 +4,7 @@
 
 import { serve } from "@std/http/server";
 import { createClient } from "@supabase/supabase-js";
+import { Sentry, withSentry } from "../_shared/sentry.ts";
 
 interface AssessmentRecord {
   id?: string;
@@ -256,7 +257,7 @@ Guidelines:
 - Output MUST be valid JSON matching the requested schema exactly.`;
 
 // ── Main handler ───────────────────────────────────────────────────────
-serve(async (req: Request) => {
+serve(withSentry(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -284,6 +285,8 @@ serve(async (req: Request) => {
         status: 401,
       });
     }
+
+    Sentry.setUser({ id: user.id, email: user.email });
 
     const { assessmentId } = await req.json();
     if (!assessmentId) throw new Error('Missing assessmentId');
@@ -328,24 +331,26 @@ serve(async (req: Request) => {
     let cascadeStep = 'deterministic-fallback';
     let fallbackUsed = true;
 
-    for (const model of AI_MODEL_CASCADE) {
-      try {
-        const { content, modelUsed } = await callAI(model, SYSTEM_PROMPT, userPrompt, nvidiaKey, openrouterKey);
+    await Sentry.startSpan({ name: "Generate AI Report", op: "function.ai" }, async () => {
+      for (const model of AI_MODEL_CASCADE) {
+        try {
+          const { content, modelUsed } = await callAI(model, SYSTEM_PROMPT, userPrompt, nvidiaKey, openrouterKey);
 
-        // Parse and validate
-        const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
-        const parsed = JSON.parse(cleaned);
+          // Parse and validate
+          const cleaned = content.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
+          const parsed = JSON.parse(cleaned);
 
-        if (parsed.student_variant && parsed.parent_variant) {
-          reportData = parsed;
-          cascadeStep = modelUsed;
-          fallbackUsed = false;
-          break;
+          if (parsed.student_variant && parsed.parent_variant) {
+            reportData = parsed;
+            cascadeStep = modelUsed;
+            fallbackUsed = false;
+            break;
+          }
+        } catch (err) {
+          console.warn(`Cascade: ${model.label} failed:`, err instanceof Error ? err.message : err);
         }
-      } catch (err) {
-        console.warn(`Cascade: ${model.label} failed:`, err instanceof Error ? err.message : err);
       }
-    }
+    });
 
     // 6. Deterministic fallback - never fails
     if (!reportData) {
@@ -405,9 +410,10 @@ serve(async (req: Request) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('ai-report-generate error:', message);
+    Sentry.captureException(error);
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,
     });
   }
-});
+}));

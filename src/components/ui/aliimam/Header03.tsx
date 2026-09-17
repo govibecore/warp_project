@@ -89,7 +89,7 @@ export function Header03({ onEnter }: Header03Props) {
             aria-label="WARP Home"
           >
             <WarpLogo variant="lockup" className="h-6 sm:h-7 w-auto" />
-            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-border bg-transparent font-mono text-[9px] uppercase tracking-widest text-[#ABABAB] group-hover:border-[#00B4D8]/50 group-hover:text-[#00B4D8] transition-colors">
+            <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 border border-border bg-transparent font-mono text-[9px] uppercase tracking-widest text-foreground-secondary group-hover:border-[#00B4D8]/50 group-hover:text-[#00B4D8] transition-colors">
               Adaptive CAT
             </span>
           </a>
@@ -105,7 +105,7 @@ export function Header03({ onEnter }: Header03Props) {
                 e.preventDefault();
                 handleSmoothScroll(link.href);
               }}
-              className="relative flex h-16 items-center px-4 font-mono text-xs uppercase tracking-widest text-[#ABABAB] hover:text-[#00B4D8] transition-colors group cursor-pointer"
+              className="relative flex h-16 items-center px-4 font-mono text-xs uppercase tracking-widest text-foreground-secondary hover:text-[#00B4D8] transition-colors group cursor-pointer"
             >
               {link.label}
               {/* Sharp Fjord Cyan Underline */}
@@ -121,7 +121,7 @@ export function Header03({ onEnter }: Header03Props) {
               <button
                 type="button"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="flex size-9 items-center justify-center rounded-none border border-border bg-[#121212] text-white transition-colors hover:border-[#00B4D8] cursor-pointer"
+                className="flex size-9 items-center justify-center rounded-none border border-border bg-[#121212] text-foreground transition-colors hover:border-[#00B4D8] cursor-pointer"
                 aria-label="User menu"
               >
                 <div className="flex size-5.5 items-center justify-center rounded-none text-[#00B4D8] font-mono text-[11px]">
@@ -166,7 +166,7 @@ export function Header03({ onEnter }: Header03Props) {
               variant="outline"
               size="sm"
               onClick={() => onEnter('login')}
-              className="h-9 px-6 text-xs font-mono uppercase tracking-widest font-medium rounded-none border border-border bg-transparent text-[#ABABAB] hover:text-[#00B4D8] hover:border-[#00B4D8] transition-colors cursor-pointer shadow-none"
+              className="h-9 px-6 text-xs font-mono uppercase tracking-widest font-medium rounded-none border border-border bg-transparent text-foreground-secondary hover:text-[#00B4D8] hover:border-[#00B4D8] transition-colors cursor-pointer shadow-none"
             >
               Sign in
             </Button>
@@ -178,11 +178,11 @@ export function Header03({ onEnter }: Header03Props) {
           <button
             type="button"
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="flex size-9 items-center justify-center rounded-none border border-border bg-transparent text-white transition-colors hover:border-white cursor-pointer"
+            className="flex size-9 items-center justify-center rounded-none border border-border bg-transparent text-foreground transition-colors hover:text-foreground-muted cursor-pointer"
             aria-label={mobileOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="size-4.5 text-white" /> : <Menu className="size-4.5 text-white" />}
+            {mobileOpen ? <X className="size-4.5 text-foreground" /> : <Menu className="size-4.5 text-foreground" />}
           </button>
         </div>
       </div>
@@ -216,7 +216,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       handleSmoothScroll(link.href);
                     }}
-                    className="block border-b border-border py-6 text-3xl font-display uppercase tracking-widest text-white hover:text-primary transition-colors"
+                    className="block border-b border-border py-6 text-3xl font-display uppercase tracking-widest text-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>
@@ -234,7 +234,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       onEnter('login');
                     }}
-                    className="w-full h-12 text-sm font-mono uppercase tracking-widest rounded-none border border-border bg-transparent text-white hover:border-primary cursor-pointer shadow-none"
+                    className="w-full h-12 text-sm font-mono uppercase tracking-widest rounded-none border border-border bg-transparent text-foreground hover:border-primary cursor-pointer shadow-none"
                   >
                     Sign in to account
                   </Button>
@@ -247,7 +247,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       signOutUser();
                     }}
-                    className="w-full h-12 text-sm font-mono uppercase tracking-widest text-red-500 cursor-pointer rounded-none border border-border"
+                    className="w-full h-12 border border-border text-foreground rounded-none shadow-none text-sm font-mono uppercase tracking-widest hover:bg-surface cursor-pointer"
                   >
                     Sign out ({displayName})
                   </Button>

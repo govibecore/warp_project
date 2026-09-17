@@ -3,6 +3,7 @@
 
 import { serve } from "@std/http/server";
 import { createClient } from "@supabase/supabase-js";
+import { Sentry } from "../_shared/sentry.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -173,7 +174,7 @@ Guide the student using the Socratic method and first-principles reasoning. Neve
             content = content.substring(thinkingProcessMatch[0].length).trim();
           }
 
-          const leakedReasoningMatch = content.match(/^(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process)[\s\S]*?(?=### |👋|Hello)/i);
+          const leakedReasoningMatch = content.match(/^(?:#*\s*(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process))[\s\S]*?(?=### |👋|Hello)/i);
           if (leakedReasoningMatch && leakedReasoningMatch.index === 0) {
             content = content.substring(leakedReasoningMatch[0].length).trim();
           }
@@ -220,6 +221,7 @@ Guide the student using the Socratic method and first-principles reasoning. Neve
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    Sentry.captureException(error);
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

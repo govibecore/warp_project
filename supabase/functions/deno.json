@@ -3,6 +3,7 @@
     "@std/http/server": "https://deno.land/std@0.168.0/http/server.ts",
     "@supabase/functions-js": "jsr:@supabase/functions-js@^2",
     "@supabase/server": "npm:@supabase/server@^1",
-    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2"
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2",
+    "@sentry/deno": "npm:@sentry/deno@^8"
   }
 }

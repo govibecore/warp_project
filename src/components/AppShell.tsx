@@ -126,7 +126,6 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
   const [open, setOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [imgError, setImgError] = useState(false);
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const { session } = useWarpSession();
   const profile = session.profile;
@@ -206,22 +205,17 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
   }, [open]);
 
   async function handleSignOut() {
-    setIsSigningOut(true);
     setOpen(false);
-    setTimeout(async () => {
-      await signOutUser();
-    }, 3000);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('show_logout_animation', 'true');
+    }
+    await signOutUser();
   }
 
   const classDisplay = profile?.classLevel ? `Class ${profile.classLevel}` : 'Standard';
 
   return (
     <div ref={ref} className="relative">
-      {isSigningOut && (
-        <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 pointer-events-none">
-          <WarpLottie animationData={starburstData} className="w-48 h-48 opacity-80 mix-blend-screen" loop={false} durationMs={3000} />
-        </div>
-      )}
       {/* Trigger Button (Minimal single profile icon: no name, no badge, no chevron) */}
       <button
         id="user-menu-trigger"

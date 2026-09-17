@@ -192,7 +192,7 @@ function AuthForm({
         variant="outline"
         block
         size="md"
-        disabled={loading}
+        disabled={loading || isSuccess}
         className="w-full flex items-center justify-center gap-2.5 cursor-pointer border-border hover:bg-surface text-sm font-medium"
         onClick={async () => {
           setLoading(true);

@@ -220,7 +220,7 @@ Socratic Teaching Guidelines:
                       }
 
                       // Strip generic reasoning like "Analyze User Input:" that appears before the actual heading
-                      const leakedReasoningMatch = cleanedText.match(/^(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process)[\s\S]*?(?=### |👋|Hello)/i);
+                      const leakedReasoningMatch = cleanedText.match(/^(?:#*\s*(?:Analyze User Input|Determine Mode|Map to Parent|Draft -|Let's outline|Thinking Process))[\s\S]*?(?=### |👋|Hello)/i);
                       if (leakedReasoningMatch && leakedReasoningMatch.index === 0) {
                         cleanedText = cleanedText.substring(leakedReasoningMatch[0].length).trim();
                       }
