@@ -145,7 +145,7 @@ export function Landing({ onEnter }: LandingProps) {
   );
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background text-foreground flex flex-col font-sans relative overflow-hidden max-w-7xl mx-auto border-x border-border">
+    <div ref={containerRef} className="min-w-0 w-full min-h-screen bg-background text-foreground flex flex-col font-sans relative overflow-hidden max-w-7xl mx-auto border-x border-border">
       {showLogoutAnim && (
         <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 pointer-events-none">
           <WarpLottie animationData={starburstData} className="w-48 h-48 opacity-80 mix-blend-screen" loop={false} durationMs={3000} />
@@ -156,7 +156,7 @@ export function Landing({ onEnter }: LandingProps) {
       <Header03 onEnter={onEnter} />
 
       {/* HERO */}
-      <main className="overflow-hidden border-b border-border relative">
+      <main className="w-full min-w-0 overflow-hidden border-b border-border relative">
         <div
           className="absolute inset-0 z-0 pointer-events-none"
           style={{
@@ -174,41 +174,42 @@ export function Landing({ onEnter }: LandingProps) {
         <section className="relative mx-auto px-4 pb-0 pt-24 lg:pt-32 z-10">
           <div className="mx-auto max-w-5xl text-center">
 
-            <div className="hero-stagger inline-flex items-center gap-2 border border-border bg-surface/50 px-4 py-1.5 text-xs font-mono mb-8 uppercase tracking-widest rounded-none mx-auto">
+            <div className="hero-stagger inline-flex items-center gap-1.5 sm:gap-2 border border-border bg-surface/50 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono mb-6 sm:mb-8 uppercase tracking-widest rounded-none mx-auto">
               <SparklesIcon size={14} className="text-primary" />
               <span className="text-foreground-secondary">Forging Tomorrow's Global Champions</span>
             </div>
 
+            {/* HEADLINE */}
             <h1
-              className="hero-stagger font-display text-4xl sm:text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight mb-8 max-w-4xl mx-auto min-h-30 flex flex-col items-center justify-center gap-y-2"
+              className="w-full min-w-0 hero-stagger font-display text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-bold leading-none sm:leading-[1.05] tracking-tighter mb-8 sm:mb-10 max-w-6xl mx-auto min-h-40 sm:min-h-36 flex flex-col items-center justify-center gap-y-2 sm:gap-y-3 px-2 sm:px-0"
             >
-              <span className="text-center">Your child's potential.</span>
+              <span className="text-center text-balance">Your child's <br className="sm:hidden" /> potential.</span>
               <span className="text-primary flex items-center justify-center text-center">
                 <Typewriter words={["Measured.", "Proven.", "Unleashed."]} speed={60} delayBetweenWords={2500} />
               </span>
             </h1>
 
-            <p className="hero-stagger text-lg text-foreground-secondary max-w-2xl mb-12 font-medium mx-auto">
+            <p className="hero-stagger text-base sm:text-lg text-foreground-secondary max-w-2xl mb-10 sm:mb-12 font-medium mx-auto px-2 sm:px-0">
               Benchmark STEM and English skills against global standards. 30 questions. A lifetime of advantage.
             </p>
 
-            <div className="hero-stagger flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
+            <div className="hero-stagger flex flex-col sm:flex-row items-center justify-center gap-4 mb-12 sm:mb-16 w-full max-w-xs mx-auto sm:max-w-none">
               <Button
                 onClick={() => onEnter('choose')}
-                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none h-10 px-8 font-mono uppercase tracking-widest font-medium text-sm border-none w-full sm:w-auto cursor-pointer"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-none h-12 sm:h-10 px-8 font-mono uppercase tracking-widest font-medium text-xs sm:text-sm border-none w-full sm:w-auto cursor-pointer"
               >
                 Start Benchmark
               </Button>
             </div>
 
-            <div className="hero-stagger border border-border bg-card py-4 overflow-hidden mx-auto max-w-3xl rounded-none relative z-20 shadow-xl">
-              <Marquee className="text-foreground-secondary font-mono text-xs uppercase tracking-widest" repeat={6} pauseOnHover={false}>
-                <span className="px-8 flex items-center gap-2">■ NGSS GLOBAL STANDARD</span>
-                <span className="px-8 flex items-center gap-2">■ PISA 2025 ALIGNED</span>
-                <span className="px-8 flex items-center gap-2">■ INDIA NCF 2023</span>
-                <span className="px-8 flex items-center gap-2">■ ZERO DATA SOLD</span>
-                <span className="px-8 flex items-center gap-2">■ AI-POWERED REPORTS</span>
-                <span className="px-8 flex items-center gap-2">■ EMERGING TECH READY</span>
+            <div className="hero-stagger border border-border bg-card py-3 sm:py-4 overflow-hidden mx-auto max-w-3xl rounded-none relative z-20 shadow-xl">
+              <Marquee className="text-foreground-secondary font-mono text-[10px] sm:text-xs uppercase tracking-widest" repeat={6} pauseOnHover={false}>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ NGSS GLOBAL STANDARD</span>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ PISA 2025 ALIGNED</span>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ INDIA NCF 2023</span>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ ZERO DATA SOLD</span>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ AI-POWERED REPORTS</span>
+                <span className="px-4 sm:px-8 flex items-center gap-2">■ EMERGING TECH READY</span>
               </Marquee>
             </div>
           </div>
@@ -244,7 +245,7 @@ export function Landing({ onEnter }: LandingProps) {
       </main>
 
       {/* METRICS */}
-      <section id="features" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="features" className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left divide-y md:divide-y-0 md:divide-x divide-border">
           <div className="feature-card px-6">
             <div className="font-display text-6xl sm:text-7xl font-bold text-foreground mb-4 tracking-tighter">30<span className="text-3xl text-foreground-muted">Qs</span></div>
@@ -265,7 +266,7 @@ export function Landing({ onEnter }: LandingProps) {
       </section>
 
       {/* GALLERY */}
-      <section id="competencies" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="competencies" className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="mb-16 text-center max-w-2xl mx-auto">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">Built for the World Stage</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">Local grades do not predict global success. WARP competes on NGSS, PISA 2025, and NCF 2023 the international benchmarks that universities, scholarship boards, and future employers actually use.</p>
@@ -313,12 +314,12 @@ export function Landing({ onEnter }: LandingProps) {
       </section>
 
       {/* STEM CITY */}
-      <section id="frameworks" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="frameworks" className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="mb-16 text-center max-w-2xl mx-auto">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">The Blueprint of Global Competence</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">WARP maps your child's 5 core competencies into an interactive STEM City blueprint, contrasting their proficiency directly against the global cohort standard.</p>
         </div>
-        <div className="w-full h-125 border border-border bg-card overflow-hidden relative group">
+        <div className="w-full h-96 md:h-125 border border-border bg-card overflow-hidden relative group">
           <Suspense fallback={<div className="w-full h-full bg-surface flex items-center justify-center font-mono text-xs text-foreground-muted">INITIALIZING SCENE...</div>}>
             <StemCityCanvas className="w-full h-full" />
           </Suspense>
@@ -326,7 +327,7 @@ export function Landing({ onEnter }: LandingProps) {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-32 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <section id="faq" className="py-16 md:py-32 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <div className="mb-16 text-left">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">Questions Parents Ask</h2>
           <p className="text-foreground-secondary text-sm">Everything you need to know before starting your child's global benchmark.</p>
@@ -340,7 +341,7 @@ export function Landing({ onEnter }: LandingProps) {
 
       {/* CTA */}
       <section className="cta-section border-y border-border">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-32 flex flex-col items-center text-center relative overflow-hidden">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-32 flex flex-col items-center text-center relative overflow-hidden">
           <div className="absolute inset-0 z-0">
             <div
               style={{

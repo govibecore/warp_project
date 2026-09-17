@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Lottie, LottieProps } from 'lottie-react';
 import { cn } from '../../lib/utils';
 
@@ -20,6 +20,8 @@ export function WarpLottie({
 }: WarpLottieProps) {
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const lottieRef = useRef<any>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -33,6 +35,19 @@ export function WarpLottie({
     mediaQuery.addEventListener('change', listener);
     return () => mediaQuery.removeEventListener('change', listener);
   }, []);
+
+  // We do NOT use the built-in `autoplay` prop because lottie-react hardcodes a console 
+  // warning for any autoplay > 5s in development mode, even for purely decorative animations.
+  // Instead, we manually call play() if autoplay was requested.
+  useEffect(() => {
+    if (isClient && lottieRef.current) {
+      if (!prefersReducedMotion && autoplay) {
+        lottieRef.current.play();
+      } else {
+        lottieRef.current.pause();
+      }
+    }
+  }, [isClient, prefersReducedMotion, autoplay]);
 
   if (!isClient) return null;
 
@@ -49,10 +64,18 @@ export function WarpLottie({
     <div className={cn('pointer-events-none', className)}>
       <Lottie
         {...props}
+        lottieRef={lottieRef}
         src={animationData as any}
         loop={prefersReducedMotion ? false : loop}
-        autoplay={prefersReducedMotion ? false : autoplay}
+        autoplay={false}
         speed={computedSpeed}
+        rendererSettings={{
+          // @ts-expect-error: ariaHidden is supported in lottie-web 5.12+ but missing from lottie-react types
+          ariaHidden: true,
+          ...props.rendererSettings,
+        }}
+        role="presentation"
+        aria-hidden="true"
       />
     </div>
   );

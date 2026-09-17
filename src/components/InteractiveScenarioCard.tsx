@@ -37,7 +37,7 @@ export function InteractiveScenarioCard({
           <label
             key={index}
             className={
-              'group relative flex cursor-pointer items-center gap-4 border border-border px-5 py-4 text-left transition-colors -mt-px first:mt-0 ' +
+              'group relative flex cursor-pointer items-center gap-3 sm:gap-4 border border-border px-4 py-3 sm:px-5 sm:py-4 text-left transition-colors -mt-px first:mt-0 ' +
               (isSelected
                 ? 'z-10 border-primary bg-primary/8'
                 : 'hover:border-border-strong')

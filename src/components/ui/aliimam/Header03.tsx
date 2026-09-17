@@ -216,7 +216,7 @@ export function Header03({ onEnter }: Header03Props) {
                       setMobileOpen(false);
                       handleSmoothScroll(link.href);
                     }}
-                    className="block border-b border-border py-6 text-3xl font-display uppercase tracking-widest text-foreground hover:text-primary transition-colors"
+                    className="block border-b border-border py-6 text-2xl sm:text-3xl font-display uppercase tracking-widest text-foreground hover:text-primary transition-colors"
                   >
                     {link.label}
                   </a>

@@ -129,7 +129,7 @@ export function ProfileSetup() {
               required
             />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Class" htmlFor="classLevel">
               <Select
                 id="classLevel"
