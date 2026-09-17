@@ -8,6 +8,8 @@ import { useWarpSession } from '../context/WarpSessionContext';
 import { Button } from './ui/button';
 import { Input, Field } from './ui/input';
 import { WarpLogo } from './WarpLogo';
+import { WarpLottie } from './ui/warp-lottie';
+import checkmarkData from '../assets/lottie/checkmark.json';
 
 type FormMode = 'choose' | 'login' | 'register';
 
@@ -26,6 +28,7 @@ function AuthForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(initialNotice || null);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
@@ -64,8 +67,9 @@ function AuthForm({
       if (signUpErr) {
         setError(signUpErr.message);
       } else if (data.session) {
-        // Automatically signed in
+        setIsSuccess(true);
       } else {
+        setIsSuccess(true);
         setNotice('Registration successful! Please check your email to verify your account.');
       }
     } else {
@@ -75,6 +79,8 @@ function AuthForm({
       });
       if (signInErr) {
         setError(signInErr.message);
+      } else {
+        setIsSuccess(true);
       }
     }
     setLoading(false);
@@ -160,8 +166,12 @@ function AuthForm({
       </div>
 
       {/* Submit Button */}
-      <Button type="submit" disabled={loading} block size="md" className="w-full mt-2 cursor-pointer font-semibold text-xs tracking-wider uppercase">
-        {loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
+      <Button type="submit" disabled={loading || isSuccess} block size="md" className="w-full mt-2 cursor-pointer font-semibold text-xs tracking-wider uppercase relative overflow-hidden transition-colors">
+        {isSuccess ? (
+          <span className="absolute inset-0 flex items-center justify-center bg-primary">
+            <WarpLottie animationData={checkmarkData} className="w-8 h-8 opacity-90" loop={false} durationMs={3000} />
+          </span>
+        ) : loading ? 'Please wait...' : type === 'register' ? 'Sign up' : 'Sign in'}
       </Button>
 
       {/* Separator */}
@@ -182,7 +192,7 @@ function AuthForm({
         variant="outline"
         block
         size="md"
-        disabled={loading}
+        disabled={loading || isSuccess}
         className="w-full flex items-center justify-center gap-2.5 cursor-pointer border-border hover:bg-surface text-sm font-medium"
         onClick={async () => {
           setLoading(true);

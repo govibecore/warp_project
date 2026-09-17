@@ -4,6 +4,7 @@
 
 import { serve } from "@std/http/server";
 import { createClient } from "@supabase/supabase-js";
+import { Sentry } from "../_shared/sentry.ts";
 
 export const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -80,6 +81,7 @@ serve(async (req: Request) => {
 
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : "Unknown error";
+    Sentry.captureException(error);
     return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

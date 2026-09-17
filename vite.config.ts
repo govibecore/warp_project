@@ -1,4 +1,5 @@
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -6,14 +7,22 @@ import { fileURLToPath, URL } from 'node:url';
 import { nemotronSocraticTutorPlugin } from './vite-plugin-nemotron';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
-export default defineConfig({
-  plugins: [
-    nodePolyfills({
-      globals: {
-        Buffer: true,
-        global: true,
-        process: true,
-      },
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  
+  return {
+    plugins: [
+      sentryVitePlugin({
+        org: "warp-fd",
+        project: "javascript-react-qh",
+        authToken: env.SENTRY_AUTH_TOKEN,
+      }),
+      nodePolyfills({
+        globals: {
+          Buffer: true,
+          global: true,
+          process: true,
+        },
       protocolImports: true,
     }),
     react(), 
@@ -63,6 +72,7 @@ export default defineConfig({
   ],
   appType: 'spa',
   build: {
+    sourcemap: true,
     chunkSizeWarningLimit: 1500,
     rollupOptions: {
       output: {
@@ -85,5 +95,6 @@ export default defineConfig({
     },
     proxy: { '/api': 'http://localhost:3000' },
   },
-  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
+  resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } }
+  };
 });

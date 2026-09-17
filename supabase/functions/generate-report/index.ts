@@ -2,6 +2,7 @@
 import { withSupabase } from "https://esm.sh/@supabase/server@1.6.0";
 import { OpenAI } from "https://esm.sh/openai@4.40.0";
 import { z } from "https://esm.sh/zod@3.23.0";
+import { Sentry } from "../_shared/sentry.ts";
 
 const COMPETENCY_LABELS: Record<string, string> = {
   scientificInquiry: 'Scientific Inquiry',
@@ -168,6 +169,7 @@ Return the JSON report now.`;
 
     } catch (err: unknown) {
       console.error(err);
+      Sentry.captureException(err);
       const message = err instanceof Error ? err.message : String(err);
       return Response.json({ error: message }, { status: 500 });
     }

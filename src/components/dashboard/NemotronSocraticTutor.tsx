@@ -354,23 +354,24 @@ export function NemotronSocraticTutor({
 
                   <div className="flex items-center gap-1">
                     {/* Audience toggle — compact */}
-                    <div className="hidden sm:flex items-center border border-border bg-surface p-0.5 mr-2">
+                    <div className="hidden sm:flex items-center p-0.5 mr-2 bg-surface">
                       <button
                         onClick={() => handleModeChange('student')}
-                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                           mode === 'student'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-foreground-secondary hover:text-foreground'
+                            ? 'text-primary'
+                            : 'text-foreground-muted hover:text-foreground'
                         }`}
                       >
                         Student
                       </button>
+                      <div className="w-px h-3 bg-border" />
                       <button
                         onClick={() => handleModeChange('parent')}
-                        className={`px-2 py-1 text-xs font-medium transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
                           mode === 'parent'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-foreground-secondary hover:text-foreground'
+                            ? 'text-primary'
+                            : 'text-foreground-muted hover:text-foreground'
                         }`}
                       >
                         Parent
@@ -455,8 +456,8 @@ export function NemotronSocraticTutor({
                     <div
                       className={`max-w-[85%] p-4 text-sm leading-relaxed ${
                         m.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-card text-foreground border border-border'
+                          ? 'bg-surface text-foreground border border-primary/20'
+                          : 'text-foreground'
                       }`}
                     >
                       {m.role === 'user' ? (
@@ -506,14 +507,14 @@ export function NemotronSocraticTutor({
               </div>
 
               {/* ── Quick Prompts ── */}
-              <div className="border-t border-border px-4 py-2.5">
-                <div className="flex flex-wrap gap-1.5">
+              <div className="px-6 py-3 border-t border-border">
+                <div className="flex flex-wrap gap-x-4 gap-y-2">
                   {currentPrompts.map((qp, idx) => (
                     <button
                       key={idx}
                       disabled={loading}
                       onClick={() => handleSend(qp)}
-                      className="border border-border bg-card px-2.5 py-1 text-xs text-foreground-secondary hover:border-primary/50 hover:text-foreground transition-colors disabled:opacity-50 font-medium"
+                      className="text-xs text-foreground-muted hover:text-primary transition-colors disabled:opacity-50 font-medium text-left"
                     >
                       {qp}
                     </button>
@@ -540,7 +541,7 @@ export function NemotronSocraticTutor({
                         : (isEnglish ? 'Ask about rhetorical devices, author\'s intent...' : 'Ask why an option is a trap, or how to solve from first principles...')
                     }
                     disabled={loading}
-                    className="flex-1 border border-border bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-foreground-muted focus:border-primary focus:outline-none transition-colors"
+                    className="flex-1 bg-transparent px-2 py-1 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none transition-colors"
                   />
                   <Button
                     type="submit"

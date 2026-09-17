@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -10,6 +10,9 @@ import { Marquee } from './ui/aliimam/Marquee';
 import React, { Suspense } from 'react';
 const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
 import { Typewriter } from './ui/Typewriter';
+import { WarpLottie } from './ui/warp-lottie';
+import gridLoopData from '../assets/lottie/Grid Loop background.json';
+import starburstData from '../assets/lottie/star burst animation.json';
 
 interface LandingProps {
   onEnter(mode?: 'choose' | 'login' | 'register'): void;
@@ -62,6 +65,17 @@ gsap.registerPlugin(ScrollTrigger);
 
 export function Landing({ onEnter }: LandingProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showLogoutAnim, setShowLogoutAnim] = useState(
+    () => typeof window !== 'undefined' && window.sessionStorage.getItem('show_logout_animation') === 'true'
+  );
+
+  useEffect(() => {
+    if (showLogoutAnim) {
+      window.sessionStorage.removeItem('show_logout_animation');
+      const t = setTimeout(() => setShowLogoutAnim(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [showLogoutAnim]);
 
   useGSAP(
     () => {
@@ -131,7 +145,12 @@ export function Landing({ onEnter }: LandingProps) {
   );
 
   return (
-    <div ref={containerRef} className="min-h-screen text-foreground selection:bg-primary selection:text-primary-foreground font-sans overflow-x-hidden border-x border-border max-w-7xl mx-auto">
+    <div ref={containerRef} className="min-h-screen bg-background text-foreground flex flex-col font-sans relative overflow-hidden max-w-7xl mx-auto border-x border-border">
+      {showLogoutAnim && (
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 pointer-events-none">
+          <WarpLottie animationData={starburstData} className="w-48 h-48 opacity-80 mix-blend-screen" loop={false} durationMs={3000} />
+        </div>
+      )}
 
       {/* NAVIGATION */}
       <Header03 onEnter={onEnter} />
@@ -148,6 +167,9 @@ export function Landing({ onEnter }: LandingProps) {
             opacity: 0.65
           }}
         />
+        <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10 mix-blend-screen" style={{ maskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)' }}>
+          <WarpLottie animationData={gridLoopData} className="w-full h-full min-w-300" />
+        </div>
 
         <section className="relative mx-auto px-4 pb-0 pt-24 lg:pt-32 z-10">
           <div className="mx-auto max-w-5xl text-center">

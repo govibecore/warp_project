@@ -39,7 +39,7 @@ export function AppShell({
       }
     >
       {!hideHeader && (
-        <header className="no-print sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-card/80 backdrop-blur-xs px-4 md:px-8 transition-colors">
+        <header className="no-print sticky top-0 z-50 flex h-14 shrink-0 items-center justify-between gap-4 border-b border-border bg-background px-4 md:px-8 transition-colors">
           {/* ── Left Brand Lockup & Technical Telemetry ── */}
           <div className="flex items-center gap-3">
             <button
@@ -204,6 +204,9 @@ function UserMenu({ user }: { user: import('@supabase/supabase-js').User | null 
 
   async function handleSignOut() {
     setOpen(false);
+    if (typeof window !== 'undefined') {
+      window.sessionStorage.setItem('show_logout_animation', 'true');
+    }
     await signOutUser();
   }
 

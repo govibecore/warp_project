@@ -1,5 +1,7 @@
 import { forwardRef, type HTMLAttributes } from 'react';
 import { cn } from '../../lib/utils';
+import { WarpLottie } from './warp-lottie';
+import radarData from '../../assets/lottie/Radar.json';
 
 /**
  * A card is a surface with one hairline border. It does not glow, float, or
@@ -82,8 +84,9 @@ export function EmptyState({
   className?: string;
 }) {
   return (
-    <div className={cn('px-6 py-16 text-center', className)}>
-      <p className="font-medium">{title}</p>
+    <div className={cn('flex flex-col items-center justify-center px-6 py-16 text-center', className)}>
+      <WarpLottie animationData={radarData} className="w-24 h-24 mb-4 opacity-50" />
+      <p className="font-medium text-foreground">{title}</p>
       {hint && <p className="mt-1 text-sm text-foreground-secondary">{hint}</p>}
     </div>
   );

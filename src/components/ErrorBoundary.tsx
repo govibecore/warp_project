@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { CircleAlert } from 'lucide-react';
 import { Button } from './ui/button';
+import * as Sentry from '@sentry/react';
 
 interface Props {
   children?: ReactNode;
@@ -22,6 +23,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
+    Sentry.captureException(error, { extra: errorInfo as any });
   }
 
   public render() {

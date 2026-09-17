@@ -1,6 +1,7 @@
 allowBuilds:
   '@clerk/shared': true
   '@firebase/util': true
+  '@sentry/cli': true
   bcrypt: set this to true or false
   core-js: true
   esbuild: true
