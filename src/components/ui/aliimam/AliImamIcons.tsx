@@ -242,7 +242,7 @@ export const CopyIcon = forwardRef<SVGSVGElement, AliImamIconProps>(
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <rect x="8" y="8" width="14" height="14" rx="2" ry="2" />
+      <rect x="8" y="8" width="14" height="14" />
       <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
     </svg>
   )
@@ -343,7 +343,7 @@ export const DashboardIcon = forwardRef<SVGSVGElement, AliImamIconProps>(
     >
       <path d="M12 3v18" />
       <path d="M3 12h18" />
-      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <rect x="3" y="3" width="18" height="18" />
     </svg>
   )
 );

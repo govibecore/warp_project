@@ -110,10 +110,10 @@
   --popover: oklch(27% 0.03 280deg);
   --popover-foreground: oklch(95% 0.010 230deg);
 
-  /* 10% Luminous Accent (FlowDesk Yellow) */
-  --primary: oklch(85.2% 0.141 81.3deg);               /* Luminous Yellow */
-  --primary-foreground: oklch(22% 0.02 280deg);    /* Deep background text on yellow */
-  --primary-subtle: oklch(35% 0.08 81.3deg);       /* Subtle yellow wash */
+  /* 10% Oceanic Fjord Cyan Accent */
+  --primary: oklch(74% 0.16 215deg);               /* Fjord Cyan (Dark) */
+  --primary-foreground: oklch(22% 0.02 280deg);    /* Deep background text on cyan */
+  --primary-subtle: oklch(35% 0.08 215deg);       /* Subtle cyan wash */
 
   /* Semantics (Nordic Mineral Tones) */
   --success: oklch(75% 0.15 150deg);               /* Nordic Moss */
@@ -141,12 +141,12 @@
   --accent: oklch(30% 0.040 220deg);
   --accent-foreground: oklch(95% 0.010 230deg);
 
-  /* 5 STEAM Competency Spectrum (FlowDesk Accents) */
-  --chart-1: oklch(70.4% 0.119 284.1deg);           /* Periwinkle */
-  --chart-2: oklch(74.1% 0.174 341.2deg);           /* Pink */
-  --chart-3: oklch(85.2% 0.141 81.3deg);            /* Yellow */
-  --chart-4: oklch(70.4% 0.119 284.1deg);           /* Periwinkle */
-  --chart-5: oklch(74.1% 0.174 341.2deg);           /* Pink */
+  /* 5 STEAM Competency Mineral Spectrum (Dark Mode) */
+  --chart-1: oklch(64% 0.14 215deg);               /* Scientific Inquiry (Glacier Cyan) */
+  --chart-2: oklch(64% 0.15 270deg);               /* Computational Thinking (Cobalt Petrol) */
+  --chart-3: oklch(64% 0.13 170deg);               /* Engineering Design (Pine Teal) */
+  --chart-4: oklch(72% 0.15 65deg);                /* Mathematical Reasoning (Solar Amber) */
+  --chart-5: oklch(66% 0.16 315deg);               /* Systems Thinking (Heather Amethyst) */
   --radius: 0px;
   --sidebar: oklch(23% 0.022 235deg);
   --sidebar-foreground: oklch(95% 0.010 230deg);
@@ -155,7 +155,7 @@
   --sidebar-accent: oklch(28% 0.024 235deg);
   --sidebar-accent-foreground: oklch(95% 0.010 230deg);
   --sidebar-border: oklch(36% 0.025 235deg);
-  --sidebar-ring: oklch(85.2% 0.141 81.3deg);
+  --sidebar-ring: oklch(74% 0.16 215deg);
 
   /* FlowDesk Gradients */
   --gradient-flowdesk-1: oklch(74.1% 0.174 341.2deg); /* Pink */

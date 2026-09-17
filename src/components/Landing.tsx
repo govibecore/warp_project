@@ -7,7 +7,8 @@ import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
 import { ArrowRightIcon, SparklesIcon, PlusIcon, MinusIcon } from './ui/aliimam/AliImamIcons';
 import { Marquee } from './ui/aliimam/Marquee';
-import StemCityCanvas from './StemCityCanvas';
+import React, { Suspense } from 'react';
+const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
 import { Typewriter } from './ui/Typewriter';
 
 interface LandingProps {
@@ -221,7 +222,7 @@ export function Landing({ onEnter }: LandingProps) {
       </main>
 
       {/* METRICS */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="features" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left divide-y md:divide-y-0 md:divide-x divide-border">
           <div className="feature-card px-6">
             <div className="font-display text-6xl sm:text-7xl font-bold text-foreground mb-4 tracking-tighter">30<span className="text-3xl text-foreground-muted">Qs</span></div>
@@ -242,7 +243,7 @@ export function Landing({ onEnter }: LandingProps) {
       </section>
 
       {/* GALLERY */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="competencies" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="mb-16 text-center max-w-2xl mx-auto">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">Built for the World Stage</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">Local grades do not predict global success. WARP competes on NGSS, PISA 2025, and NCF 2023 the international benchmarks that universities, scholarship boards, and future employers actually use.</p>
@@ -290,18 +291,20 @@ export function Landing({ onEnter }: LandingProps) {
       </section>
 
       {/* STEM CITY */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
+      <section id="frameworks" className="py-32 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto border-b border-border">
         <div className="mb-16 text-center max-w-2xl mx-auto">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">The Blueprint of Global Competence</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">WARP maps your child's 5 core competencies into an interactive STEM City blueprint, contrasting their proficiency directly against the global cohort standard.</p>
         </div>
         <div className="w-full h-125 border border-border bg-card overflow-hidden relative group">
-          <StemCityCanvas className="w-full h-full" />
+          <Suspense fallback={<div className="w-full h-full bg-surface flex items-center justify-center font-mono text-xs text-foreground-muted">INITIALIZING SCENE...</div>}>
+            <StemCityCanvas className="w-full h-full" />
+          </Suspense>
         </div>
       </section>
 
       {/* FAQ */}
-      <section className="py-32 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
+      <section id="faq" className="py-32 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto">
         <div className="mb-16 text-left">
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">Questions Parents Ask</h2>
           <p className="text-foreground-secondary text-sm">Everything you need to know before starting your child's global benchmark.</p>

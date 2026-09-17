@@ -195,9 +195,8 @@ export function TextIonIgnite({
     <div
       ref={containerRef}
       className={cn('inline-flex items-baseline justify-center select-none', className)}
-      role="text"
-      aria-label={currentWord}
     >
+      <span className="sr-only">{currentWord}</span>
       <span aria-hidden="true" className="inline-flex whitespace-nowrap">
         {chars.map(({ id, char, isSpace }) => (
           <span

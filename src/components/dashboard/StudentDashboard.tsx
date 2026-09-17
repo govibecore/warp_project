@@ -101,7 +101,7 @@ export function StudentDashboard() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [dangerOpen, setDangerOpen] = useState(false);
-  const [timeRange, setTimeRange] = useState("90d");
+  const [timeRange, setTimeRange] = useState("all");
   const containerRef = useRef<HTMLElement>(null);
   const headerBgRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +293,7 @@ export function StudentDashboard() {
   });
 
   const filteredData = chartPoints.filter((item) => {
+    if (timeRange === "all") return true;
     const date = new Date(item.rawDate);
     const referenceDate = new Date();
     let daysToSubtract = 90;
@@ -726,9 +727,12 @@ export function StudentDashboard() {
                       className="w-35 rounded-none sm:ml-auto"
                       aria-label="Select a value"
                     >
-                      <SelectValue placeholder="Last 3 months" />
+                      <SelectValue placeholder="All history" />
                     </SelectTrigger>
                     <SelectContent className="rounded-none">
+                      <SelectItem value="all" className="rounded-none">
+                        All history
+                      </SelectItem>
                       <SelectItem value="90d" className="rounded-none">
                         Last 3 months
                       </SelectItem>

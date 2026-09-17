@@ -78,6 +78,6 @@
 ## 7. Psychometric Integrity & Security
 
 - WARP is an educational diagnostic instrument calibrated against **NGSS SEP, PISA 2025, and India NCF 2023**.
-- Guest mode runs 100% client-side in `localStorage`.
-- Registered accounts authenticate via Clerk and sync to Convex.
+- Guest mode is deprecated. All sessions run through authenticated profiles.
+- Registered accounts authenticate via Supabase.
 - Never weaken data privacy, non-enumerable token policies, or RLS security patterns.

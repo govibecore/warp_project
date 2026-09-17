@@ -76,12 +76,12 @@ function WarpApplication() {
   //   1. Google OAuth bounces to /?dashboard - URL already has the param so isDashboard is true (handled above).
   //   2. A signed-in user manually navigates to / - send them to their dashboard.
   useEffect(() => {
-    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard && !hasAssessmentId && !isSharedReport) {
+    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard && !hasAssessmentId && !isSharedReport && !pageParam) {
       window.history.replaceState({}, '', '/?dashboard');
       // Force a URL-param re-read by reloading in-place
       window.location.replace('/?dashboard');
     }
-  }, [isLoaded, isSignedIn, session.phase, isDashboard, hasAssessmentId, isSharedReport]);
+  }, [isLoaded, isSignedIn, session.phase, isDashboard, hasAssessmentId, isSharedReport, pageParam]);
 
   // Synchronize user to Supabase public.users and WarpSession
   useEffect(() => {
@@ -165,7 +165,7 @@ function WarpApplication() {
     body = <MarketingPage key="marketing" slug={pageParam} onEnter={handleEnterApp} />;
   } else if (isDashboard) {
     if (!isLoaded) {
-      body = <div className="min-h-screen bg-[#0A0A0A] flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-none animate-spin" /></div>;
+      body = <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-none animate-spin" /></div>;
     } else if (isSignedIn) {
       body = <StudentDashboard key="dashboard" />;
     } else {

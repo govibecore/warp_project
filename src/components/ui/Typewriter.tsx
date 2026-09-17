@@ -29,6 +29,7 @@ export function Typewriter({
     const timeout = setTimeout(
       () => {
         // Typing logic
+        if (!currentWord) return;
         if (!isDeleting) {
           if (charIndex < currentWord.length) {
             setDisplayText(currentWord.substring(0, charIndex + 1))
@@ -79,7 +80,7 @@ export function Typewriter({
   return (
     <div className="inline-block">
       <span className={className}>
-        {displayText}
+        {displayText || "\u00A0"}
         {cursor && (
           <span
             className="ml-1 transition-opacity duration-75"

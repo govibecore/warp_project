@@ -127,6 +127,12 @@ export function createStemCity(
       const wireframe = new THREE.LineSegments(edges, lineMat);
       child.add(wireframe);
       
+      // Dispose old material to prevent memory leaks
+      if (Array.isArray(child.material)) {
+        child.material.forEach((m) => m.dispose());
+      } else if (child.material) {
+        child.material.dispose();
+      }
       // Override material to flat mineral slate
       child.material = new THREE.MeshBasicMaterial({ color: 0x181818 });
     }

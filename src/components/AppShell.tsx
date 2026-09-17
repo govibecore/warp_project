@@ -364,10 +364,10 @@ function DropdownItem({
       type="button"
       role="menuitem"
       onClick={onClick}
-      className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-all cursor-pointer relative ${
+      className={`flex w-full items-start gap-3 px-4 py-2.5 text-left transition-all cursor-pointer relative group ${
         danger
           ? 'text-foreground-secondary hover:text-destructive hover:bg-destructive/5'
-          : 'text-foreground-secondary hover:text-foreground hover:bg-surface group'
+          : 'text-foreground-secondary hover:text-foreground hover:bg-surface'
       }`}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-0.5 transition-colors ${

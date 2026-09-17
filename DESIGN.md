@@ -33,11 +33,11 @@ Every border radius is **`0px`**. Surfaces meet at clean 90-degree corners. Bubb
 | `--elevated` | `oklch(1.000 0 0)` | Cards, panels, elevated surfaces | Layer 2 |
 | `--foreground` | `oklch(0.24 0.03 240)` | Body text (deep mineral slate) | >12:1 (AAA) |
 | `--foreground-secondary` | `oklch(0.46 0.03 235)` | Captions, secondary labels | >5.5:1 (AA) |
-| `--foreground-muted` | `oklch(0.58 0.025 230)` | Placeholders, inactive hints | >4.5:1 (AA) |
+| `--foreground-muted` | `oklch(0.58 0.025 230)` | Placeholders, inactive hints | >3:1 (Large/UI) |
 | `--primary` (Fjord Cyan) | `oklch(0.52 0.14 215)` | Primary action, focus, selection | >4.5:1 (AA) |
 | `--primary-foreground` | `oklch(1.000 0 0)` | Text on primary button | >4.5:1 (AA) |
 | `--success` (Moss) | `oklch(0.56 0.14 150)` | Positive diagnostic outcome | >4.5:1 (AA) |
-| `--warning` (Amber) | `oklch(0.62 0.15 65)` | Caution / timing threshold | >4.5:1 (AA) |
+| `--warning` (Amber) | `oklch(0.62 0.15 65)` | Caution / timing threshold | >3:1 (Large/UI) |
 | `--highlight` (Terracotta) | `oklch(0.62 0.15 45)` | Attention / misconception callout | >4.5:1 (AA) |
 | `--destructive` | `oklch(0.56 0.19 25)` | Error semantic | >4.5:1 (AA) |
 | `--border` | `oklch(0.88 0.012 210)` | Hairline boundary | Non-text 3:1 |
