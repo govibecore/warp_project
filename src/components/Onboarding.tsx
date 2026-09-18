@@ -90,7 +90,7 @@ function AuthForm({
     <form onSubmit={handleSubmit} className="flex w-full flex-col gap-3">
       {/* Header Block */}
       <div className="flex flex-col items-center gap-1.5 text-center mb-1">
-        <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
+        <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight text-foreground">
           {type === 'login' ? 'Welcome back' : 'Create your account'}
         </h1>
         <p className="text-muted-foreground text-[11px] text-balance">
@@ -364,7 +364,7 @@ export function Onboarding() {
               {mode === 'choose' && (
                 <motion.div key="choose" {...FADE_SLIDE} className="flex w-full flex-col gap-3">
                   <div className="flex flex-col items-center gap-1.5 text-center mb-3">
-                    <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
+                    <h1 className="text-lg sm:text-xl font-display font-bold tracking-tight text-foreground">
                       Get started
                     </h1>
                     <p className="text-muted-foreground text-[11px] text-balance max-w-xs mx-auto">
@@ -436,9 +436,9 @@ export function Onboarding() {
       <div className="relative hidden lg:flex flex-col items-center justify-center overflow-hidden lg:order-1 border-r border-border/40 p-8 lg:p-12">
         <img
           ref={imgRef}
-          src="/onboarding-bg.jpg"
+          src="/blueprint_native_dark.jpg"
           alt="WARP Assessment Architecture"
-          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 mix-blend-luminosity will-change-transform"
+          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 mix-blend-lighten will-change-transform"
           draggable={false}
         />
         {/* Ambient radial lighting overlay for blending */}

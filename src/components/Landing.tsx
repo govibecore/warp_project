@@ -202,7 +202,7 @@ export function Landing({ onEnter }: LandingProps) {
               </Button>
             </div>
 
-            <div className="hero-stagger border border-border bg-card py-3 sm:py-4 overflow-hidden mx-auto max-w-3xl rounded-none relative z-20 shadow-xl">
+            <div className="hero-stagger border border-border bg-card py-3 sm:py-4 overflow-hidden mx-auto max-w-3xl rounded-none relative z-20">
               <Marquee className="text-foreground-secondary font-mono text-[10px] sm:text-xs uppercase tracking-widest" repeat={6} pauseOnHover={false}>
                 <span className="px-4 sm:px-8 flex items-center gap-2">■ NGSS GLOBAL STANDARD</span>
                 <span className="px-4 sm:px-8 flex items-center gap-2">■ PISA 2025 ALIGNED</span>
@@ -215,29 +215,13 @@ export function Landing({ onEnter }: LandingProps) {
           </div>
 
           <div className="relative mt-8 overflow-hidden rounded-none pt-12 pb-24 max-w-5xl mx-auto border-x-0 sm:border-x border-t border-border">
-            <img
-              src="/hero_background_safe_1789598312867.jpg"
-              alt="WARP Benchmark Environment"
-              className="absolute inset-0 w-full h-full object-cover opacity-20 mix-blend-screen"
-            />
-            <div className="relative z-10 flex justify-center">
-              <div className="absolute inset-0 mx-auto max-w-72 aspect-9/16 border border-border bg-card/90 after:absolute after:-inset-4 after:border after:border-border/50 rounded-none"></div>
-              <div aria-hidden className="relative mx-auto max-w-72 w-full aspect-9/16 overflow-hidden border border-border bg-background rounded-none z-10">
+            <div className="relative z-10 flex justify-center w-full px-4 sm:px-12">
+              <div className="relative w-full max-w-4xl aspect-video overflow-hidden border border-border bg-surface rounded-none z-10 shadow-2xl">
                 <img
-                  src="/diagnostic_interface_safe_1789598324845.jpg"
-                  alt="Student Diagnostic Interface"
-                  className="w-full h-full object-cover opacity-100"
+                  src="/hero_native_dark.jpg"
+                  alt="Students collaborating"
+                  className="w-full h-full object-cover opacity-90 mix-blend-lighten"
                 />
-                <div className="absolute top-0 left-0 right-0 p-4 border-b border-border bg-card">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] tracking-widest text-foreground-secondary uppercase">WARP // BENCHMARKING</span>
-                    <span className="w-2 h-2 bg-primary animate-pulse rounded-none"></span>
-                  </div>
-                </div>
-                <div className="absolute bottom-0 left-0 right-0 p-6 bg-linear-to-t from-background to-transparent">
-                  <div className="h-1 w-1/3 bg-border mb-4"></div>
-                  <div className="font-mono text-xs text-foreground-secondary">Mapping global rank...</div>
-                </div>
               </div>
             </div>
           </div>
@@ -274,7 +258,7 @@ export function Landing({ onEnter }: LandingProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/adaptive_convergence_1789597259469.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              <img src="/adaptive_native_dark.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -287,7 +271,7 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/misconception_mapping_1789597272215.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              <img src="/mapping_native_dark.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -300,7 +284,7 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/global_rank_engine_1789597284659.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-75 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-center" />
+              <img src="/global_native_dark.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -319,10 +303,8 @@ export function Landing({ onEnter }: LandingProps) {
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">The Blueprint of Global Competence</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">WARP maps your child's 5 core competencies into an interactive STEM City blueprint, contrasting their proficiency directly against the global cohort standard.</p>
         </div>
-        <div className="w-full h-96 md:h-125 border border-border bg-card overflow-hidden relative group">
-          <Suspense fallback={<div className="w-full h-full bg-surface flex items-center justify-center font-mono text-xs text-foreground-muted">INITIALIZING SCENE...</div>}>
-            <StemCityCanvas className="w-full h-full" />
-          </Suspense>
+        <div className="w-full h-96 md:h-125 border border-border bg-surface overflow-hidden relative group">
+          <img src="/blueprint_native_dark.jpg" alt="Blueprint of Global Competence" className="w-full h-full object-cover opacity-90 mix-blend-lighten" />
         </div>
       </section>
 

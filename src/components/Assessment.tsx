@@ -13,6 +13,7 @@ import { getNemotronSocraticHint } from '../lib/nvidiaService';
 import { AssessmentTutorial } from './AssessmentTutorial';
 import { InteractiveScenarioCard } from './InteractiveScenarioCard';
 import { COMPETENCY_LABELS, CompetencyKey } from '../lib/irt/globalBenchmark';
+import { renderTextWithMath } from '../lib/mathRender';
 
 function getGuestId(): string {
   let id = localStorage.getItem('warp_guest_student_id');
@@ -323,7 +324,7 @@ export function Assessment() {
               </span>
 
               <h1 className="text-balance text-lg sm:text-xl font-medium leading-normal md:text-2xl">
-                {item.prompt}
+                {renderTextWithMath(item.prompt)}
               </h1>
 
               {item.context_image && (
@@ -387,7 +388,7 @@ export function Assessment() {
       </div>
 
       {/* ── Action bar ── */}
-      <footer className="z-10 flex shrink-0 items-center justify-between border-t border-border bg-background p-3 px-4 sm:p-4 sm:px-6">
+      <footer className="sticky bottom-0 z-10 flex shrink-0 items-center justify-between border-t border-border bg-background p-3 px-4 sm:p-4 sm:px-6">
         <div className="hidden items-center gap-2 text-[11px] text-foreground-secondary md:flex">
           <span>Select</span>
           <span className="kbd">A</span>

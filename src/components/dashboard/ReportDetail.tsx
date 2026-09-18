@@ -378,13 +378,7 @@ export function ReportDetail() {
           style={{ animation: 'fadeIn 300ms cubic-bezier(.2,.7,.2,1) both' }}
         >
           <div
-            className="absolute inset-0 z-0 pointer-events-none opacity-30 transition-opacity duration-700 group-hover:opacity-50"
-            style={{
-              WebkitMaskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
-              backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
-              backgroundSize: '22px 22px',
-              maskImage: 'radial-gradient(ellipse 100% 100% at 50% 0%, black 0%, transparent 80%)',
-            }}
+            className="absolute inset-0 z-0 pointer-events-none bg-surface"
           />
           <div className="relative z-10">
             {/* Top bar: nav only */}
@@ -414,7 +408,7 @@ export function ReportDetail() {
                   <Sparkles className="size-3 text-primary" />
                   <span className="text-foreground-secondary">WARP Global {subjectDisplay} Benchmark</span>
                 </div>
-                <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tighter leading-tight max-w-3xl bg-linear-to-br from-(--gradient-flowdesk-1) to-(--gradient-flowdesk-2) bg-clip-text text-transparent">
+                <h1 className="font-display text-5xl md:text-6xl font-bold tracking-tighter leading-tight max-w-3xl text-foreground">
                   Diagnostic Executive Summary
                 </h1>
                 {/* Compact metadata strip */}
@@ -462,31 +456,33 @@ export function ReportDetail() {
         {/* ── Sticky Tab Navigation ── */}
         <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-md">
           <div className="mx-auto max-w-5xl flex items-center justify-between px-4 md:px-8 py-2">
-            {/* Tab row — text only, no icons */}
-            <div className="flex items-center gap-0.5 overflow-x-auto">
-              {(['hub', 'onepage', 'student', 'parent', 'audit', 'trajectory'] as TabType[]).map((id) => {
-                const labels: Record<TabType, string> = {
-                  hub: 'Executive Hub',
-                  onepage: '1-Page Brief',
-                  student: 'Student Sprint',
-                  parent: 'Parent Blueprint',
-                  audit: 'Scenario Audit',
-                  trajectory: 'Longitudinal Arc',
-                };
-                return (
-                  <button
-                    key={id}
-                    onClick={() => setActiveTab(id)}
-                    className={`px-3 py-2.5 text-sm font-medium whitespace-nowrap transition-colors border-b-2 ${
-                      activeTab === id
-                        ? 'border-primary text-primary'
-                        : 'border-transparent text-foreground-secondary hover:text-foreground'
-                    }`}
-                  >
-                    {labels[id]}
-                  </button>
-                );
-              })}
+            {/* Segmented Control Tab Row */}
+            <div className="flex items-center overflow-x-auto hide-scrollbar w-full py-1 pr-4">
+              <div className="flex items-center border border-border bg-surface p-0.5 shrink-0">
+                {(['hub', 'onepage', 'student', 'parent', 'audit', 'trajectory'] as TabType[]).map((id) => {
+                  const labels: Record<TabType, string> = {
+                    hub: 'Executive Hub',
+                    onepage: '1-Page Brief',
+                    student: 'Student Sprint',
+                    parent: 'Parent Blueprint',
+                    audit: 'Scenario Audit',
+                    trajectory: 'Longitudinal Arc',
+                  };
+                  return (
+                    <button
+                      key={id}
+                      onClick={() => setActiveTab(id)}
+                      className={`px-4 py-2 text-[11px] font-mono font-bold uppercase tracking-wider whitespace-nowrap transition-colors border border-transparent ${
+                        activeTab === id
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'text-foreground-secondary hover:text-foreground hover:bg-accent/50'
+                      }`}
+                    >
+                      {labels[id]}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Share Report — always mounted so modal portal survives dropdown close */}
@@ -749,10 +745,7 @@ export function ReportDetail() {
                 
                 <div className="w-full flex items-center justify-center p-8 lg:p-16 relative">
                   {/* Subtle dot matrix behind the radar chart */}
-                  <div className="absolute inset-0 z-0 opacity-10 pointer-events-none" style={{
-                    backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
-                    backgroundSize: '32px 32px'
-                  }} />
+                  <div className="absolute inset-0 z-0 pointer-events-none bg-surface" />
                   <div className="w-full max-w-xl h-full relative z-10 aspect-square md:aspect-auto">
                     <ParakhRadarChart pillars={parakhVitals} baseline={50} />
                   </div>

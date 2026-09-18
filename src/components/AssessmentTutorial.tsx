@@ -58,11 +58,11 @@ export function AssessmentTutorial({ onStart }: AssessmentTutorialProps) {
         </div>
 
         {/* Big Warning Box */}
-        <div className="card border border-primary/30 bg-primary-subtle p-5">
+        <div className="card border-l-[3px] border-warning bg-surface p-5 rounded-none border-t-border border-r-border border-b-border">
           <div className="flex items-start gap-3">
-            <Lock className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+            <Lock className="mt-0.5 size-5 shrink-0 text-warning" aria-hidden="true" />
             <div>
-              <h2 className="mb-1 font-bold text-sm uppercase tracking-wider text-primary">Lock Your Answers Carefully</h2>
+              <h2 className="mb-1 font-bold text-sm uppercase tracking-wider text-warning">Lock Your Answers Carefully</h2>
               <p className="text-sm leading-relaxed text-foreground-secondary">
                 Because the questions adapt to your responses, <strong>you cannot go back to change an answer</strong> once it is locked in. Please review your choices carefully before proceeding to the next scenario.
               </p>

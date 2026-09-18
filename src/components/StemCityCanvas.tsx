@@ -154,14 +154,14 @@ export default function StemCityCanvas({
       </div>
 
       {/* 🧭 Controls Hint (Top Left) - Hidden on narrow mobile to prevent overlap 🧭 */}
-      <div className="hidden sm:block pointer-events-none absolute top-3 left-3 border border-border bg-background/85 backdrop-blur-sm px-3.5 py-2.5 z-10">
+      <div className="hidden sm:block pointer-events-none absolute top-3 left-3 border border-border bg-background px-3.5 py-2.5 z-10">
         <span className="font-mono text-[10px] tracking-wide text-primary">
           Drag to orbit · scroll to zoom
         </span>
       </div>
 
       {/* 🧭 Legend (Top Right) 🧭 */}
-      <div className="pointer-events-none absolute top-3 right-3 border border-border bg-background/85 backdrop-blur-sm p-2 sm:px-3.5 sm:py-2.5 z-10">
+      <div className="pointer-events-none absolute top-3 right-3 border border-border bg-background p-2 sm:px-3.5 sm:py-2.5 z-10">
         <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.16em] text-foreground-secondary text-right mb-1 sm:mb-2">
           How to read it
         </p>
