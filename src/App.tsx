@@ -186,10 +186,12 @@ function WarpApplication() {
   } else if (session.phase === 'landing') {
     body = <Landing key="landing" onEnter={handleEnterApp} />;
   } else if (session.phase === 'onboarding') {
-    if (!isProfileComplete || needsProfileSetup) {
+    if (!isSignedIn) {
+      body = <Onboarding key="onboarding" />;
+    } else if (!isProfileComplete || needsProfileSetup) {
       body = <ProfileSetup key="profileSetup" />;
     } else {
-      body = <Onboarding key="onboarding" />;
+      body = <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-none animate-spin" /></div>;
     }
   } else if (session.phase === 'hub') {
     body = <AssessmentHub key="hub" onSelectSubject={selectSubject} />;
