@@ -7,8 +7,7 @@ import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
 import { ArrowRightIcon, SparklesIcon, PlusIcon, MinusIcon } from './ui/aliimam/AliImamIcons';
 import { Marquee } from './ui/aliimam/Marquee';
-import React, { Suspense } from 'react';
-const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
+
 import { Typewriter } from './ui/Typewriter';
 import { WarpLottie } from './ui/warp-lottie';
 import gridLoopData from '../assets/lottie/Grid Loop background.json';
