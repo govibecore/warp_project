@@ -49,69 +49,95 @@ export function ParakhRadarChart({ pillars, baseline = 50, className = '' }: Par
   return (
     <div className={`flex flex-col gap-8 ${className}`}>
       {/* Recharts Radar */}
-      <div className="flex justify-center px-4 pt-4" role="img" aria-label="Competency breakdown radar chart">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-70">
-          <RadarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent 
-                  indicator="dot" 
-                  hideLabel={true}
-                  formatter={(val, name, item) => (
-                    <div className="flex flex-col gap-1">
-                      <span className="font-mono text-[10px] uppercase text-muted-foreground">{item.payload.domain}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold">{val}%</span>
-                        {name === 'value' && <span className="text-muted-foreground ml-1">Achieved</span>}
-                        {name === 'baseline' && <span className="text-muted-foreground ml-1">Baseline</span>}
+      <div className="flex justify-center px-4 pt-4">
+        <div className="hidden md:block w-full" role="img" aria-label="Competency breakdown radar chart">
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-70">
+            <RadarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent 
+                    indicator="dot" 
+                    hideLabel={true}
+                    formatter={(val, name, item) => (
+                      <div className="flex flex-col gap-1">
+                        <span className="font-mono text-[10px] uppercase text-muted-foreground">{item.payload.domain}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold">{val}%</span>
+                          {name === 'value' && <span className="text-muted-foreground ml-1">Achieved</span>}
+                          {name === 'baseline' && <span className="text-muted-foreground ml-1">Baseline</span>}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+                  />
+                }
+              />
+              <PolarGrid 
+                className="stroke-border/40" 
+                gridType="polygon"
+              />
+              <PolarAngleAxis 
+                dataKey="domain" 
+                tick={{ fill: "var(--foreground)", fontSize: 10, fontFamily: "var(--font-mono, monospace)", fontWeight: 700, opacity: 0.6 }} 
+              />
+              <PolarRadiusAxis
+                angle={90}
+                domain={[0, 100]}
+                tick={false}
+                axisLine={false}
+              />
+              <Radar
+                name="baseline"
+                dataKey="baseline"
+                stroke="var(--muted-foreground)"
+                strokeWidth={1.5}
+                strokeDasharray="4 4"
+                fill="transparent"
+              />
+              <Radar
+                name="value"
+                dataKey="value"
+                stroke="var(--color-value)"
+                strokeWidth={2}
+                fill="var(--color-value)"
+                fillOpacity={0.15}
+                dot={{
+                  r: 4,
+                  fill: "var(--color-value)",
+                  strokeWidth: 0,
+                }}
+                activeDot={{
+                  r: 6,
+                  fill: "var(--color-value)",
+                }}
+              />
+            </RadarChart>
+          </ChartContainer>
+        </div>
+
+        <div className="md:hidden flex flex-col gap-4 w-full">
+          {chartData.map((d, i) => (
+            <div key={i} className="flex flex-col gap-1.5 text-xs w-full">
+              <div className="flex justify-between items-center text-foreground-secondary">
+                <span className="font-semibold">{d.domain}</span>
+                <span className="font-mono text-primary font-bold">{d.value}</span>
+              </div>
+              <div className="relative h-1.5 w-full bg-border overflow-hidden">
+                <div
+                  className="absolute left-0 top-0 h-full bg-primary transition-[width] duration-700"
+                  style={{ width: `${d.value}%` }}
                 />
-              }
-            />
-            <PolarGrid 
-              className="stroke-border/40" 
-              gridType="polygon"
-            />
-            <PolarAngleAxis 
-              dataKey="domain" 
-              tick={{ fill: "var(--foreground)", fontSize: 10, fontFamily: "var(--font-mono, monospace)", fontWeight: 700, opacity: 0.6 }} 
-            />
-            <PolarRadiusAxis
-              angle={90}
-              domain={[0, 100]}
-              tick={false}
-              axisLine={false}
-            />
-            <Radar
-              name="baseline"
-              dataKey="baseline"
-              stroke="var(--muted-foreground)"
-              strokeWidth={1.5}
-              strokeDasharray="4 4"
-              fill="transparent"
-            />
-            <Radar
-              name="value"
-              dataKey="value"
-              stroke="var(--color-value)"
-              strokeWidth={2}
-              fill="var(--color-value)"
-              fillOpacity={0.15}
-              dot={{
-                r: 4,
-                fill: "var(--color-value)",
-                strokeWidth: 0,
-              }}
-              activeDot={{
-                r: 6,
-                fill: "var(--color-value)",
-              }}
-            />
-          </RadarChart>
-        </ChartContainer>
+                <div
+                  className="absolute top-0 bottom-0 border-l border-muted-foreground/50 border-dashed"
+                  style={{ left: `${d.baseline}%` }}
+                />
+              </div>
+              <div className="flex justify-between text-[9px] text-foreground-muted font-mono">
+                <span className="text-muted-foreground">Baseline: {d.baseline}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* 2x2 Legend grid */}

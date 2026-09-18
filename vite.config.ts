@@ -8,6 +8,7 @@ import { nemotronSocraticTutorPlugin } from './vite-plugin-nemotron';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig(({ mode }) => {
+  process.env.VITE_CJS_IGNORE_WARNING = 'true';
   const env = loadEnv(mode, process.cwd(), '');
   
   return {

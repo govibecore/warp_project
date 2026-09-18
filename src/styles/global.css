@@ -96,10 +96,10 @@
 .dark {
   color-scheme: dark;
 
-  /* 60% Canvas & Surfaces (FlowDesk Deep Violet-Grey) */
-  --background: oklch(22% 0.02 280deg);          /* Deep violet-grey background */
-  --surface: oklch(27% 0.03 280deg);             /* Sub-surface / inputs / tabs */
-  --elevated: oklch(30% 0.03 280deg);            /* Elevated cards / panels */
+  /* 60% Canvas & Surfaces (Twilight Mineral Slate) */
+  --background: oklch(21.5% 0.022 235deg);          /* Twilight mineral slate */
+  --surface: oklch(25.5% 0.024 235deg);             /* Sub-surface / inputs / tabs */
+  --elevated: oklch(29.5% 0.026 235deg);            /* Elevated cards / panels */
 
   /* 30% Typographic Hierarchy */
   --foreground: oklch(95% 0.010 230deg);           /* Crisp white */
@@ -612,12 +612,9 @@
      The logo's spacetime grid, translated to UI: blueprint hairlines,
      registration marks, ruler ticks. Decoration with a job - measurement. */
 
-  /* Blueprint hairline grid for section backdrops. Faint on purpose. */
+  /* Blueprint hairline grid for section backdrops - Disabled for clean Lagom surfaces */
   .bg-warp-grid {
-    background-image:
-      linear-gradient(to right, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px),
-      linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 5%, transparent) 1px, transparent 1px);
-    background-size: 2rem 2rem;
+    background-image: none;
   }
 
   /* Registration marks: two diagonal corner brackets inside a surface. */

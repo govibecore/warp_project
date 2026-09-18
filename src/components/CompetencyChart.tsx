@@ -76,52 +76,78 @@ export function CompetencyRadarChart({
 
   return (
     <div className="w-full h-72 relative z-10 min-w-0 min-h-0">
-      <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
-        <RadarChart cx="50%" cy="45%" outerRadius="62%" data={chartData}>
-          <PolarGrid stroke="var(--border)" strokeOpacity={0.6} />
-          <PolarAngleAxis
-            dataKey="competency"
-            tick={{ fill: 'var(--foreground-secondary)', fontSize: 9.5, fontWeight: 500 }}
-          />
-          <PolarRadiusAxis
-            angle={30}
-            domain={[0, 100]}
-            tick={{ fill: 'var(--foreground-muted)', fontSize: 8 }}
-            stroke="var(--border)"
-            tickCount={4}
-          />
-          <Radar
-            name="Student"
-            dataKey="student"
-            {...chartTheme.radar.student}
-            isAnimationActive
-            animationDuration={600}
-          />
-          <Radar
-            name="Singapore Top 10%"
-            dataKey="singaporeTop10"
-            {...chartTheme.radar.benchmark}
-          />
-          <Radar
-            name="Global Median"
-            dataKey="globalMedian"
-            {...chartTheme.radar.median}
-          />
-          <Tooltip contentStyle={chartTheme.tooltip.contentStyle} />
-          <Legend
-            verticalAlign="bottom"
-            wrapperStyle={{
-              fontSize: '10px',
-              paddingTop: '8px',
-              color: 'var(--foreground-secondary)',
-              lineHeight: '1.6',
-            }}
-            formatter={(value) => (
-              <span style={{ color: 'var(--foreground-secondary)', fontSize: '10px' }}>{value}</span>
-            )}
-          />
-        </RadarChart>
-      </ResponsiveContainer>
+      {/* Desktop: Radar Chart */}
+      <div className="hidden md:block w-full h-full relative z-10 min-w-0 min-h-0">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+          <RadarChart cx="50%" cy="45%" outerRadius="62%" data={chartData}>
+            <PolarGrid stroke="var(--border)" strokeOpacity={0.6} />
+            <PolarAngleAxis
+              dataKey="competency"
+              tick={{ fill: 'var(--foreground-secondary)', fontSize: 9.5, fontWeight: 500 }}
+            />
+            <PolarRadiusAxis
+              angle={30}
+              domain={[0, 100]}
+              tick={{ fill: 'var(--foreground-muted)', fontSize: 8 }}
+              stroke="var(--border)"
+              tickCount={4}
+            />
+            <Radar
+              name="Student"
+              dataKey="student"
+              {...chartTheme.radar.student}
+              isAnimationActive
+              animationDuration={600}
+            />
+            <Radar
+              name="Singapore Top 10%"
+              dataKey="singaporeTop10"
+              {...chartTheme.radar.benchmark}
+            />
+            <Radar
+              name="Global Median"
+              dataKey="globalMedian"
+              {...chartTheme.radar.median}
+            />
+            <Tooltip contentStyle={chartTheme.tooltip.contentStyle} />
+            <Legend
+              verticalAlign="bottom"
+              wrapperStyle={{
+                fontSize: '10px',
+                paddingTop: '8px',
+                color: 'var(--foreground-secondary)',
+                lineHeight: '1.6',
+              }}
+              formatter={(value) => (
+                <span style={{ color: 'var(--foreground-secondary)', fontSize: '10px' }}>{value}</span>
+              )}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Mobile: Horizontal Bars */}
+      <div className="md:hidden flex flex-col gap-3 w-full p-2 h-auto overflow-y-auto">
+        {chartData.map((d, i) => (
+          <div key={i} className="flex flex-col gap-1 text-xs">
+            <div className="flex justify-between items-center text-foreground-secondary">
+              <span className="font-semibold">{d.competency}</span>
+              <span className="font-mono text-primary font-bold">{d.student}</span>
+            </div>
+            <div className="h-1.5 w-full bg-border overflow-hidden">
+              <div
+                className="h-full bg-primary transition-[width] duration-700"
+                style={{ width: `${d.student}%` }}
+              />
+            </div>
+            {/* Optional markers for median/singapore could go here */}
+            <div className="flex justify-between text-[8px] text-foreground-muted font-mono px-0.5">
+              <span>Median: {d.globalMedian}</span>
+              <span>SG Top: {d.singaporeTop10}</span>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

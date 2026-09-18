@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client';
 import * as Sentry from '@sentry/react';
 import App from './App';
 import './styles/global.css';
-
+import 'katex/dist/katex.min.css';
 import { SupabaseAuthProvider } from './context/SupabaseAuthContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
