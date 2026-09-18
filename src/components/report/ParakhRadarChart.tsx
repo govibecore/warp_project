@@ -49,8 +49,8 @@ export function ParakhRadarChart({ pillars, baseline = 50, className = '' }: Par
   return (
     <div className={`flex flex-col gap-8 ${className}`}>
       {/* Recharts Radar */}
-      <div className="flex justify-center px-4 pt-4" role="img" aria-label="Competency breakdown radar chart">
-        <div className="hidden md:block w-full">
+      <div className="flex justify-center px-4 pt-4">
+        <div className="hidden md:block w-full" role="img" aria-label="Competency breakdown radar chart">
           <ChartContainer config={chartConfig} className="mx-auto aspect-square w-full max-w-70">
             <RadarChart data={chartData} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
               <ChartTooltip

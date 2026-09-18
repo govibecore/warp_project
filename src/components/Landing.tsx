@@ -7,7 +7,8 @@ import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
 import { ArrowRightIcon, SparklesIcon, PlusIcon, MinusIcon } from './ui/aliimam/AliImamIcons';
 import { Marquee } from './ui/aliimam/Marquee';
-
+import React, { Suspense } from 'react';
+const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
 import { Typewriter } from './ui/Typewriter';
 import { WarpLottie } from './ui/warp-lottie';
 import gridLoopData from '../assets/lottie/Grid Loop background.json';
@@ -217,9 +218,14 @@ export function Landing({ onEnter }: LandingProps) {
             <div className="relative z-10 flex justify-center w-full px-4 sm:px-12">
               <div className="relative w-full max-w-4xl aspect-video overflow-hidden border border-border bg-surface rounded-none z-10 shadow-2xl">
                 <img
+                  src="/hero_wc_bg.jpg"
+                  alt="Students collaborating"
+                  className="w-full h-full object-cover opacity-90 dark:hidden"
+                />
+                <img
                   src="/hero_native_dark.jpg"
                   alt="Students collaborating"
-                  className="w-full h-full object-cover opacity-90 mix-blend-lighten"
+                  className="w-full h-full object-cover opacity-90 hidden dark:block"
                 />
               </div>
             </div>
@@ -257,7 +263,8 @@ export function Landing({ onEnter }: LandingProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/adaptive_native_dark.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              <img src="/adaptive_wc_bg.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 dark:hidden" />
+              <img src="/adaptive_native_dark.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 hidden dark:block" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -270,7 +277,8 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/mapping_native_dark.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              <img src="/mapping_wc_bg.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 dark:hidden" />
+              <img src="/mapping_native_dark.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 hidden dark:block" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -283,7 +291,8 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/global_native_dark.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 mix-blend-lighten group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom" />
+              <img src="/global_wc_bg.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom dark:hidden" />
+              <img src="/global_native_dark.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom hidden dark:block" />
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -302,8 +311,10 @@ export function Landing({ onEnter }: LandingProps) {
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">The Blueprint of Global Competence</h2>
           <p className="text-foreground-secondary text-sm leading-relaxed">WARP maps your child's 5 core competencies into an interactive STEM City blueprint, contrasting their proficiency directly against the global cohort standard.</p>
         </div>
-        <div className="w-full h-96 md:h-125 border border-border bg-surface overflow-hidden relative group">
-          <img src="/blueprint_native_dark.jpg" alt="Blueprint of Global Competence" className="w-full h-full object-cover opacity-90 mix-blend-lighten" />
+        <div className="w-full h-96 md:h-125 border border-border bg-card overflow-hidden relative group">
+          <Suspense fallback={<div className="w-full h-full bg-surface flex items-center justify-center font-mono text-xs text-foreground-muted">INITIALIZING SCENE...</div>}>
+            <StemCityCanvas className="w-full h-full" />
+          </Suspense>
         </div>
       </section>
 

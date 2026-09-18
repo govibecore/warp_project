@@ -435,10 +435,15 @@ export function Onboarding() {
       {/* ── Right Column: Illustration ── */}
       <div className="relative hidden lg:flex flex-col items-center justify-center overflow-hidden lg:order-1 border-r border-border/40 p-8 lg:p-12">
         <img
-          ref={imgRef}
+          src="/blueprint_wc_bg.jpg"
+          alt="WARP Assessment Architecture"
+          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 dark:hidden will-change-transform"
+          draggable={false}
+        />
+        <img
           src="/blueprint_native_dark.jpg"
           alt="WARP Assessment Architecture"
-          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 mix-blend-lighten will-change-transform"
+          className="absolute inset-0 w-full h-full object-contain p-8 lg:p-12 opacity-90 hidden dark:block will-change-transform"
           draggable={false}
         />
         {/* Ambient radial lighting overlay for blending */}
