@@ -100,7 +100,7 @@ export function ParakhRadarChart({ pillars, baseline = 50, className = '' }: Par
                 stroke="var(--color-value)"
                 strokeWidth={2}
                 fill="var(--color-value)"
-                fillOpacity={0.15}
+                fillOpacity={0.4}
                 dot={{
                   r: 4,
                   fill: "var(--color-value)",

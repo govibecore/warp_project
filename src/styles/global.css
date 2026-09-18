@@ -91,6 +91,27 @@
   --sidebar-accent-foreground: oklch(24% 0.03 240deg);
   --sidebar-border: oklch(88% 0.012 210deg);
   --sidebar-ring: oklch(52% 0.14 215deg);
+
+  /* Redesign Report UI Tokens (Light Mode) */
+  --surface-page: oklch(98.2% 0.006 205deg);
+  --surface-card: var(--surface-page);
+  --surface-elevated: oklch(100% 0 0deg);
+  --border-hairline: oklch(88% 0.012 210deg);
+  --border-hover: oklch(76% 0.020 215deg);
+  --border-active: oklch(52% 0.14 215deg);
+
+  --ink-primary: oklch(24% 0.03 240deg);
+  --ink-secondary: oklch(46% 0.03 235deg);
+  --ink-muted: oklch(58% 0.025 230deg);
+  --ink-inverse: oklch(100% 0 0deg);
+
+  --accent-default: oklch(52% 0.14 215deg);
+  --accent-pressed: oklch(46% 0.14 215deg);
+  --accent-muted: oklch(94% 0.025 210deg);
+
+  --semantic-critical: oklch(56% 0.19 25deg);
+  --semantic-watch: oklch(62% 0.15 65deg);
+  --semantic-positive: oklch(56% 0.14 150deg);
 }
 
 .dark {
@@ -148,6 +169,28 @@
   --chart-4: oklch(72% 0.15 65deg);                /* Mathematical Reasoning (Solar Amber) */
   --chart-5: oklch(66% 0.16 315deg);               /* Systems Thinking (Heather Amethyst) */
   --radius: 0px;
+
+  /* Redesign Report UI Tokens (Dark Mode Primary) */
+  --surface-page: oklch(0.215 0.022 235);
+  --surface-card: var(--surface-page);
+  --surface-elevated: oklch(0.245 0.022 235);
+  --border-hairline: oklch(0.30 0.02 235);
+  --border-hover: oklch(0.40 0.02 235);
+  --border-active: oklch(0.74 0.16 215);
+
+  --ink-primary: oklch(0.96 0.01 235);
+  --ink-secondary: oklch(0.72 0.01 235);
+  --ink-muted: oklch(0.55 0.01 235);
+  --ink-inverse: oklch(0.15 0.02 235);
+
+  --accent-default: oklch(0.74 0.16 215);
+  --accent-pressed: oklch(0.66 0.16 215);
+  --accent-muted: oklch(0.40 0.10 215);
+
+  --semantic-critical: oklch(0.62 0.18 25);
+  --semantic-watch: oklch(0.72 0.14 75);
+  --semantic-positive: oklch(0.66 0.12 155);
+
   --sidebar: oklch(23% 0.022 235deg);
   --sidebar-foreground: oklch(95% 0.010 230deg);
   --sidebar-primary: oklch(74% 0.16 215deg);
@@ -204,6 +247,25 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Redesign UI Colors */
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-elevated: var(--surface-elevated);
+  --color-border-hairline: var(--border-hairline);
+  --color-border-hover: var(--border-hover);
+  --color-border-active: var(--border-active);
+  --color-ink-primary: var(--ink-primary);
+  --color-ink-secondary: var(--ink-secondary);
+  --color-ink-muted: var(--ink-muted);
+  --color-ink-inverse: var(--ink-inverse);
+  --color-accent-default: var(--accent-default);
+  --color-accent-pressed: var(--accent-pressed);
+  --color-accent-muted: var(--accent-muted);
+  --color-semantic-critical: var(--semantic-critical);
+  --color-semantic-watch: var(--semantic-watch);
+  --color-semantic-positive: var(--semantic-positive);
+
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
