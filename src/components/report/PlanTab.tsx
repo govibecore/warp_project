@@ -186,7 +186,7 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
                          <span className="font-mono text-ink-muted text-[12px] mt-0.5">0{i+1}</span>
                          <div>
                             <p className="text-[14px] font-medium text-ink-primary leading-snug">"{qText}"</p>
-                            {qWhy && <p className="text-[13px] text-ink-secondary mt-1 text-ink-muted">{qWhy}</p>}
+                            {qWhy && <p className="text-[13px] text-ink-secondary mt-1">{qWhy}</p>}
                          </div>
                       </li>
                     )

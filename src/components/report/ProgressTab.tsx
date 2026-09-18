@@ -155,7 +155,7 @@ export function ProgressTab({
            <Card className="h-full flex flex-col p-6">
               <h4 className="font-display font-medium text-ink-primary mb-6 text-center">Score Trajectory (Scaled / 900)</h4>
               
-              <div className="flex-1 min-h-[300px] w-full mt-4">
+              <div className="flex-1 min-h-75 w-full mt-4">
                 {isInitial ? (
                   <div className="h-full w-full border border-dashed border-border-hairline flex flex-col items-center justify-center p-8 text-center text-ink-secondary">
                     <History className="size-6 mb-3 text-ink-muted" />

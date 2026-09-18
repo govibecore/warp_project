@@ -31,7 +31,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
 Card.displayName = 'Card';
 
 export function CardHeader({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('flex flex-col space-y-1.5 px-[28px] pt-[24px] pb-4', className)} {...props} />;
+  return <div className={cn('flex flex-col space-y-1.5 px-7 pt-6 pb-4', className)} {...props} />;
 }
 
 export function CardTitle({ className, ...props }: HTMLAttributes<HTMLHeadingElement>) {
@@ -62,14 +62,14 @@ export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElemen
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-[28px] pb-[24px] text-[14px] leading-[1.55] max-w-[70ch]', className)} {...props} />;
+  return <div className={cn('px-7 pb-6 text-[14px] leading-[1.55] max-w-[70ch]', className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 border-t border-border-hairline bg-surface-card px-[28px] py-4',
+        'flex items-center gap-3 border-t border-border-hairline bg-surface-card px-7 py-4',
         className,
       )}
       {...props}

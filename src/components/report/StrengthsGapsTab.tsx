@@ -108,7 +108,7 @@ export function StrengthsGapsTab({
         <div className="lg:col-span-1">
           <Card className="p-6 h-full flex flex-col justify-center items-center bg-surface-page">
             <h4 className="font-display font-medium text-ink-primary mb-6 text-center">Radar Profile</h4>
-            <div className="w-full max-w-[280px]">
+            <div className="mx-auto w-full max-w-70 aspect-square">
               <ParakhRadarChart pillars={parakhVitals} baseline={50} />
             </div>
           </Card>
