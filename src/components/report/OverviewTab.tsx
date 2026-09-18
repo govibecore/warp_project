@@ -84,7 +84,7 @@ export function OverviewTab({
 
         {/* CTA */}
         <Card className="flex flex-col justify-center items-start">
-          <CardContent className="pt-[24px]">
+          <CardContent className="pt-6">
             <div className="space-y-4">
               <h4 className="text-xl font-display text-ink-primary">Next Steps</h4>
               <p className="text-[14px] leading-[1.6] text-ink-secondary max-w-[40ch]">

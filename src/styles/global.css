@@ -35,6 +35,7 @@
   --background: oklch(98.2% 0.006 205deg);          /* Crisp clean mineral paper */
   --surface: oklch(95.6% 0.010 205deg);             /* Subtle section background */
   --elevated: oklch(100% 0 0deg);                  /* Pure white card / panel surface */
+
   /* 30% Typographic Hierarchy (Deep mineral slate text, >12:1 WCAG AAA contrast) */
   --foreground: oklch(24% 0.03 240deg);            /* Crisp deep slate body copy */
   --foreground-secondary: oklch(46% 0.03 235deg);  /* Readable secondary slate */
@@ -183,7 +184,6 @@
   --semantic-critical: oklch(62% 0.18 25deg);
   --semantic-watch: oklch(72% 0.14 75deg);
   --semantic-positive: oklch(66% 0.12 155deg);
-
   --sidebar: oklch(23% 0.022 235deg);
   --sidebar-foreground: oklch(95% 0.010 230deg);
   --sidebar-primary: oklch(74% 0.16 215deg);
@@ -258,7 +258,6 @@
   --color-semantic-critical: var(--semantic-critical);
   --color-semantic-watch: var(--semantic-watch);
   --color-semantic-positive: var(--semantic-positive);
-
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
