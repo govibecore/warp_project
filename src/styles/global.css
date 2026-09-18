@@ -35,7 +35,6 @@
   --background: oklch(98.2% 0.006 205deg);          /* Crisp clean mineral paper */
   --surface: oklch(95.6% 0.010 205deg);             /* Subtle section background */
   --elevated: oklch(100% 0 0deg);                  /* Pure white card / panel surface */
-
   /* 30% Typographic Hierarchy (Deep mineral slate text, >12:1 WCAG AAA contrast) */
   --foreground: oklch(24% 0.03 240deg);            /* Crisp deep slate body copy */
   --foreground-secondary: oklch(46% 0.03 235deg);  /* Readable secondary slate */
@@ -99,16 +98,13 @@
   --border-hairline: oklch(88% 0.012 210deg);
   --border-hover: oklch(76% 0.020 215deg);
   --border-active: oklch(52% 0.14 215deg);
-
   --ink-primary: oklch(24% 0.03 240deg);
   --ink-secondary: oklch(46% 0.03 235deg);
   --ink-muted: oklch(58% 0.025 230deg);
   --ink-inverse: oklch(100% 0 0deg);
-
   --accent-default: oklch(52% 0.14 215deg);
   --accent-pressed: oklch(46% 0.14 215deg);
   --accent-muted: oklch(94% 0.025 210deg);
-
   --semantic-critical: oklch(56% 0.19 25deg);
   --semantic-watch: oklch(62% 0.15 65deg);
   --semantic-positive: oklch(56% 0.14 150deg);
@@ -171,25 +167,22 @@
   --radius: 0px;
 
   /* Redesign Report UI Tokens (Dark Mode Primary) */
-  --surface-page: oklch(0.215 0.022 235);
+  --surface-page: oklch(21.5% 0.022 235deg);
   --surface-card: var(--surface-page);
-  --surface-elevated: oklch(0.245 0.022 235);
-  --border-hairline: oklch(0.30 0.02 235);
-  --border-hover: oklch(0.40 0.02 235);
-  --border-active: oklch(0.74 0.16 215);
-
-  --ink-primary: oklch(0.96 0.01 235);
-  --ink-secondary: oklch(0.72 0.01 235);
-  --ink-muted: oklch(0.55 0.01 235);
-  --ink-inverse: oklch(0.15 0.02 235);
-
-  --accent-default: oklch(0.74 0.16 215);
-  --accent-pressed: oklch(0.66 0.16 215);
-  --accent-muted: oklch(0.40 0.10 215);
-
-  --semantic-critical: oklch(0.62 0.18 25);
-  --semantic-watch: oklch(0.72 0.14 75);
-  --semantic-positive: oklch(0.66 0.12 155);
+  --surface-elevated: oklch(24.5% 0.022 235deg);
+  --border-hairline: oklch(30% 0.02 235deg);
+  --border-hover: oklch(40% 0.02 235deg);
+  --border-active: oklch(74% 0.16 215deg);
+  --ink-primary: oklch(96% 0.01 235deg);
+  --ink-secondary: oklch(72% 0.01 235deg);
+  --ink-muted: oklch(55% 0.01 235deg);
+  --ink-inverse: oklch(15% 0.02 235deg);
+  --accent-default: oklch(74% 0.16 215deg);
+  --accent-pressed: oklch(66% 0.16 215deg);
+  --accent-muted: oklch(40% 0.10 215deg);
+  --semantic-critical: oklch(62% 0.18 25deg);
+  --semantic-watch: oklch(72% 0.14 75deg);
+  --semantic-positive: oklch(66% 0.12 155deg);
 
   --sidebar: oklch(23% 0.022 235deg);
   --sidebar-foreground: oklch(95% 0.010 230deg);
@@ -900,7 +893,7 @@ html:not(.dark) select option:checked {
 
 @media print {
   @page {
-    size: A4;
+    size: a4;
     margin: 15mm;
   }
 
@@ -914,13 +907,11 @@ html:not(.dark) select option:checked {
   /* Prevent elements from awkwardly breaking across pages */
   .break-inside-avoid {
     break-inside: avoid;
-    page-break-inside: avoid;
   }
 
   /* Keep headers together with their content */
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid;
-    page-break-after: avoid;
   }
 
   /* Hide interactive/UI elements */
@@ -948,12 +939,10 @@ html:not(.dark) select option:checked {
   
   .print-page {
     break-after: page;
-    page-break-after: always;
   }
 
   /* Last page shouldn't break to a blank page */
   .print-page:last-of-type {
     break-after: auto;
-    page-break-after: auto;
   }
 }

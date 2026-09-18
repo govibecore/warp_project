@@ -346,7 +346,7 @@ export function ReportDetail() {
 
   return (
     <div className="w-full flex-1 overflow-y-auto pb-32">
-      <div className="mx-auto max-w-[1200px] border-x border-border bg-background min-h-screen" id="report-printable-area">
+      <div className="mx-auto max-w-300 border-x border-border bg-background min-h-screen" id="report-printable-area">
         {/* ── Header ── */}
         <header
           className="relative border-b border-border px-4 py-16 md:px-8 md:py-24 screen-only overflow-hidden group"
@@ -432,7 +432,7 @@ export function ReportDetail() {
 
         {/* ── Sticky Tab Navigation ── */}
         <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-md">
-          <div className="mx-auto max-w-[1200px] flex items-center justify-between px-4 md:px-8 py-2">
+          <div className="mx-auto max-w-300 flex items-center justify-between px-4 md:px-8 py-2">
             {/* Segmented Control Tab Row */}
             <div className="flex items-center overflow-x-auto hide-scrollbar w-full py-1 pr-4">
               <div className="flex items-center border-b border-border w-full shrink-0">
