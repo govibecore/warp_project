@@ -101,109 +101,6 @@
   --border-active: oklch(52% 0.14 215deg);
 
   --ink-primary: oklch(24% 0.03 240deg);
-@import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
-@import "@fontsource-variable/space-grotesk";
-
-/* ══════════════════════════════════════════════════════════════════════════
-   NORDIC LAGOM - DESIGN SYSTEM
-   "Lagom": not too much, not too little. The right amount.
-
-   Light is the default. The scene is a student at a desk in daytime, a parent
-   reading a printed report, a classroom projector. Dark is a complete second
-   theme for evening and low-glare use - not an afterthought override.
-
-   Colour strategy: Restrained. Warm paper neutrals carry the surface; one
-   accent (Fjord) marks action. Moss, Terracotta and Amber are semantics with
-   meaning, never decoration.
-
-   Elevation is declared once: a single hairline border. No stacked shadows,
-   no glass, no glow. Depth comes from space and alignment.
-   ══════════════════════════════════════════════════════════════════════════ */
-
-@custom-variant dark (&:where(.dark, .dark *));
-
-/* ══════════════════════════════════════════════════════════════════════════
-   NORDIC CYBER-MINERAL COLOR SCHEME
-   Light is the daytime/parent/projector standard.
-   Dark is the twilight mineral slate standard (low glare, zero eyestrain).
-   ══════════════════════════════════════════════════════════════════════════ */
-
-:root {
-  color-scheme: light;
-
-  /* 60% Canvas & Surfaces (Warm Mineral Paper) */
-  --background: oklch(98.2% 0.006 205deg);          /* Crisp clean mineral paper */
-  --surface: oklch(95.6% 0.010 205deg);             /* Subtle section background */
-  --elevated: oklch(100% 0 0deg);                  /* Pure white card / panel surface */
-
-  /* 30% Typographic Hierarchy (Deep mineral slate text, >12:1 WCAG AAA contrast) */
-  --foreground: oklch(24% 0.03 240deg);            /* Crisp deep slate body copy */
-  --foreground-secondary: oklch(46% 0.03 235deg);  /* Readable secondary slate */
-  --foreground-muted: oklch(58% 0.025 230deg);     /* Captions & subtle placeholders */
-  --card: oklch(100% 0 0deg);                      /* White elevated card */
-  --card-foreground: oklch(24% 0.03 240deg);
-  --popover: oklch(100% 0 0deg);
-  --popover-foreground: oklch(24% 0.03 240deg);
-
-  /* 10% Oceanic Fjord Cyan Accent (Authoritative, readable >4.5:1 on light paper) */
-  --primary: oklch(52% 0.14 215deg);               /* Deep Fjord Cyan */
-  --primary-foreground: oklch(100% 0 0deg);        /* Pure white text on primary button */
-  --primary-subtle: oklch(94% 0.025 210deg);       /* Soft cyan wash for active states */
-
-  /* Semantics (Nordic Mineral Tones) */
-  --success: oklch(56% 0.14 150deg);               /* Nordic Moss Green */
-  --success-foreground: oklch(100% 0 0deg);
-  --success-subtle: oklch(94% 0.03 150deg);
-  --warning: oklch(62% 0.15 65deg);                /* Nordic Amber */
-  --warning-foreground: oklch(18% 0.04 65deg);
-  --warning-subtle: oklch(95% 0.03 65deg);
-  --highlight: oklch(62% 0.15 45deg);              /* Terracotta Coral */
-  --highlight-foreground: oklch(100% 0 0deg);
-  --highlight-subtle: oklch(94% 0.03 45deg);
-  --destructive: oklch(56% 0.19 25deg);            /* Nordic Rowan Red */
-  --destructive-foreground: oklch(100% 0 0deg);
-  --destructive-subtle: oklch(95% 0.03 25deg);
-
-  /* Structure & Hairline Borders */
-  --border: oklch(88% 0.012 210deg);               /* Crisp 1px hairline border */
-  --border-strong: oklch(76% 0.020 215deg);        /* Emphasized border on hover/focus */
-  --input: oklch(92% 0.015 210deg);
-  --ring: oklch(52% 0.14 215deg);
-  --secondary: oklch(94% 0.012 210deg);
-  --secondary-foreground: oklch(24% 0.03 240deg);
-  --muted: oklch(94% 0.012 210deg);
-  --muted-foreground: oklch(54% 0.025 230deg);
-  --accent: oklch(92% 0.025 215deg);
-  --accent-foreground: oklch(24% 0.03 240deg);
-
-  /* 5 STEAM Competency Mineral Spectrum (Light Mode) */
-  --chart-1: oklch(52% 0.14 215deg);               /* Scientific Inquiry (Glacier Cyan) */
-  --chart-2: oklch(52% 0.15 270deg);               /* Computational Thinking (Cobalt Petrol) */
-  --chart-3: oklch(52% 0.13 170deg);               /* Engineering Design (Pine Teal) */
-  --chart-4: oklch(60% 0.15 65deg);                /* Mathematical Reasoning (Solar Amber) */
-  --chart-5: oklch(54% 0.16 315deg);               /* Systems Thinking (Heather Amethyst) */
-  --radius: 0px;
-  --sidebar: oklch(96% 0.010 205deg);
-  --sidebar-foreground: oklch(24% 0.03 240deg);
-  --sidebar-primary: oklch(52% 0.14 215deg);
-  --sidebar-primary-foreground: oklch(100% 0 0deg);
-  --sidebar-accent: oklch(92% 0.025 215deg);
-  --sidebar-accent-foreground: oklch(24% 0.03 240deg);
-  --sidebar-border: oklch(88% 0.012 210deg);
-  --sidebar-ring: oklch(52% 0.14 215deg);
-
-  /* Redesign Report UI Tokens (Light Mode) */
-  --surface-page: oklch(98.2% 0.006 205deg);
-  --surface-card: var(--surface-page);
-  --surface-elevated: oklch(100% 0 0deg);
-  --border-hairline: oklch(88% 0.012 210deg);
-  --border-hover: oklch(76% 0.020 215deg);
-  --border-active: oklch(52% 0.14 215deg);
-
-  --ink-primary: oklch(24% 0.03 240deg);
   --ink-secondary: oklch(46% 0.03 235deg);
   --ink-muted: oklch(58% 0.025 230deg);
   --ink-inverse: oklch(100% 0 0deg);
@@ -211,6 +108,7 @@
   --accent-default: oklch(52% 0.14 215deg);
   --accent-pressed: oklch(46% 0.14 215deg);
   --accent-muted: oklch(94% 0.025 210deg);
+
   --semantic-critical: oklch(56% 0.19 25deg);
   --semantic-watch: oklch(62% 0.15 65deg);
   --semantic-positive: oklch(56% 0.14 150deg);
@@ -272,22 +170,26 @@
   --chart-5: oklch(66% 0.16 315deg);               /* Systems Thinking (Heather Amethyst) */
   --radius: 0px;
 
-  --surface-page: oklch(21.5% 0.022 235deg);
+  /* Redesign Report UI Tokens (Dark Mode Primary) */
+  --surface-page: oklch(0.215 0.022 235);
   --surface-card: var(--surface-page);
-  --surface-elevated: oklch(24.5% 0.022 235deg);
-  --border-hairline: oklch(30% 0.02 235deg);
-  --border-hover: oklch(40% 0.02 235deg);
-  --border-active: oklch(74% 0.16 215deg);
-  --ink-primary: oklch(96% 0.01 235deg);
-  --ink-secondary: oklch(72% 0.01 235deg);
-  --ink-muted: oklch(55% 0.01 235deg);
-  --ink-inverse: oklch(15% 0.02 235deg);
-  --accent-default: oklch(74% 0.16 215deg);
-  --accent-pressed: oklch(66% 0.16 215deg);
-  --accent-muted: oklch(40% 0.10 215deg);
-  --semantic-critical: oklch(62% 0.18 25deg);
-  --semantic-watch: oklch(72% 0.14 75deg);
-  --semantic-positive: oklch(66% 0.12 155deg);
+  --surface-elevated: oklch(0.245 0.022 235);
+  --border-hairline: oklch(0.30 0.02 235);
+  --border-hover: oklch(0.40 0.02 235);
+  --border-active: oklch(0.74 0.16 215);
+
+  --ink-primary: oklch(0.96 0.01 235);
+  --ink-secondary: oklch(0.72 0.01 235);
+  --ink-muted: oklch(0.55 0.01 235);
+  --ink-inverse: oklch(0.15 0.02 235);
+
+  --accent-default: oklch(0.74 0.16 215);
+  --accent-pressed: oklch(0.66 0.16 215);
+  --accent-muted: oklch(0.40 0.10 215);
+
+  --semantic-critical: oklch(0.62 0.18 25);
+  --semantic-watch: oklch(0.72 0.14 75);
+  --semantic-positive: oklch(0.66 0.12 155);
 
   --sidebar: oklch(23% 0.022 235deg);
   --sidebar-foreground: oklch(95% 0.010 230deg);
@@ -369,7 +271,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
   --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-sidebar-accent-foreground);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
@@ -998,7 +900,7 @@ html:not(.dark) select option:checked {
 
 @media print {
   @page {
-    size: a4;
+    size: A4;
     margin: 15mm;
   }
 
@@ -1012,11 +914,13 @@ html:not(.dark) select option:checked {
   /* Prevent elements from awkwardly breaking across pages */
   .break-inside-avoid {
     break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   /* Keep headers together with their content */
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid;
+    page-break-after: avoid;
   }
 
   /* Hide interactive/UI elements */
@@ -1044,10 +948,12 @@ html:not(.dark) select option:checked {
   
   .print-page {
     break-after: page;
+    page-break-after: always;
   }
 
   /* Last page shouldn't break to a blank page */
   .print-page:last-of-type {
     break-after: auto;
+    page-break-after: auto;
   }
 }
