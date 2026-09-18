@@ -3,6 +3,7 @@ import { GraduationCap, Users, Sparkles, CheckCircle2, AlertTriangle, Target, Bo
 
 interface OnePagePrintSummaryProps {
   studentName: string;
+  parentName?: string;
   classLevel: number;
   completedAt: string;
   totalTimeMs?: number;
@@ -38,6 +39,7 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', {
 
 export function OnePagePrintSummary({
   studentName,
+  parentName,
   classLevel,
   completedAt,
   totalTimeMs,
@@ -108,10 +110,14 @@ export function OnePagePrintSummary({
 
       {/* ── Candidate Metadata & Benchmark Score Ribbon ── */}
       <div className="grid grid-cols-12 gap-3 pb-3 mb-3 border-b border-neutral-200">
-        <div className="col-span-8 grid grid-cols-4 gap-2 text-[10px]">
+        <div className="col-span-8 grid grid-cols-5 gap-2 text-[10px]">
           <div>
             <span className="text-neutral-500 block font-mono uppercase text-[8px]">Candidate</span>
             <span className="font-bold text-neutral-900 text-xs truncate block">{studentName}</span>
+          </div>
+          <div>
+            <span className="text-neutral-500 block font-mono uppercase text-[8px]">Parent/Guardian</span>
+            <span className="font-bold text-neutral-900 text-xs truncate block">{parentName || '-'}</span>
           </div>
           <div>
             <span className="text-neutral-500 block font-mono uppercase text-[8px]">Cohort Level</span>
@@ -119,7 +125,7 @@ export function OnePagePrintSummary({
           </div>
           <div>
             <span className="text-neutral-500 block font-mono uppercase text-[8px]">Date & Duration</span>
-            <span className="font-medium text-neutral-800 text-[11px] block">
+            <span className="font-medium text-neutral-800 text-[10px] block">
               {dateFmt.format(new Date(completedAt))} · {formatDuration(totalTimeMs)}
             </span>
           </div>

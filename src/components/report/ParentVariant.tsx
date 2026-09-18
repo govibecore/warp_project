@@ -14,15 +14,18 @@ import {
 import { RegionalBenchmarkBarChart, BenchmarkLegend } from '../CompetencyChart';
 
 interface ParentVariantProps {
+  studentName?: string;
+  parentName?: string;
   parentVariant?: any;
-  benchmark: any;
+  benchmark?: any;
+  overallScore?: number;
   classLevel: number;
 }
 
-export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVariantProps) {
-  const realityCheck = benchmark.realityCheck || {};
-  const blueprint = benchmark.parentActionBlueprint || {};
-  const regionalPercentiles = benchmark.regionalPercentiles || {};
+export function ParentVariant({ studentName, parentName, parentVariant, benchmark, overallScore, classLevel }: ParentVariantProps) {
+  const realityCheck = parentVariant?.realityCheck || {};
+  const blueprint = parentVariant?.parentActionBlueprint || {};
+  const regionalPercentiles = parentVariant?.regionalPercentiles || {};
 
   const verdict = realityCheck.verdict || 'Developing Foundation';
   const honestSummary = parentVariant?.realityCheckSummary || realityCheck.honestSummary;
@@ -37,18 +40,18 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
   const streamInfo = parentVariant?.streamOrientation || blueprint.streamOrientation;
   const quarterlyMilestones = blueprint.quarterlyMilestones || [];
 
-  const boardGradeBand = benchmark.boardGradeBand;
-  const parakh = benchmark.parakhHolisticPillars;
-  const competitive = benchmark.indianCompetitiveFoundation;
-  const indiaPercentile = benchmark.indiaNationalPercentile || regionalPercentiles.India || 68;
+  const boardGradeBand = parentVariant?.boardGradeBand || {};
+  const parakh = parentVariant?.parakhHolisticPillars || {};
+  const competitive = parentVariant?.indianCompetitiveFoundation || {};
+  const indiaPercentile = parentVariant?.indiaNationalPercentile || regionalPercentiles.India || 68;
 
-  const isEnglish = (benchmark.subject || parentVariant?.subject || '').toLowerCase().includes('english');
+  const isEnglish = (parentVariant?.subject || '').toLowerCase().includes('english');
   const mathGap = isEnglish
-    ? (benchmark.competencyBreakdown?.understanding?.singaporeGapSigma ?? -0.5)
-    : (benchmark.competencyBreakdown?.mathematicalReasoning?.singaporeGapSigma ?? -0.6);
+    ? (parentVariant?.competencyBreakdown?.understanding?.singaporeGapSigma ?? -0.5)
+    : (parentVariant?.competencyBreakdown?.mathematicalReasoning?.singaporeGapSigma ?? -0.6);
   const compGap = isEnglish
-    ? (benchmark.competencyBreakdown?.synthesis?.singaporeGapSigma ?? -0.4)
-    : (benchmark.competencyBreakdown?.computationalThinking?.singaporeGapSigma ?? -0.4);
+    ? (parentVariant?.competencyBreakdown?.synthesis?.singaporeGapSigma ?? -0.4)
+    : (parentVariant?.competencyBreakdown?.computationalThinking?.singaporeGapSigma ?? -0.4);
 
   const gapLabel1 = isEnglish ? 'Reading Comprehension Gap:' : 'Singapore Mathematical Gap:';
   const gapLabel2 = isEnglish ? 'Synthesis & Integration Gap:' : 'Singapore Computational Gap:';
@@ -58,8 +61,28 @@ export function ParentVariant({ parentVariant, benchmark, classLevel }: ParentVa
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
-      {/* ── Unvarnished Reality Check ── */}
-      <Card className="p-6 md:p-8 border border-border bg-card">
+      {/* ── Parent Header ── */}
+      {studentName && parentName && (
+        <Card className="p-4 bg-surface border-border flex items-center justify-between">
+          <div>
+            <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Candidate</p>
+            <p className="font-display font-medium text-lg">{studentName}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Parent / Guardian</p>
+            <p className="font-display font-medium text-lg">{parentName}</p>
+          </div>
+          {overallScore !== undefined && (
+            <div className="text-right">
+              <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Global Score</p>
+              <p className="font-display font-medium text-lg">{overallScore}</p>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* ── Direct Truth & Reality Check ── */}
+      <Card className="p-6 md:p-8 bg-card border-border">
         <div className="flex items-center gap-2 mb-4 text-foreground">
           <AlertCircle className="size-4 text-primary" />
           <h2 className="text-xs font-bold font-mono uppercase tracking-widest text-foreground">

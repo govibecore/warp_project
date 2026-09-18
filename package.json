@@ -25,6 +25,7 @@
     "@supabase/supabase-js": "^2.116.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "framer-motion": "^13.4.0",
     "gsap": "^3.15.0",
     "katex": "^0.18.7",
     "lottie-react": "^3.1.2",

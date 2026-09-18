@@ -98,7 +98,7 @@ function Stat({ label, children }: { label: string; children: React.ReactNode })
 }
 
 export function StudentDashboard() {
-  const { user, isLoaded } = useSupabaseAuth();
+  const { user, isLoaded, studentProfile } = useSupabaseAuth();
   const { setProfile, enterApp } = useWarpSession();
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -153,14 +153,8 @@ export function StudentDashboard() {
     setIsLoading(true);
     async function fetchSummary() {
       try {
-        const { data: userData } = await supabase
-          .from('students')
-          .select('id, full_name')
-          .eq('id', user!.id)
-          .maybeSingle();
-
-        const studentId = userData?.id || user!.id;
-        const latestFullName = (userData as any)?.full_name || null;
+        const studentId = studentProfile?.id || user!.id;
+        const latestFullName = studentProfile?.full_name || null;
 
         const { data: assessments } = await supabase
           .from('assessments')
@@ -244,9 +238,8 @@ export function StudentDashboard() {
     if (!user) return;
     setDeleting(true);
     try {
-      const { data: userData } = await supabase.from('students').select('id').eq('id', user.id).single();
-      if (userData) {
-        await supabase.from('students').delete().eq('id', userData.id);
+      if (studentProfile) {
+        await supabase.from('students').delete().eq('id', studentProfile.id);
       }
       await signOutUser();
     } catch {
@@ -346,14 +339,13 @@ export function StudentDashboard() {
         <div className="relative z-10 flex gap-3">
           <Button size="sm" className="rounded-none border border-foreground/20 hover:border-foreground bg-foreground text-background text-xs font-mono font-semibold px-4 h-8 shadow-[0_0_20px_rgba(var(--foreground-rgb),0.1)] transition-all uppercase tracking-widest" onClick={async () => {
             if (user) {
-              const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
-              if (!userData?.full_name || !userData?.current_class || !userData?.parent_name || !userData?.school_name) {
+              if (!studentProfile?.full_name || !studentProfile?.current_class || !studentProfile?.parent_name || !studentProfile?.school_name) {
                 enterApp();
                 setTimeout(() => {
                   window.location.search = '';
                 }, 50);
               } else {
-                setSelectedClass(userData.current_class.toString());
+                setSelectedClass(studentProfile.current_class.toString());
                 setShowClassConfirm(true);
               }
             } else {
@@ -465,12 +457,11 @@ export function StudentDashboard() {
               whileTap={{ scale: 0.98 }}
               onClick={async () => {
                 if (user) {
-                  const { data: userData } = await supabase.from('students').select('*').eq('id', user.id).single();
-                  if (!userData?.full_name || !userData?.current_class || !userData?.parent_name || !userData?.school_name) {
+                  if (!studentProfile?.full_name || !studentProfile?.current_class || !studentProfile?.parent_name || !studentProfile?.school_name) {
                     enterApp();
                     setTimeout(() => { window.location.search = ''; }, 50);
                   } else {
-                    setSelectedClass(userData.current_class.toString());
+                    setSelectedClass(studentProfile.current_class.toString());
                     setShowClassConfirm(true);
                   }
                 } else {
@@ -1203,11 +1194,10 @@ export function StudentDashboard() {
               <Button disabled={isStarting} onClick={async () => {
                 setIsStarting(true);
                 await supabase.from('students').update({ current_class: Number(selectedClass) }).eq('id', user!.id);
-                const { data: userData } = await supabase.from('students').select('*').eq('id', user!.id).single();
                 setProfile({
-                  name: userData?.full_name || 'Learner',
-                  classLevel: userData?.current_class || 8,
-                  difficulty: (userData?.difficulty_pref as any) || 'Standard'
+                  name: studentProfile?.full_name || 'Learner',
+                  classLevel: Number(selectedClass),
+                  difficulty: (studentProfile?.difficulty_pref as any) || 'Standard'
                 });
                 setTimeout(() => {
                   window.location.search = '';

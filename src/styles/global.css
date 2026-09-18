@@ -831,3 +831,67 @@ html:not(.dark) select option:checked {
 .domain-strip::-webkit-scrollbar { display: none; }
 .domain-card-snap { scroll-snap-align: start; flex-shrink: 0; }
 
+
+/* ==========================================================================
+   PRINT LAYOUT & AESTHETICS (NORDIC LAGOM A4)
+   ========================================================================== */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    background-color: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Prevent elements from awkwardly breaking across pages */
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Keep headers together with their content */
+  h1, h2, h3, h4, h5, h6 {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  /* Hide interactive/UI elements */
+  .no-print, 
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Force display block on hidden print containers */
+  .print-dossier {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    left: auto !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+
+  /* Relax padding & margins for an uncrowded A4 layout */
+  .print-dossier .p-8 {
+    padding: 0 !important;
+  }
+  
+  .print-page {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  /* Last page shouldn't break to a blank page */
+  .print-page:last-of-type {
+    break-after: auto;
+    page-break-after: auto;
+  }
+}

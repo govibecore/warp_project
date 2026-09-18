@@ -71,6 +71,7 @@ export function ReportDetail() {
   const [isTutorOpen, setIsTutorOpen] = useState(Boolean(shouldOpenTutor && assessmentId));
   const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
   const [studentName, setStudentName] = useState<string>('Candidate');
+  const [parentName, setParentName] = useState<string>('Parent/Guardian');
   const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
   const [showOverflow, setShowOverflow] = useState(false);
 
@@ -113,10 +114,11 @@ export function ReportDetail() {
             if (assessment?.student_id) {
               const { data: stu } = await supabase
                 .from('students')
-                .select('full_name')
+                .select('full_name, parent_name')
                 .eq('id', assessment.student_id)
                 .maybeSingle();
               if (stu?.full_name) setStudentName(stu.full_name);
+              if (stu?.parent_name) setParentName(stu.parent_name);
             }
           }
           setLoading(false);
@@ -163,15 +165,17 @@ export function ReportDetail() {
           }
           setAssessmentData(assessment as any);
 
-          // Fetch student name
+          // Fetch student name and parent name
           const { data: studentRecord } = await supabase
             .from('students')
-            .select('full_name, current_class')
+            .select('full_name, parent_name, current_class')
             .eq('id', assessment.student_id)
             .maybeSingle();
 
           const name = studentRecord?.full_name || student?.fullName || 'Candidate';
+          const pName = studentRecord?.parent_name || 'Parent/Guardian';
           setStudentName(name);
+          setParentName(pName);
 
           // Check if report already exists in reports table
           const { data: report } = await supabase
@@ -414,6 +418,8 @@ export function ReportDetail() {
                 {/* Compact metadata strip */}
                 <p className="text-xs font-mono text-foreground-secondary leading-relaxed">
                   <span className="text-foreground font-semibold">{studentName}</span>
+                  {' · '}
+                  <span className="text-foreground font-semibold">{parentName || 'Parent'}</span>
                   {' · '}
                   <span>Class {snapshot.classLevel}</span>
                   {' · '}
@@ -883,17 +889,23 @@ export function ReportDetail() {
           {/* ══════════════════ INDIVIDUAL FOCUSED TABS ══════════════════ */}
           {!aiGenerating && activeTab === 'student' && (
             <StudentVariant
+              studentName={studentName}
+              parentName={parentName}
+              classLevel={snapshot.classLevel}
               studentVariant={studentVariant}
               benchmark={benchmark}
-              classLevel={snapshot.classLevel}
+              overallScore={snapshot.overallScore}
             />
           )}
 
           {!aiGenerating && activeTab === 'parent' && (
             <ParentVariant
+              studentName={studentName}
+              parentName={parentName}
+              classLevel={snapshot.classLevel}
               parentVariant={parentVariant}
               benchmark={benchmark}
-              classLevel={snapshot.classLevel}
+              overallScore={snapshot.overallScore}
             />
           )}
 
@@ -933,6 +945,7 @@ export function ReportDetail() {
           {printMode === 'one-page' ? (
             <OnePagePrintSummary
               studentName={studentName}
+              parentName={parentName}
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}
@@ -946,6 +959,7 @@ export function ReportDetail() {
           ) : (
             <ComprehensivePrintDossier
               studentName={studentName}
+              parentName={parentName}
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}

@@ -23,7 +23,7 @@ const isAdminRoute = window.location.pathname.startsWith('/admin');
 
 function WarpApplication() {
   const { session, enterApp, setProfile, selectSubject, goHome } = useWarpSession();
-  const { isLoaded, isSignedIn, user } = useSupabaseAuth();
+  const { isLoaded, isSignedIn, user, studentProfile } = useSupabaseAuth();
   const [needsProfileSetup, setNeedsProfileSetup] = useState(false);
 
   // URL routing for dashboard/reports
@@ -158,6 +158,14 @@ function WarpApplication() {
     enterApp();
   }, [enterApp]);
 
+  const isProfileComplete = Boolean(
+    studentProfile && 
+    studentProfile.full_name && 
+    studentProfile.current_class && 
+    studentProfile.parent_name && 
+    studentProfile.school_name
+  );
+
   // Determine what body to render
   let body;
 
@@ -167,7 +175,7 @@ function WarpApplication() {
     if (!isLoaded) {
       body = <div className="min-h-screen bg-background flex items-center justify-center"><div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-none animate-spin" /></div>;
     } else if (isSignedIn) {
-      body = <StudentDashboard key="dashboard" />;
+      body = isProfileComplete ? <StudentDashboard key="dashboard" /> : <ProfileSetup key="profileSetup" />;
     } else {
       body = <Landing key="landing" onEnter={handleEnterApp} />;
     }
@@ -178,7 +186,7 @@ function WarpApplication() {
   } else if (session.phase === 'landing') {
     body = <Landing key="landing" onEnter={handleEnterApp} />;
   } else if (session.phase === 'onboarding') {
-    if (needsProfileSetup) {
+    if (!isProfileComplete || needsProfileSetup) {
       body = <ProfileSetup key="profileSetup" />;
     } else {
       body = <Onboarding key="onboarding" />;
@@ -215,27 +223,25 @@ function WarpApplication() {
       lastCheckedUserId.current = user.id;
 
       // Automatically start the assessment with their saved profile
-      supabase.from('students').select('*').eq('id', user.id).maybeSingle().then(async ({ data: userData }) => {
-        if (!userData || !userData.full_name || !userData.current_class || !userData.parent_name || !userData.school_name) {
-          setNeedsProfileSetup(true);
-        } else {
-          // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
-          if (typeof window !== 'undefined' && window.location.search) {
-            const p = new URLSearchParams(window.location.search);
-            if (p.has('login') || p.has('register') || p.has('choose')) {
-              window.history.replaceState({}, '', window.location.pathname);
-            }
+      if (!studentProfile || !studentProfile.full_name || !studentProfile.current_class || !studentProfile.parent_name || !studentProfile.school_name) {
+        setNeedsProfileSetup(true);
+      } else {
+        // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
+        if (typeof window !== 'undefined' && window.location.search) {
+          const p = new URLSearchParams(window.location.search);
+          if (p.has('login') || p.has('register') || p.has('choose')) {
+            window.history.replaceState({}, '', window.location.pathname);
           }
-          setProfile({
-            name: userData.full_name || 'Learner',
-            classLevel: userData.current_class || 8,
-            difficulty: normalizeDifficulty(userData.difficulty_pref),
-            schoolName: userData.school_name ?? undefined
-          });
         }
-      });
+        setProfile({
+          name: studentProfile.full_name || 'Learner',
+          classLevel: studentProfile.current_class || 8,
+          difficulty: normalizeDifficulty(studentProfile.difficulty_pref),
+          schoolName: studentProfile.school_name ?? undefined
+        });
+      }
     }
-  }, [session.phase, isLoaded, isSignedIn, user, session.profile, setProfile]);
+  }, [session.phase, isLoaded, isSignedIn, user, session.profile, setProfile, studentProfile]);
 
   // If a logged-out user returns or signs out, redirect to the landing page instead of hub/assessment/results
   useEffect(() => {

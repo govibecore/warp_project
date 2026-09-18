@@ -3,17 +3,20 @@ import { Sparkles, Compass, AlertCircle, Target, Flame, Cpu, Bot, Layers, Leaf }
 import { CompetencyRadarChart } from '../CompetencyChart';
 
 interface StudentVariantProps {
+  studentName?: string;
+  parentName?: string;
   studentVariant?: any;
-  benchmark: any;
+  benchmark?: any;
+  overallScore?: number;
   classLevel: number;
 }
 
-export function StudentVariant({ studentVariant, benchmark, classLevel = 8 }: StudentVariantProps) {
-  const archetypeTitle = studentVariant?.archetypeTitle || benchmark.cognitiveArchetype?.title || 'Analytical Strategist';
-  const archetypeTagline = studentVariant?.archetypeTagline || benchmark.cognitiveArchetype?.tagline || 'Deconstructs multi-variable systems with structural precision';
-  const summary = studentVariant?.summary || benchmark.realityCheck?.honestSummary;
-  const primaryStrength = benchmark.cognitiveArchetype?.primaryStrength || 'Parameter isolation & causal inference';
-  const criticalBlindspot = benchmark.cognitiveArchetype?.criticalBlindspot || 'Premature optimization under time pressure';
+export function StudentVariant({ studentName, parentName, studentVariant, benchmark, overallScore, classLevel = 8 }: StudentVariantProps) {
+  const archetypeTitle = studentVariant?.archetypeTitle || 'Analytical Strategist';
+  const archetypeTagline = studentVariant?.archetypeTagline || 'Deconstructs multi-variable systems with structural precision';
+  const summary = studentVariant?.summary || 'Consistently demonstrates strong structural awareness when approaching complex, multi-step problems.';
+  const primaryStrength = 'Parameter isolation & causal inference';
+  const criticalBlindspot = 'Premature optimization under time pressure';
 
   const strengths: string[] = studentVariant?.keyStrengths || [
     primaryStrength,
@@ -27,10 +30,32 @@ export function StudentVariant({ studentVariant, benchmark, classLevel = 8 }: St
     'Vulnerability to distractor options engineered around formula shortcuts.'
   ];
 
-  const sprintEntries = Object.entries(benchmark.studentChallengeSprint || {});
+  const sprintEntries = Object.entries(studentVariant?.challengeSprint || {});
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* ── Student Header ── */}
+      {studentName && (
+        <Card className="p-4 bg-surface border-border flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Candidate</p>
+            <p className="font-display font-medium text-lg">{studentName}</p>
+          </div>
+          {parentName && (
+            <div>
+              <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Parent / Guardian</p>
+              <p className="font-display font-medium text-lg">{parentName}</p>
+            </div>
+          )}
+          {overallScore !== undefined && (
+            <div className="text-right">
+              <p className="text-xs font-mono text-foreground-secondary uppercase tracking-widest">Global Score</p>
+              <p className="font-display font-medium text-lg">{overallScore}</p>
+            </div>
+          )}
+        </Card>
+      )}
+
       {/* ── Cognitive Profile Hero ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card className="md:col-span-2 p-6 md:p-8 border border-border bg-card flex flex-col justify-between">

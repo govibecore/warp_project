@@ -13,6 +13,7 @@ import {
 
 interface ComprehensivePrintDossierProps {
   studentName: string;
+  parentName?: string;
   classLevel: number;
   completedAt: string;
   totalTimeMs?: number;
@@ -48,6 +49,7 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', {
 
 export function ComprehensivePrintDossier({
   studentName,
+  parentName,
   classLevel,
   completedAt,
   totalTimeMs,
@@ -207,10 +209,14 @@ export function ComprehensivePrintDossier({
           </div>
 
           {/* Candidate & Assessment Metadata Grid */}
-          <div className="grid grid-cols-5 gap-3 p-3 bg-neutral-50 border border-neutral-200 text-[10px]">
+          <div className="grid grid-cols-6 gap-3 p-3 bg-neutral-50 border border-neutral-200 text-[10px]">
             <div>
               <span className="text-neutral-500 block font-mono uppercase text-[8px]">Candidate</span>
               <span className="font-bold text-neutral-900 text-xs truncate block">{studentName}</span>
+            </div>
+            <div>
+              <span className="text-neutral-500 block font-mono uppercase text-[8px]">Parent/Guardian</span>
+              <span className="font-bold text-neutral-900 text-xs truncate block">{parentName || '-'}</span>
             </div>
             <div>
               <span className="text-neutral-500 block font-mono uppercase text-[8px]">Cohort Level</span>

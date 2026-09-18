@@ -5,14 +5,19 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Hexagon } from 'lucide-react';
 import { Header03 } from './ui/aliimam/Header03';
 import { Button } from './ui/button';
-import { ArrowRightIcon, SparklesIcon, PlusIcon, MinusIcon } from './ui/aliimam/AliImamIcons';
+import { ArrowRightIcon, SparklesIcon } from './ui/aliimam/AliImamIcons';
 import { Marquee } from './ui/aliimam/Marquee';
 import React, { Suspense } from 'react';
-const StemCityCanvas = React.lazy(() => import('./StemCityCanvas'));
+const StemCityCanvas = React.lazy(() => import('./StemCityCanvas').catch(err => {
+  console.warn('Failed to load canvas chunk', err);
+  return { default: () => <div className="absolute inset-0 bg-background/5" /> };
+}));
 import { Typewriter } from './ui/Typewriter';
 import { WarpLottie } from './ui/warp-lottie';
-import gridLoopData from '../assets/lottie/Grid Loop background.json';
+import { GlyphMatrix } from './ui/glyph-matrix';
+import { BorderBeam } from './ui/border-beam';
 import starburstData from '../assets/lottie/star burst animation.json';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './ui/accordion';
 
 interface LandingProps {
   onEnter(mode?: 'choose' | 'login' | 'register'): void;
@@ -41,25 +46,7 @@ const FAQS = [
   },
 ];
 
-function FAQItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-border group">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between py-6 text-left cursor-pointer outline-none"
-      >
-        <span className="font-display text-lg sm:text-xl font-medium text-foreground group-hover:text-foreground/80 transition-colors">{q}</span>
-        <span className="text-foreground-secondary shrink-0 ml-4">
-          {open ? <MinusIcon size={20} /> : <PlusIcon size={20} />}
-        </span>
-      </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 pb-6 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <p className="text-foreground-secondary text-sm leading-relaxed max-w-3xl">{a}</p>
-      </div>
-    </div>
-  );
-}
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -68,6 +55,21 @@ export function Landing({ onEnter }: LandingProps) {
   const [showLogoutAnim, setShowLogoutAnim] = useState(
     () => typeof window !== 'undefined' && window.sessionStorage.getItem('show_logout_animation') === 'true'
   );
+  
+  const [glyphColor, setGlyphColor] = useState("#6B7280");
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const isDark = document.documentElement.classList.contains("dark");
+    setGlyphColor(isDark ? "#ffffff" : "#000000");
+    
+    const observer = new MutationObserver(() => {
+      const isDarkNow = document.documentElement.classList.contains("dark");
+      setGlyphColor(isDarkNow ? "#ffffff" : "#000000");
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (showLogoutAnim) {
@@ -157,26 +159,24 @@ export function Landing({ onEnter }: LandingProps) {
 
       {/* HERO */}
       <main className="w-full min-w-0 overflow-hidden border-b border-border relative">
-        <div
-          className="absolute inset-0 z-0 pointer-events-none"
-          style={{
-            WebkitMaskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)',
-            backgroundImage: 'radial-gradient(circle at 1px 1px, var(--primary) 1px, transparent 0)',
-            backgroundSize: '22px 22px',
-            maskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)',
-            opacity: 0.65
-          }}
-        />
-        <div className="absolute inset-0 z-0 pointer-events-none flex items-center justify-center opacity-10 mix-blend-screen" style={{ maskImage: 'radial-gradient(ellipse 100% 60% at 50% 50%, black 40%, transparent 70%)' }}>
-          <WarpLottie animationData={gridLoopData} className="w-full h-full min-w-300" />
+        <div className="absolute inset-0 z-0 pointer-events-none opacity-25">
+          <GlyphMatrix
+            glyphs="01·•+*/\<>="
+            cellSize={14}
+            mutationRate={0.04}
+            interval={90}
+            fadeBottom={0.6}
+            color={glyphColor}
+          />
         </div>
 
         <section className="relative mx-auto px-4 pb-0 pt-20 lg:pt-24 xl:pt-32 z-10">
           <div className="mx-auto max-w-5xl text-center">
 
-            <div className="hero-stagger inline-flex items-center gap-1.5 sm:gap-2 border border-border bg-surface/50 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono mb-6 sm:mb-8 uppercase tracking-widest rounded-none mx-auto">
-              <SparklesIcon size={14} className="text-primary" />
-              <span className="text-foreground-secondary">Forging Tomorrow's Global Champions</span>
+            <div className="hero-stagger relative overflow-hidden inline-flex items-center gap-1.5 sm:gap-2 border border-border bg-surface/50 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono mb-6 sm:mb-8 uppercase tracking-widest rounded-none mx-auto">
+              <SparklesIcon size={14} className="text-primary z-10 relative" />
+              <span className="text-foreground-secondary z-10 relative">Forging Tomorrow's Global Champions</span>
+              <BorderBeam duration={8} size={50} />
             </div>
 
             {/* HEADLINE */}
@@ -324,10 +324,32 @@ export function Landing({ onEnter }: LandingProps) {
           <h2 className="font-display text-4xl font-bold text-foreground mb-4">Questions Parents Ask</h2>
           <p className="text-foreground-secondary text-sm">Everything you need to know before starting your child's global benchmark.</p>
         </div>
-        <div className="border-t border-border">
-          {FAQS.map((faq, idx) => (
-            <FAQItem key={idx} q={faq.q} a={faq.a} />
-          ))}
+        <div className="w-full">
+          <Accordion
+            type="single"
+            className="w-full"
+            defaultValue="item-0"
+          >
+            {FAQS.map((faq, idx) => (
+              <AccordionItem
+                key={idx}
+                value={`item-${idx}`}
+                className="space-y-4 border-none mb-8"
+              >
+                <AccordionTrigger className="group flex w-full justify-end py-0 hover:no-underline [&_svg]:hidden">
+                  <div className="bg-primary text-primary-foreground max-w-[80%] cursor-pointer px-5 py-4 text-left text-base transition relative">
+                    {faq.q}
+                  </div>
+                </AccordionTrigger>
+
+                <AccordionContent className="flex justify-start">
+                  <div className="bg-muted text-muted-foreground max-w-[80%] px-5 py-4 text-base relative">
+                    {faq.a}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         </div>
       </section>
 
@@ -395,8 +417,8 @@ export function Landing({ onEnter }: LandingProps) {
             </div>
           </div>
 
-          <div className="flex flex-col flex-wrap items-start gap-12 self-stretch sm:flex-row sm:justify-between md:gap-16 font-mono">
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 md:gap-16 font-mono flex-1 w-full md:w-auto mt-8 md:mt-0">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">Platform</div>
               <div className="flex flex-col gap-3">
                 <a href="?page=stem-benchmark" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">STEM Benchmark</a>
@@ -405,7 +427,7 @@ export function Landing({ onEnter }: LandingProps) {
                 <a href="?page=global-rankings" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Global Rankings</a>
               </div>
             </div>
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">For Families</div>
                 <div className="flex flex-col gap-3">
                   <a href="?page=parent-reports" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Parent Reports</a>
@@ -413,7 +435,7 @@ export function Landing({ onEnter }: LandingProps) {
                   <a href="?page=pricing" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">Pricing</a>
                 </div>
             </div>
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">Company</div>
               <div className="flex flex-col gap-3">
                 <a href="?page=about" className="text-foreground-secondary hover:text-foreground cursor-pointer text-xs transition-colors">About WARP</a>

@@ -97,8 +97,8 @@ export function MarketingPage({ slug, onEnter }: MarketingPageProps) {
             </div>
           </div>
 
-          <div className="flex flex-col flex-wrap items-start gap-12 self-stretch sm:flex-row sm:justify-between md:gap-16 font-mono bg-background">
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-12 md:gap-16 font-mono flex-1 w-full md:w-auto mt-8 md:mt-0 bg-background">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">Platform</div>
               <div className="flex flex-col gap-3">
                 <a href="?page=stem-benchmark" className="text-foreground-secondary hover:text-foreground text-xs transition-colors">STEM Benchmark</a>
@@ -107,7 +107,7 @@ export function MarketingPage({ slug, onEnter }: MarketingPageProps) {
                 <a href="?page=global-rankings" className="text-foreground-secondary hover:text-foreground text-xs transition-colors">Global Rankings</a>
               </div>
             </div>
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">For Families</div>
               <div className="flex flex-col gap-3">
                 <a href="?page=parent-reports" className="text-foreground-secondary hover:text-foreground text-xs transition-colors">Parent Reports</a>
@@ -115,7 +115,7 @@ export function MarketingPage({ slug, onEnter }: MarketingPageProps) {
                 <a href="?page=pricing" className="text-foreground-secondary hover:text-foreground text-xs transition-colors">Pricing</a>
               </div>
             </div>
-            <div className="flex min-w-32 flex-1 flex-col gap-4">
+            <div className="flex flex-col gap-4">
               <div className="text-xs font-bold text-foreground uppercase tracking-widest">Company</div>
               <div className="flex flex-col gap-3">
                 <a href="?page=about" className="text-foreground-secondary hover:text-foreground text-xs transition-colors">About WARP</a>

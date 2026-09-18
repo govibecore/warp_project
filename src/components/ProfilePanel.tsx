@@ -71,7 +71,7 @@ interface StudentProfile {
 
 /** Persistent slide-over profile & settings panel + avatar ring trigger */
 export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } = {}) {
-  const { user, isSignedIn, isLoaded } = useSupabaseAuth();
+  const { user, isSignedIn, isLoaded, studentProfile, refreshStudentProfile } = useSupabaseAuth();
   const { setProfile } = useWarpSession();
 
   const [open, setOpen] = useState(false);
@@ -224,64 +224,58 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
       return;
     }
     setLoading(true);
-    supabase
-      .from('students')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) {
-          const validGenders: StudentGender[] = ['male', 'female', 'other', 'prefer_not_to_say'];
-          const parsedGender = data.gender && validGenders.includes(data.gender as StudentGender)
-            ? (data.gender as StudentGender)
-            : 'prefer_not_to_say';
+    
+    if (studentProfile) {
+      const validGenders: StudentGender[] = ['male', 'female', 'other', 'prefer_not_to_say'];
+      const parsedGender = studentProfile.gender && validGenders.includes(studentProfile.gender as StudentGender)
+        ? (studentProfile.gender as StudentGender)
+        : 'prefer_not_to_say';
 
-          let parsedDiff = (data.difficulty_pref || 'standard').toLowerCase();
-          if (parsedDiff === 'easy' || parsedDiff === 'medium') parsedDiff = 'standard';
-          if (parsedDiff === 'hard') parsedDiff = 'olympiad';
-          const validDiffs: StudentDifficultyPref[] = ['standard', 'advanced', 'olympiad'];
-          const cleanDiff = validDiffs.includes(parsedDiff as StudentDifficultyPref)
-            ? (parsedDiff as StudentDifficultyPref)
-            : 'standard';
+      let parsedDiff = (studentProfile.difficulty_pref || 'standard').toLowerCase();
+      if (parsedDiff === 'easy' || parsedDiff === 'medium') parsedDiff = 'standard';
+      if (parsedDiff === 'hard') parsedDiff = 'olympiad';
+      const validDiffs: StudentDifficultyPref[] = ['standard', 'advanced', 'olympiad'];
+      const cleanDiff = validDiffs.includes(parsedDiff as StudentDifficultyPref)
+        ? (parsedDiff as StudentDifficultyPref)
+        : 'standard';
 
-          const loaded: StudentProfile = {
-            full_name: data.full_name ?? '',
-            parent_name: data.parent_name ?? '',
-            school_name: data.school_name ?? '',
-            city: data.city ?? '',
-            state: data.state ?? '',
-            parent_phone: data.parent_phone ?? '',
-            current_class: data.current_class ?? 8,
-            gender: parsedGender,
-            preferred_language: data.preferred_language ?? 'English',
-            difficulty_pref: cleanDiff,
-            bio: (data as any).bio ?? '',
-            avatar_url: (data as any).avatar_url ?? null,
-          };
-          setLocalProfile(loaded);
-          setInitialProfile(loaded);
-        } else {
-          const meta = user.user_metadata;
-          const prefill: StudentProfile = {
-            full_name: meta?.full_name ?? meta?.name ?? '',
-            parent_name: '',
-            school_name: '',
-            city: '',
-            state: '',
-            parent_phone: '',
-            current_class: 8,
-            gender: 'prefer_not_to_say',
-            preferred_language: 'English',
-            difficulty_pref: 'standard',
-            bio: '',
-            avatar_url: null,
-          };
-          setLocalProfile(prefill);
-          setInitialProfile(prefill);
-        }
-        setLoading(false);
-      });
-  }, [user?.id]);
+      const loaded: StudentProfile = {
+        full_name: studentProfile.full_name ?? '',
+        parent_name: studentProfile.parent_name ?? '',
+        school_name: studentProfile.school_name ?? '',
+        city: studentProfile.city ?? '',
+        state: studentProfile.state ?? '',
+        parent_phone: studentProfile.parent_phone ?? '',
+        current_class: studentProfile.current_class ?? 8,
+        gender: parsedGender,
+        preferred_language: studentProfile.preferred_language ?? 'English',
+        difficulty_pref: cleanDiff,
+        bio: (studentProfile as any).bio ?? '',
+        avatar_url: (studentProfile as any).avatar_url ?? null,
+      };
+      setLocalProfile(loaded);
+      setInitialProfile(loaded);
+    } else {
+      const meta = user.user_metadata;
+      const prefill: StudentProfile = {
+        full_name: meta?.full_name ?? meta?.name ?? '',
+        parent_name: '',
+        school_name: '',
+        city: '',
+        state: '',
+        parent_phone: '',
+        current_class: 8,
+        gender: 'prefer_not_to_say',
+        preferred_language: 'English',
+        difficulty_pref: 'standard',
+        bio: '',
+        avatar_url: null,
+      };
+      setLocalProfile(prefill);
+      setInitialProfile(prefill);
+    }
+    setLoading(false);
+  }, [user, studentProfile]);
 
   // Check if there are unsaved modifications
   const isDirty = initialProfile !== null && JSON.stringify(profile) !== JSON.stringify(initialProfile);
@@ -432,6 +426,7 @@ export function ProfilePanel({ hideTrigger = false }: { hideTrigger?: boolean } 
         difficulty: normalizeDifficulty(updatedUser.difficulty_pref),
         schoolName: updatedUser.school_name ?? undefined,
       });
+      await refreshStudentProfile();
     }
 
     setInitialProfile(profile);
