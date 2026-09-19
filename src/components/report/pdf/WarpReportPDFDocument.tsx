@@ -12,10 +12,10 @@ import { stripLaTeXForPdf } from '@/lib/mathRender';
 // ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 38,
-    paddingBottom: 22,
-    paddingLeft: 28,
-    paddingRight: 28,
+    paddingTop: 51,
+    paddingBottom: 51,
+    paddingLeft: 51,
+    paddingRight: 51,
     fontFamily: 'Helvetica',
     fontSize: 10,
     lineHeight: 1.5,
@@ -119,9 +119,9 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   metricCardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: 4,
     marginBottom: 4,
   },
   metricCardTitle: {
@@ -135,6 +135,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#0f172a',
+    paddingBottom: 14,
   },
   metricCardSub: {
     fontSize: 8.5,
@@ -431,7 +432,7 @@ export function WarpReportPDFDocument({
                 <Text style={styles.metricCardTitle}>Overall Scaled Score</Text>
                 
               </View>
-              <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{overallScore || '--'} <Text style={{ fontSize: 12, color: '#64748b' }}>/ 900</Text></Text>
+              <Text style={styles.metricCardValue}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
               <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'} SD</Text>
             </View>
 
@@ -455,7 +456,7 @@ export function WarpReportPDFDocument({
           </View>
 
           {/* PARAKH Holistic Pillars */}
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <View style={styles.sectionTitleBox}>
               <Text style={styles.sectionTitle}>PARAKH Holistic Competency Spectrum (NEP 2020)</Text>
               <Text style={styles.sectionSubtitle}>Standardized vs All-India Cohort</Text>
@@ -485,7 +486,7 @@ export function WarpReportPDFDocument({
           </View>
 
           {/* Student Profile: Strengths & Blindspots */}
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <View style={styles.sectionTitleBox}>
               <Text style={styles.sectionTitle}>Student Cognitive Profile</Text>
               <Text style={styles.sectionSubtitle}>Diagnostic Observations</Text>
@@ -514,7 +515,7 @@ export function WarpReportPDFDocument({
           </View>
 
           {/* Parent Blueprint: Action Plan */}
-          <View style={styles.section}>
+          <View style={styles.section} wrap={false}>
             <View style={styles.sectionTitleBox}>
               <Text style={styles.sectionTitle}>Parent Educational Blueprint & Reality Check</Text>
               <Text style={styles.sectionSubtitle}>Status: {verdict}</Text>
@@ -598,7 +599,7 @@ export function WarpReportPDFDocument({
               <Text style={styles.metricCardTitle}>Overall Scaled Score</Text>
               
             </View>
-            <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
+            <Text style={styles.metricCardValue}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
             <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'} SD</Text>
           </View>
 
@@ -622,7 +623,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* PARAKH Holistic Pillars Table */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>PARAKH Holistic Competency Spectrum (NEP 2020)</Text>
             <Text style={styles.sectionSubtitle}>Standardized 5-Pillar STEAM Diagnostic</Text>
@@ -652,7 +653,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Global Calibration Benchmark */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>International Benchmark Comparison</Text>
             <Text style={styles.sectionSubtitle}>PISA / Singapore / OECD Alignment</Text>
@@ -688,7 +689,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Archetype Overview */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>Cognitive Archetype: {archetypeTitle}</Text>
             <Text style={styles.sectionSubtitle}>Mental Processing Signature</Text>
@@ -703,7 +704,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Strengths and Blindspots detailed */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
             <View wrap={false} style={[styles.cardBox, { flex: 1 }]}>
               <Text style={[styles.cardTitle, { color: '#16a34a' }]}>Core Strengths (3 Evaluated)</Text>
@@ -728,7 +729,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* 30-Day Metacognitive Sprint */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>30-Day Student Challenge Sprint</Text>
             <Text style={styles.sectionSubtitle}>Weekly Actionable Milestones</Text>
@@ -779,7 +780,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Board Reality Check */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>Board Readiness &amp; Reality Check</Text>
             <Text style={styles.sectionSubtitle}>Assessment Verdict: {verdict}</Text>
@@ -791,7 +792,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Daily Home Rehearsal Routines */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>Immediate Home Routines (Next 30 Days)</Text>
             <Text style={styles.sectionSubtitle}>Actionable Parent Support Protocol</Text>
@@ -805,7 +806,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* PTM Discussion Guide */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>Parent-Teacher Meeting (PTM) Strategic Questions</Text>
             <Text style={styles.sectionSubtitle}>Targeted Prompts for Educators</Text>
@@ -840,7 +841,7 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Scenarios Table */}
-        <View style={styles.section}>
+        <View style={styles.section} wrap={false}>
           <View style={styles.sectionTitleBox}>
             <Text style={styles.sectionTitle}>Scenario Response Log &amp; Distractor Audit</Text>
             <Text style={styles.sectionSubtitle}>Item-by-Item Cognitive Performance</Text>
@@ -883,8 +884,13 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Metacognitive Conclusion */}
+<<<<<<< HEAD
         <View style={styles.section}>
           <View wrap={false} style={styles.cardBox}>
+=======
+        <View style={styles.section} wrap={false}>
+          <View style={styles.cardBox}>
+>>>>>>> 240bd7f (feat(ui): Phase 1 Nordic Lagom redesign - PDF layout fixes + UI token cleanup)
             <Text style={styles.cardTitle}>Diagnostic Verification &amp; Authorization</Text>
             <Text style={styles.cardText}>
               This psychometric calibration report was generated using the WARP 3-Parameter Logistic (3PL) Item Response Theory model 
