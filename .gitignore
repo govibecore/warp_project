@@ -1,4 +1,4 @@
-# Dependencies
+﻿# Dependencies
 node_modules/
 .pnp
 .pnp.js
@@ -59,3 +59,4 @@ public/pdf/*.pdf
 docs/pdf-analysis/
 docs/pdf-layout-ux-audit.md
 docs/report-ui-ux-redesign-plan.md
+supabase/.temp/

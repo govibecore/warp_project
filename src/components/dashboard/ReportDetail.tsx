@@ -225,6 +225,23 @@ export function ReportDetail() {
     }
   }, [stream]);
 
+  // ── Fetch cohort norms + resources once data is ready ──
+  useEffect(() => {
+    if (!assessmentData) return;
+    const difficulty = assessmentData.difficulty || 'standard';
+    const classLevel = assessmentData.class_level || 8;
+    fetchCohortNorms(classLevel, difficulty).then(setCohortNorms);
+
+    const reportResourceKeys: string[] = reportData?.resource_keys ?? [];
+    const topCompetency = assessmentData.responses?.[0]?.competency ?? 'scientificInquiry';
+    if (reportResourceKeys.length > 0) {
+      fetchResources(reportResourceKeys).then(setResources);
+    } else {
+      fetchResourcesByCompetency(topCompetency, difficulty).then(setResources);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [assessmentData?.id, reportData?.id]);
+
   const aiGenerating = stream.status === 'analyzing';
 
   if (!assessmentData) {
@@ -377,23 +394,7 @@ export function ReportDetail() {
     },
   ];
 
-  // ── Fetch cohort norms + resources once data is ready ──
-  useEffect(() => {
-    if (!assessmentData) return;
-    const difficulty = assessmentData.difficulty || 'standard';
-    const classLevel = assessmentData.class_level || snapshot?.classLevel || 12;
-    fetchCohortNorms(classLevel, difficulty).then(setCohortNorms);
-
-    const reportResourceKeys: string[] = reportData?.resource_keys ?? [];
-    const topCompetency = assessmentData.responses?.[0]?.competency ?? 'scientificInquiry';
-    if (reportResourceKeys.length > 0) {
-      fetchResources(reportResourceKeys).then(setResources);
-    } else {
-      fetchResourcesByCompetency(topCompetency, difficulty).then(setResources);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assessmentData?.id]);
-
+  // ── Fetch cohort norms + resources moved to top level ──
   return (
     <div className="w-full flex-1 overflow-y-auto pb-32">
       <div className="mx-auto max-w-5xl border-x border-border bg-background min-h-screen" id="report-printable-area">

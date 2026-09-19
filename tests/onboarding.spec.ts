@@ -44,8 +44,9 @@ test("Successful Registration shows confirmation notice", async ({ page }) => {
   await page.getByLabel(/Parent Name/i).fill("Mr Koo");
   await page.getByRole("button", { name: /^Sign up$/i }).click();
 
-  // Notice should be displayed
-  await expect(page.getByText(/Registration successful|Account created/i)).toBeVisible({ timeout: 10000 });
+  // OTP Verification screen should be displayed
+  await expect(page.getByText(/We sent an 8-digit code to/i)).toBeVisible({ timeout: 10000 });
+  await expect(page.getByLabel(/Confirmation Code/i)).toBeVisible();
 });
 
 test("Sign in mode renders credentials form", async ({ page }) => {
