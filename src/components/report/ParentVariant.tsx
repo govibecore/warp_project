@@ -22,7 +22,7 @@ interface ParentVariantProps {
   classLevel: number;
 }
 
-export function ParentVariant({ studentName, parentName, parentVariant, benchmark, overallScore, classLevel }: ParentVariantProps) {
+export function ParentVariant({ studentName, parentName, parentVariant, benchmark = {}, overallScore, classLevel }: ParentVariantProps) {
   const realityCheck = parentVariant?.realityCheck || {};
   const blueprint = parentVariant?.parentActionBlueprint || {};
   const regionalPercentiles = parentVariant?.regionalPercentiles || {};
@@ -40,9 +40,9 @@ export function ParentVariant({ studentName, parentName, parentVariant, benchmar
   const streamInfo = parentVariant?.streamOrientation || blueprint.streamOrientation;
   const quarterlyMilestones = blueprint.quarterlyMilestones || [];
 
-  const boardGradeBand = parentVariant?.boardGradeBand || {};
-  const parakh = parentVariant?.parakhHolisticPillars || {};
-  const competitive = parentVariant?.indianCompetitiveFoundation || {};
+  const boardGradeBand = parentVariant?.boardGradeBand;
+  const parakh = parentVariant?.parakhHolisticPillars;
+  const competitive = parentVariant?.indianCompetitiveFoundation;
   const indiaPercentile = parentVariant?.indiaNationalPercentile || regionalPercentiles.India || 68;
 
   const isEnglish = (parentVariant?.subject || '').toLowerCase().includes('english');

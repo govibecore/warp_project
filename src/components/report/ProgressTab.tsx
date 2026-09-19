@@ -173,7 +173,7 @@ export function ProgressTab({
                         dy={10}
                       />
                       <YAxis 
-                        domain={[400, 900]} 
+                        domain={[0, 900]} 
                         axisLine={false}
                         tickLine={false}
                         tick={{ fontSize: 12, fill: 'var(--ink-secondary)', fontFamily: 'var(--font-mono, monospace)' }}

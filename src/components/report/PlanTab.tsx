@@ -88,14 +88,16 @@ export function PlanTab({ benchmark, studentVariant, parentVariant, reportId, is
     if (reportId && isOwner) {
       setIsSaving(true);
       try {
-        await supabase.from('reports').update({
+        const { error } = await supabase.from('reports').update({
           student_variant: {
             ...studentVariant,
             sprintProgress: newProgress
           }
         }).eq('id', reportId);
+        if (error) throw error;
       } catch (err) {
         console.error('Failed to save sprint progress:', err);
+        setProgress(progress);
       } finally {
         setIsSaving(false);
       }

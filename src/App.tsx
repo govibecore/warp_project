@@ -71,15 +71,15 @@ function WarpApplication() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, [enterApp, goHome]);
 
-  // Auto-redirect signed-in users from landing → dashboard.
-  // This covers two cases:
-  //   1. Google OAuth bounces to /?dashboard - URL already has the param so isDashboard is true (handled above).
-  //   2. A signed-in user manually navigates to / - send them to their dashboard.
+  // Auto-redirect signed-in users from landing OR auth views → dashboard.
   useEffect(() => {
-    if (isLoaded && isSignedIn && session.phase === 'landing' && !isDashboard && !hasAssessmentId && !isSharedReport && !pageParam) {
-      window.history.replaceState({}, '', '/?dashboard');
-      // Force a URL-param re-read by reloading in-place
-      window.location.replace('/?dashboard');
+    if (isLoaded && isSignedIn && !isDashboard && !hasAssessmentId && !isSharedReport) {
+      const p = new URLSearchParams(window.location.search);
+      if (session.phase === 'landing' && !pageParam) {
+        window.location.replace('/?dashboard');
+      } else if (p.has('choose') || p.has('register') || p.has('login')) {
+        window.location.replace('/?dashboard');
+      }
     }
   }, [isLoaded, isSignedIn, session.phase, isDashboard, hasAssessmentId, isSharedReport, pageParam]);
 
@@ -99,7 +99,8 @@ function WarpApplication() {
           const { error } = await supabase.from('students').insert({
             id: user.id,
             full_name: user.user_metadata?.full_name || user.email.split('@')[0],
-            current_class: 8,
+            current_class: user.user_metadata?.current_class || 8,
+            parent_name: user.user_metadata?.parent_name || 'Parent/Guardian',
           });
           if (error) console.error('Failed to insert user in Supabase:', error);
         } else if (user.user_metadata?.full_name) {

@@ -62,7 +62,7 @@ export function CardAction({ className, ...props }: HTMLAttributes<HTMLDivElemen
 }
 
 export function CardContent({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn('px-7 pb-6 text-[14px] leading-[1.55] max-w-[70ch]', className)} {...props} />;
+  return <div className={cn('px-7 pb-6 text-[14px] leading-[1.55]', className)} {...props} />;
 }
 
 export function CardFooter({ className, ...props }: HTMLAttributes<HTMLDivElement>) {

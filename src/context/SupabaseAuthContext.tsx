@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User, Session } from '@supabase/supabase-js';
 import * as Sentry from '@sentry/react';
@@ -27,9 +27,15 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
   const [studentProfile, setStudentProfile] = useState<any | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
+  const fetchGenerationRef = useRef(0);
+
   const fetchStudentProfile = async (userId: string) => {
+    const gen = ++fetchGenerationRef.current;
+    setStudentProfile(null);
     const { data } = await supabase.from('students').select('*').eq('id', userId).maybeSingle();
-    setStudentProfile(data || null);
+    if (fetchGenerationRef.current === gen) {
+      setStudentProfile(data || null);
+    }
   };
 
   const refreshStudentProfile = async () => {

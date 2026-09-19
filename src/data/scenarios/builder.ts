@@ -181,7 +181,7 @@ export function materialize(
       mutableStateKeys: Object.keys(source.state),
       mutation: undefined,
       itemDifficulty: b,
-      linkedEvidenceItemId: v.difficultyParams?.evidenceFor ? `${v.difficultyParams.evidenceFor}-${developmentalBand}` : undefined,
+      linkedEvidenceItemId: v.difficultyParams?.evidenceFor ? v.difficultyParams.evidenceFor : undefined,
     };
   });
 }

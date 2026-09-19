@@ -593,7 +593,7 @@ export function WarpReportPDFDocument({
 
         {/* High-Level Benchmark Cards */}
         <View style={styles.metricRow}>
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { marginRight: 12 }]}>
             <View style={styles.metricCardHeader}>
               <Text style={styles.metricCardTitle}>Overall Scaled Score</Text>
               

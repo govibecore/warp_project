@@ -8,6 +8,7 @@ import { useWarpSession } from '../../context/WarpSessionContext';
 import { useSupabaseAuth } from '../../context/SupabaseAuthContext';
 import { supabase } from '../../lib/supabase';
 import { signOutUser } from '../../lib/auth';
+import { normalizeDifficulty } from '../../domain/assessment';
 import { Leaderboard } from './Leaderboard';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -232,7 +233,7 @@ export function StudentDashboard() {
       }
     }
     fetchSummary();
-  }, [user, isLoaded]);
+  }, [user, isLoaded, studentProfile]);
 
   const handleDeleteAccount = async () => {
     if (!user) return;
@@ -1197,7 +1198,7 @@ export function StudentDashboard() {
                 setProfile({
                   name: studentProfile?.full_name || 'Learner',
                   classLevel: Number(selectedClass),
-                  difficulty: (studentProfile?.difficulty_pref as any) || 'Standard'
+                  difficulty: normalizeDifficulty(studentProfile?.difficulty_pref)
                 });
                 setTimeout(() => {
                   window.location.search = '';

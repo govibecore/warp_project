@@ -323,9 +323,9 @@ export function Assessment() {
                 {COMPETENCY_LABELS[item.competency as CompetencyKey] || item.competency}
               </span>
 
-              <h1 className="text-balance text-lg sm:text-xl font-medium leading-normal md:text-2xl">
+              <div className="text-balance text-lg sm:text-xl font-medium leading-normal md:text-2xl">
                 {renderTextWithMath(item.prompt)}
-              </h1>
+              </div>
 
               {item.context_image && (
                 <div className="card corner-marks relative p-5">

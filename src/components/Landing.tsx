@@ -217,16 +217,19 @@ export function Landing({ onEnter }: LandingProps) {
           <div className="relative mt-8 overflow-hidden rounded-none pt-12 pb-24 max-w-5xl mx-auto border-x-0 sm:border-x border-t border-border">
             <div className="relative z-10 flex justify-center w-full px-4 sm:px-12">
               <div className="relative w-full max-w-4xl aspect-video overflow-hidden border border-border bg-surface rounded-none z-10 shadow-2xl">
-                <img
-                  src="/hero_wc_bg.jpg"
-                  alt="Students collaborating"
-                  className="w-full h-full object-cover opacity-90 dark:hidden"
-                />
-                <img
-                  src="/hero_native_dark.jpg"
-                  alt="Students collaborating"
-                  className="w-full h-full object-cover opacity-90 hidden dark:block"
-                />
+                {isDark ? (
+                  <img
+                    src="/hero_native_dark.jpg"
+                    alt="Students collaborating"
+                    className="w-full h-full object-cover opacity-90"
+                  />
+                ) : (
+                  <img
+                    src="/hero_wc_bg.jpg"
+                    alt="Students collaborating"
+                    className="w-full h-full object-cover opacity-90"
+                  />
+                )}
               </div>
             </div>
           </div>
@@ -263,8 +266,11 @@ export function Landing({ onEnter }: LandingProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/adaptive_wc_bg.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 dark:hidden" />
-              <img src="/adaptive_native_dark.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 hidden dark:block" />
+              {isDark ? (
+                <img src="/adaptive_native_dark.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              ) : (
+                <img src="/adaptive_wc_bg.jpg" alt="Adaptive Intelligence" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              )}
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -277,8 +283,11 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/mapping_wc_bg.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 dark:hidden" />
-              <img src="/mapping_native_dark.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 hidden dark:block" />
+              {isDark ? (
+                <img src="/mapping_native_dark.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              ) : (
+                <img src="/mapping_wc_bg.jpg" alt="Precision Gap Mapping" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105" />
+              )}
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>
@@ -291,8 +300,11 @@ export function Landing({ onEnter }: LandingProps) {
 
           <div className="feature-card group border border-border bg-card rounded-none overflow-hidden hover:border-border-strong transition-colors cursor-pointer">
             <div className="aspect-4/3 bg-surface relative overflow-hidden">
-              <img src="/global_wc_bg.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom dark:hidden" />
-              <img src="/global_native_dark.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom hidden dark:block" />
+              {isDark ? (
+                <img src="/global_native_dark.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom" />
+              ) : (
+                <img src="/global_wc_bg.jpg" alt="Global Rank Engine" className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-all duration-700 group-hover:scale-105 object-bottom" />
+              )}
             </div>
             <div className="p-5 flex justify-between items-start border-t border-border">
               <div>

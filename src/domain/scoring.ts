@@ -30,9 +30,8 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
       if (!evidenceResponse) {
         dependencyPenalty = 0.5; // Did not answer evidence correctly
       } else {
-        // If evidence response has <= 0 earnedWeight overall, apply penalty.
-        const evidenceEarned = evidenceResponse.evidence.reduce((sum, e) => sum + e.earnedWeight, 0);
-        if (evidenceEarned <= 0) {
+        // If evidence response was not correct, apply penalty.
+        if (!evidenceResponse.correct) {
           dependencyPenalty = 0.5;
         }
       }
@@ -43,7 +42,7 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
         // Apply multipliers
         const finalEarned = contribution.earnedWeight * difficultyMultiplier * dependencyPenalty;
         totals[contribution.competency].earned += finalEarned;
-        totals[contribution.competency].available += contribution.availableWeight;
+        totals[contribution.competency].available += contribution.availableWeight * difficultyMultiplier;
         totals[contribution.competency].count += 1;
       }
     }

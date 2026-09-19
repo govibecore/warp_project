@@ -11,7 +11,7 @@ interface StudentVariantProps {
   classLevel: number;
 }
 
-export function StudentVariant({ studentName, parentName, studentVariant, benchmark, overallScore, classLevel = 8 }: StudentVariantProps) {
+export function StudentVariant({ studentName, parentName, studentVariant, benchmark = {}, overallScore, classLevel = 8 }: StudentVariantProps) {
   const archetypeTitle = studentVariant?.archetypeTitle || 'Analytical Strategist';
   const archetypeTagline = studentVariant?.archetypeTagline || 'Deconstructs multi-variable systems with structural precision';
   const summary = studentVariant?.summary || 'Consistently demonstrates strong structural awareness when approaching complex, multi-step problems.';

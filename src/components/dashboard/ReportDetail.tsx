@@ -65,6 +65,7 @@ export function ReportDetail() {
   const stream = useReportStream(assessmentId || null);
 
   const safeClassLevel = assessmentData?.class_level || 8;
+  const safeDifficulty = assessmentData?.difficulty || 'Standard';
   const safeResponses = assessmentData?.responses || [];
 
   const allItems = useMemo(() => {
@@ -72,8 +73,8 @@ export function ReportDetail() {
       const items: AssessmentItem[] = [
         ...getCalibrationItems(safeClassLevel),
         ...MISSION_IDS.flatMap((m) => getMissionItems(m, safeClassLevel)),
-        ...getEnglishCalibrationItems(safeClassLevel, 'Standard'),
-        ...ENGLISH_MISSION_IDS.flatMap((m) => getEnglishMissionItems(m, safeClassLevel, 'Standard')),
+        ...getEnglishCalibrationItems(safeClassLevel, safeDifficulty),
+        ...ENGLISH_MISSION_IDS.flatMap((m) => getEnglishMissionItems(m, safeClassLevel, safeDifficulty)),
       ];
       return items;
     } catch (e) {
@@ -84,10 +85,10 @@ export function ReportDetail() {
   const difficultyData = useMemo(() => {
     if (!safeResponses) return [];
     return safeResponses.map((r: any) => {
-      const item = allItems.find((i) => i.id === r.itemId);
+      const item = allItems.find((i) => i.id === r.scenario_id);
       const b = item?.itemDifficulty ?? 0;
       return {
-        id: r.itemId,
+        id: r.scenario_id,
         difficulty: b,
         correct: r.correct ? 1 : 0,
         status: r.correct ? 'Correct' : 'Incorrect',

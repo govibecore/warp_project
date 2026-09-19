@@ -118,7 +118,7 @@ export function getEnglishMissionItems(missionId: string, classLevel: number, di
         scenarioState: {},
         mutableStateKeys: [],
         options: [
-          { id: 'opt1', label: 'swift', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt1', label: 'so swift', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
           { id: 'opt2', label: 'quickingly', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'invalid word formation' },
           { id: 'opt3', label: 'slowly', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'antonym' },
           { id: 'opt4', label: 'more fast', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incorrect comparative form' },
