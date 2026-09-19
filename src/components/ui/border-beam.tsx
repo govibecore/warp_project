@@ -36,8 +36,8 @@ export function BorderBeam({
   className,
   reverse = false,
 }: BorderBeamProps) {
-  const uid = `bb-${Math.abs((colorFrom + colorTo + duration).split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0))}`
-
+  const styleKey = `${colorFrom}|${colorTo}|${duration}|${borderWidth}|${reverse}`
+  const uid = `bb-${Math.abs(styleKey.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0))}`
   const keyframeName = `${uid}-spin`
   const animationDir = reverse ? "reverse" : "normal"
 
