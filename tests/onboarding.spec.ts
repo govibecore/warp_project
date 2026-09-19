@@ -67,7 +67,7 @@ test("Back to home button transitions from ?choose to Landing page cleanly", asy
   await backToHomeBtn.click({ force: true });
 
   // Verify URL is cleaned of ?choose and landing page is rendered
-  await page.waitForURL((url) => !url.searchParams.has("choose"), { timeout: 10000 });
+  await page.waitForURL((url) => !url.searchParams.has("choose"), { timeout: 10000, waitUntil: 'commit' });
   await expect(page).not.toHaveURL(/\?choose/);
   await expect(page).toHaveTitle(/WARP/i);
 });
