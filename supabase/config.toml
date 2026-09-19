@@ -27,3 +27,48 @@ verify_jwt = false
 import_map = "./functions/consent-webhook/deno.json"
 entrypoint = "./functions/consent-webhook/index.ts"
 
+
+[auth]
+additional_redirect_urls = []
+password_requirements = "lower_upper_letters_digits_symbols"
+site_url = "https://warp-labs.vercel.app/"
+
+[auth.email]
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+otp_expiry = 600
+
+[auth.email.template.confirm_signup]
+subject = "Your WARP verification code"
+content_path = "./supabase/templates/confirm_signup.html"
+
+[auth.email.smtp]
+enabled = true
+host = "smtp.gmail.com"
+port = 587
+user = "govibe689@gmail.com"
+admin_email = "govibe689@gmail.com"
+sender_name = "WARP Academy"
+
+[auth.rate_limit]
+email_sent = 30
+
+[auth.external.google]
+client_id = "239394742292-5j2m6eu5na4rurqmv9ftko433cqh5rvt.apps.googleusercontent.com"
+enabled = true
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[db.pooler]
+default_pool_size = 15
+max_client_conn = 200
+
+[storage.analytics]
+enabled = true
+max_namespaces = 10
+
+[storage.image_transformation]
+enabled = true
