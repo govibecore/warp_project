@@ -1,4 +1,4 @@
-﻿import { supabase } from "./supabase";
+import { supabase } from "./supabase";
 
 export interface Resource {
   key: string;
@@ -33,6 +33,7 @@ export async function fetchResourcesByCompetency(
     .from("resources")
     .select("key, title, url, category, competency, difficulty")
     .eq("competency", competency)
+    .in("difficulty", [difficulty, "standard"])
     .eq("verified", true)
     .limit(3);
 
