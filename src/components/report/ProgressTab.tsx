@@ -65,10 +65,10 @@ export function ProgressTab({
             id: item.id,
             date: item.completed_at || new Date().toISOString(),
             displayDate: item.completed_at ? dateFmt.format(new Date(item.completed_at)) : 'Assessment',
-            score: item.global_score ?? currentScore,
+            score: item.id === currentAssessmentId ? currentScore : (item.global_score ?? null),
             classLevel: item.class_level ?? classLevel,
             isCurrent: item.id === currentAssessmentId,
-          }));
+          })).filter(pt => pt.score !== null) as AssessmentPoint[];
           setHistory(points);
         } else {
           setHistory([

@@ -41,6 +41,7 @@ export interface ItemResponse {
    * absent for full-credit answers.
    */
   misconception?: string;
+  correct?: boolean;
 }
 
 export interface CompetencyProjection {

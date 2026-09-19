@@ -106,11 +106,15 @@ export function WarpApplication() {
     }
   }, [isLoaded, isSignedIn, user]);
 
+  const savingAssessmentRef = useRef(false);
+
   // Save assessment to Supabase when completed with sufficient responses
   useEffect(() => {
     const responseList = session.responses ? Object.values(session.responses) : [];
     const currentResult = session.result;
     if (session.phase === 'results' && currentResult && !hasAssessmentId && user && responseList.length >= 5) {
+      if (savingAssessmentRef.current) return;
+      savingAssessmentRef.current = true;
       const saveAssessment = async () => {
         const scaledScores = currentResult.competencies
           ? Object.fromEntries(Object.entries(currentResult.competencies).map(([k, v]) => [k, v.score]))
@@ -139,6 +143,9 @@ export function WarpApplication() {
 
         if (assessment && !error) {
           window.location.search = `?assessment=${assessment.id}`;
+        } else {
+          savingAssessmentRef.current = false;
+          console.error('Failed to save assessment:', error);
         }
       };
       saveAssessment();

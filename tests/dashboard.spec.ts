@@ -109,7 +109,7 @@ test("Dashboard renders consistently with mock data", async ({ page }) => {
   await page.goto("/?dashboard=true");
 
   // Wait for the STUDENT DOSSIER header to confirm dashboard loaded
-  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.dash-cascade').first()).toBeVisible({ timeout: 15000 });
 });
 
 test("User Menu contains Student Dossier, Academic Identity, Calibration Settings, and Sign out", async ({ page }) => {
@@ -223,7 +223,7 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
   await page.goto("/?dashboard=true");
 
   // Wait for dashboard to confirm auth succeeded before opening menu
-  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.dash-cascade').first()).toBeVisible({ timeout: 15000 });
 
   // Open user menu dropdown
   const userMenuTrigger = page.locator('#user-menu-trigger');
@@ -393,7 +393,7 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
   await page.goto("/?dashboard=true");
 
   // Wait for dashboard to confirm auth succeeded before opening menu
-  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.dash-cascade').first()).toBeVisible({ timeout: 15000 });
 
   // Open user menu dropdown
   const userMenuTrigger = page.locator('#user-menu-trigger');
@@ -510,10 +510,10 @@ test("Select dropdown options have high contrast dark background and visible tex
 
   await page.goto("/?dashboard=true");
   // Wait for dashboard to confirm auth succeeded
-  await expect(page.getByRole('button', { name: /New assessment/i })).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.dash-cascade').first()).toBeVisible({ timeout: 15000 });
 
-  // Click New assessment to open the Confirm class modal
-  const newAssessmentBtn = page.getByRole('button', { name: /New assessment/i });
+  // Click Start Assessment to open the Confirm class modal
+  const newAssessmentBtn = page.getByRole('button', { name: /Start Assessment/i });
   await expect(newAssessmentBtn).toBeVisible();
   await newAssessmentBtn.click();
 

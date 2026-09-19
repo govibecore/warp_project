@@ -43,7 +43,7 @@ export function ParentVariant({ studentName, parentName, parentVariant, benchmar
   const boardGradeBand = benchmark?.boardGradeBand || parentVariant?.benchmark?.boardGradeBand;
   const parakh = benchmark?.parakhHolisticPillars || parentVariant?.benchmark?.parakhHolisticPillars;
   const competitive = benchmark?.indianCompetitiveFoundation || parentVariant?.benchmark?.indianCompetitiveFoundation;
-  const indiaPercentile = benchmark?.indiaNationalPercentile || parentVariant?.benchmark?.indiaNationalPercentile || regionalPercentiles.India;
+  const indiaPercentile = benchmark?.indiaNationalPercentile ?? parentVariant?.benchmark?.indiaNationalPercentile ?? regionalPercentiles.India;
 
   const isEnglish = (parentVariant?.subject || '').toLowerCase().includes('english');
   const mathGap = isEnglish
@@ -263,21 +263,23 @@ export function ParentVariant({ studentName, parentName, parentVariant, benchmar
 
           <div className="space-y-3 py-4">
             {/* India */}
-            <div className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-foreground-secondary font-semibold">🇮🇳 All-India Standing</span>
-                <span className="font-mono font-bold text-primary">{indiaPercentile}th pct</span>
+            {indiaPercentile !== undefined && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-foreground-secondary font-semibold">🇮🇳 All-India Standing</span>
+                  <span className="font-mono font-bold text-primary">{indiaPercentile ?? 50}th pct</span>
+                </div>
+                <div className="h-1.5 w-full bg-border overflow-hidden">
+                  <div
+                    className="h-full bg-primary transition-all duration-700"
+                    style={{ width: `${indiaPercentile ?? 50}%` }}
+                  />
+                </div>
+                {boardGradeBand && (
+                  <p className="text-[10px] text-foreground-muted">Board Equiv: Grade {boardGradeBand.grade} - {boardGradeBand.band}</p>
+                )}
               </div>
-              <div className="h-1.5 w-full bg-border overflow-hidden">
-                <div
-                  className="h-full bg-primary transition-all duration-700"
-                  style={{ width: `${indiaPercentile}%` }}
-                />
-              </div>
-              {boardGradeBand && (
-                <p className="text-[10px] text-foreground-muted">Board Equiv: Grade {boardGradeBand.grade} - {boardGradeBand.band}</p>
-              )}
-            </div>
+            )}
 
             {/* Singapore */}
             <div className="space-y-1">

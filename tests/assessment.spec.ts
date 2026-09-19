@@ -125,8 +125,8 @@ test.describe("English Assessment Pool and Functionality", () => {
 
     await page.goto("/?dashboard");
 
-    // Click "New assessment"
-    const newAssessmentBtn = page.getByRole("button", { name: /New assessment/i });
+    // Click "Start Assessment"
+    const newAssessmentBtn = page.getByRole("button", { name: /Start Assessment/i });
     await expect(newAssessmentBtn).toBeVisible({ timeout: 10000 });
     await newAssessmentBtn.click();
 

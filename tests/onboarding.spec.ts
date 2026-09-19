@@ -40,6 +40,8 @@ test("Successful Registration shows confirmation notice", async ({ page }) => {
 
   await page.getByLabel(/Email/i).fill("tom123@warp.app");
   await page.locator('#password').fill("SuperSecret123!");
+  await page.getByLabel(/Student Name/i).fill("Tom Koo");
+  await page.getByLabel(/Parent Name/i).fill("Mr Koo");
   await page.getByRole("button", { name: /^Sign up$/i }).click();
 
   // Notice should be displayed

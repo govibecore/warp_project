@@ -4,6 +4,7 @@ import { supabase } from '../../lib/supabase';
 import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
 import { getMissionItems, getCalibrationItems, MISSION_IDS, getEnglishMissionItems, getEnglishCalibrationItems, ENGLISH_MISSION_IDS } from '../../data/scenarios';
+import { normalizeDifficulty } from '../../domain/assessment';
 import type { AssessmentItem } from '../../domain/types';
 
 import { WarpLogo } from '../WarpLogo';
@@ -65,14 +66,14 @@ export function ReportDetail() {
   const stream = useReportStream(assessmentId || null);
 
   const safeClassLevel = assessmentData?.class_level || 8;
-  const safeDifficulty = assessmentData?.difficulty || 'Standard';
+  const safeDifficulty = normalizeDifficulty(assessmentData?.difficulty);
   const safeResponses = assessmentData?.responses || [];
 
   const allItems = useMemo(() => {
     try {
       const items: AssessmentItem[] = [
-        ...getCalibrationItems(safeClassLevel),
-        ...MISSION_IDS.flatMap((m) => getMissionItems(m, safeClassLevel)),
+        ...getCalibrationItems(safeClassLevel, safeDifficulty),
+        ...MISSION_IDS.flatMap((m) => getMissionItems(m, safeClassLevel, safeDifficulty)),
         ...getEnglishCalibrationItems(safeClassLevel, safeDifficulty),
         ...ENGLISH_MISSION_IDS.flatMap((m) => getEnglishMissionItems(m, safeClassLevel, safeDifficulty)),
       ];
@@ -351,7 +352,7 @@ export function ReportDetail() {
     : 'Foundational Need';
 
   const getBand = (val: number | undefined, fallback: string) => {
-    if (val === undefined || val === 0) return fallback;
+    if (val === undefined) return fallback;
     if (val >= 75) return 'Advanced';
     if (val >= 55) return 'Proficient';
     if (val >= 35) return 'Developing';

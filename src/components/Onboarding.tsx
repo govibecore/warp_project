@@ -74,6 +74,7 @@ function AuthForm({
         setError(signUpErr.message);
       } else if (data.session) {
         setIsSuccess(true);
+        setNotice('Registration successful! Redirecting...');
       } else {
         setIsSuccess(true);
         setNotice('Registration successful! Please check your email to verify your account.');

@@ -31,7 +31,6 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
 
   const fetchStudentProfile = async (userId: string) => {
     const gen = ++fetchGenerationRef.current;
-    setStudentProfile(null);
     const { data } = await supabase.from('students').select('*').eq('id', userId).maybeSingle();
     if (fetchGenerationRef.current === gen) {
       setStudentProfile(data || null);
