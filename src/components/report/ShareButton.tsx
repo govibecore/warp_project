@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Share2, Check, Copy, Link as LinkIcon, Sparkles, MessageCircle, X } from 'lucide-react';
+import { Share2, Check, Copy, Link as LinkIcon, Sparkles, X } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Spinner } from '../ui/spinner';
 import { supabase } from '../../lib/supabase';
@@ -165,13 +165,13 @@ export function ShareButton({
 
   const shareModalContent = showModal && shareToken ? (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 p-4 animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeModal();
       }}
     >
       <div
-        className="w-full max-w-md rounded-none border border-border bg-card p-6 shadow-2xl space-y-4 text-foreground"
+        className="w-full max-w-md rounded-none border border-border-hairline bg-surface-card p-6 shadow-none space-y-4 text-foreground"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-dialog-title"
@@ -226,22 +226,10 @@ export function ShareButton({
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-border">
-          <a
-            href={`https://api.whatsapp.com/send?text=${encodeURIComponent(`WARP STEM Diagnostic Benchmark Report for ${studentName}:\n${getShareUrl(shareToken)}`)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-500 text-white transition-colors"
-          >
-            <MessageCircle className="size-3.5" />
-            <span>Share via WhatsApp</span>
-          </a>
-
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-foreground-muted font-mono">Valid for 30 days</span>
-            <Button variant="ghost" size="sm" onClick={closeModal}>
-              Done
-            </Button>
-          </div>
+          <span className="text-[10px] text-foreground-muted font-mono">Valid for 30 days</span>
+          <Button variant="ghost" size="sm" onClick={closeModal}>
+            Done
+          </Button>
         </div>
       </div>
     </div>
