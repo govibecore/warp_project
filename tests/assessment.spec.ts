@@ -1,6 +1,6 @@
 import { test, expect } from "@chromatic-com/playwright";
 
-// Mock token for "Mock User" (mock@example.com) — expires year 2100
+// Mock token for "Khamba Meetei" (mock@example.com) — expires year 2100
 const MOCK_ACCESS_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
   ".eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMTA0ODgxNDI2LCJpYXQiOjE3ODk1MjE0MjYsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6Im1vY2tAZXhhbXBsZS5jb20iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInVzZXJfbWV0YWRhdGEiOnsiZnVsbF9uYW1lIjoiTW9jayBVc2VyIiwiY3VycmVudF9jbGFzcyI6OCwicGFyZW50X25hbWUiOiJNb2NrIFBhcmVudCIsInNjaG9vbF9uYW1lIjoiTW9jayBTY2hvb2wifSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX19" +

@@ -7,7 +7,7 @@ import { test, expect } from "@chromatic-com/playwright";
 // The Supabase client uses jwtDecode (no signature verification) to read expiry.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Mock token for "Mock User" (mock@example.com) — expires year 2100
+// Mock token for "Khamba Meetei" (mock@example.com) — expires year 2100
 const MOCK_ACCESS_TOKEN =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9" +
   ".eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMTA0ODgxNDI2LCJpYXQiOjE3ODk1MjE0MjYsInN1YiI6InRlc3QtdXNlci0xMjMiLCJlbWFpbCI6Im1vY2tAZXhhbXBsZS5jb20iLCJyb2xlIjoiYXV0aGVudGljYXRlZCIsInVzZXJfbWV0YWRhdGEiOnsiZnVsbF9uYW1lIjoiTW9jayBVc2VyIiwiY3VycmVudF9jbGFzcyI6OCwicGFyZW50X25hbWUiOiJNb2NrIFBhcmVudCIsInNjaG9vbF9uYW1lIjoiTW9jayBTY2hvb2wifSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiZW1haWwiLCJwcm92aWRlcnMiOlsiZW1haWwiXX19" +
@@ -38,9 +38,9 @@ test("Dashboard renders consistently with mock data", async ({ page }) => {
         aud: 'authenticated',
         role: 'authenticated',
         user_metadata: {
-          full_name: 'Mock User',
+          full_name: 'Khamba Meetei',
           current_class: 8,
-          parent_name: 'Mock Parent',
+          parent_name: 'Tomcha Meetei',
           school_name: 'Mock School'
         }
       }
@@ -54,7 +54,7 @@ test("Dashboard renders consistently with mock data", async ({ page }) => {
       email: 'mock@example.com',
       aud: 'authenticated',
       role: 'authenticated',
-      user_metadata: { full_name: 'Mock User' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -130,9 +130,9 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
         email_confirmed_at: '2026-09-01T00:00:00.000Z',
         phone: '',
         user_metadata: {
-          full_name: 'mandolee79',
+          full_name: 'Khamba Meetei',
           current_class: 8,
-          parent_name: 'Mock Parent',
+          parent_name: 'Tomcha Meetei',
           school_name: 'Mock School'
         },
         app_metadata: { provider: 'email', providers: ['email'] },
@@ -155,7 +155,7 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
         aud: 'authenticated',
         role: 'authenticated',
         email: 'mandolee79@gmail.com',
-        user_metadata: { full_name: 'mandolee79' }
+        user_metadata: { full_name: 'Khamba Meetei' }
       }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
@@ -167,7 +167,7 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
       aud: 'authenticated',
       role: 'authenticated',
       email: 'mandolee79@gmail.com',
-      user_metadata: { full_name: 'mandolee79' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -178,7 +178,7 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
       aud: 'authenticated',
       role: 'authenticated',
       email: 'mandolee79@gmail.com',
-      user_metadata: { full_name: 'mandolee79' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -191,11 +191,11 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
       } catch (e) {}
       const json = {
         id: 'test-user-123',
-        full_name: 'mandolee79',
+        full_name: 'Khamba Meetei',
         current_class: 8,
         difficulty_pref: 'standard',
         gender: 'prefer_not_to_say',
-        parent_name: 'Mock Parent',
+        parent_name: 'Tomcha Meetei',
         school_name: 'Mock School',
         consent_status: 'verified'
       };
@@ -205,11 +205,11 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
 
     const json = [{
       id: 'test-user-123',
-      full_name: 'mandolee79',
+      full_name: 'Khamba Meetei',
       current_class: 8,
       difficulty_pref: 'standard',
       gender: 'prefer_not_to_say',
-      parent_name: 'Mock Parent',
+      parent_name: 'Tomcha Meetei',
       school_name: 'Mock School',
       consent_status: 'verified'
     }];
@@ -261,7 +261,7 @@ test("User Menu contains Student Dossier, Academic Identity, Calibration Setting
 
   // Edit student name to trigger isDirty state
   const nameInput = panel.getByPlaceholder('e.g. Alex Mercer');
-  await nameInput.fill('mandolee79 updated');
+  await nameInput.fill('Khamba Meetei updated');
 
   // Save changes
   const saveBtn = panel.getByRole('button', { name: /save changes/i });
@@ -300,9 +300,9 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
         email_confirmed_at: '2026-09-01T00:00:00.000Z',
         phone: '',
         user_metadata: {
-          full_name: 'mandolee79',
+          full_name: 'Khamba Meetei',
           current_class: 8,
-          parent_name: 'Mock Parent',
+          parent_name: 'Tomcha Meetei',
           school_name: 'Mock School'
         },
         app_metadata: { provider: 'email', providers: ['email'] },
@@ -336,7 +336,7 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
         aud: 'authenticated',
         role: 'authenticated',
         email: 'mandolee79@gmail.com',
-        user_metadata: { full_name: 'mandolee79' }
+        user_metadata: { full_name: 'Khamba Meetei' }
       }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
@@ -352,7 +352,7 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
       aud: 'authenticated',
       role: 'authenticated',
       email: 'mandolee79@gmail.com',
-      user_metadata: { full_name: 'mandolee79' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -367,7 +367,7 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
       aud: 'authenticated',
       role: 'authenticated',
       email: 'mandolee79@gmail.com',
-      user_metadata: { full_name: 'mandolee79' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -375,11 +375,11 @@ test("Signing out redirects to the landing page and not Choose Your Assessment",
   await page.route('**/rest/v1/students*', async (route) => {
     const json = [{
       id: 'test-user-123',
-      full_name: 'mandolee79',
+      full_name: 'Khamba Meetei',
       current_class: 8,
       difficulty_pref: 'standard',
       gender: 'prefer_not_to_say',
-      parent_name: 'Mock Parent',
+      parent_name: 'Tomcha Meetei',
       school_name: 'Mock School',
       consent_status: 'verified'
     }];
@@ -465,9 +465,9 @@ test("Select dropdown options have high contrast dark background and visible tex
         role: 'authenticated',
         email: 'mandolee79@gmail.com',
         user_metadata: {
-          full_name: 'mandolee79',
+          full_name: 'Khamba Meetei',
           current_class: 8,
-          parent_name: 'Mock Parent',
+          parent_name: 'Tomcha Meetei',
           school_name: 'Mock School'
         }
       }
@@ -481,7 +481,7 @@ test("Select dropdown options have high contrast dark background and visible tex
       aud: 'authenticated',
       role: 'authenticated',
       email: 'mandolee79@gmail.com',
-      user_metadata: { full_name: 'mandolee79' }
+      user_metadata: { full_name: 'Khamba Meetei' }
     };
     await route.fulfill({ json, status: 200, contentType: 'application/json' });
   });
@@ -489,10 +489,10 @@ test("Select dropdown options have high contrast dark background and visible tex
   await page.route('**/rest/v1/students*', async (route) => {
     const student = {
       id: 'test-user-123',
-      full_name: 'mandolee79',
+      full_name: 'Khamba Meetei',
       current_class: 8,
       difficulty_pref: 'standard',
-      parent_name: 'Mock Parent',
+      parent_name: 'Tomcha Meetei',
       school_name: 'Mock School',
       consent_status: 'verified'
     };

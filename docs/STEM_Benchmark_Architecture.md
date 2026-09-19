@@ -502,15 +502,15 @@ app.use(helmet({
 **Register Request:**
 ```json
 {
-  "email": "arjun.sharma@example.com",
+  "email": "khamba.meetei@example.com",
   "password": "SecurePass123!",
-  "fullName": "Arjun Sharma",
+  "fullName": "Khamba Meetei",
   "currentClass": 8,
   "schoolName": "Delhi Public School",
   "city": "New Delhi",
   "state": "Delhi",
-  "parentName": "Rajesh Sharma",
-  "parentEmail": "rajesh.sharma@example.com"
+  "parentName": "Tomcha Meetei",
+  "parentEmail": "tomcha.meetei@example.com"
 }
 ```
 
@@ -521,8 +521,8 @@ app.use(helmet({
   "data": {
     "student": {
       "id": "64f8a2b1c3d4e5f6a7b8c9d0",
-      "email": "arjun.sharma@example.com",
-      "fullName": "Arjun Sharma",
+      "email": "khamba.meetei@example.com",
+      "fullName": "Khamba Meetei",
       "currentClass": 8,
       "createdAt": "2026-08-25T09:30:00.000Z"
     },
@@ -731,7 +731,7 @@ If OpenRouter free tier is unavailable:
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  Welcome back, Arjun!                    [Start New Assessment →]   │   │
+│  │  Welcome back, Khamba!                    [Start New Assessment →]   │   │
 │  │  Class 8 • 3 assessments completed • Last: 2 days ago              │   │
 │  └─────────────────────────────────────────────────────────────────────┘   │
 │                                                                             │
@@ -801,7 +801,7 @@ If OpenRouter free tier is unavailable:
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  Report #3 - Aug 23, 2026                                                  │
-│  Arjun Sharma • Class 8 • Advanced Difficulty                               │
+│  Khamba Meetei • Class 8 • Advanced Difficulty                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
 │  ┌─────────────────────────────────────────────────────────────────────┐   │

@@ -124,7 +124,7 @@ function AuthForm({
             <Field label="Student Name" htmlFor="studentName">
               <Input
                 id="studentName"
-                placeholder="Aryan Sharma"
+                placeholder="Khamba Meetei"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
                 required
@@ -133,7 +133,7 @@ function AuthForm({
             <Field label="Parent Name" htmlFor="parentName">
               <Input
                 id="parentName"
-                placeholder="Rajiv Sharma"
+                placeholder="Tomcha Meetei"
                 value={parentName}
                 onChange={(e) => setParentName(e.target.value)}
                 required
