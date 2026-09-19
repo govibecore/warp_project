@@ -149,7 +149,7 @@ export function GlyphMatrix({
       cancelAnimationFrame(raf)
       ro.disconnect()
     }
-  }, [glyphs, cellSize, mutationRate, interval, fadeBottom])
+  }, [glyphs, cellSize, mutationRate, interval, fadeBottom, prefersReducedMotion])
 
   return (
     <motion.canvas

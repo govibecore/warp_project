@@ -71,20 +71,7 @@ export function Landing({ onEnter }: LandingProps) {
     return () => observer.disconnect();
   }, []);
 
-  const [glyphColor, setGlyphColor] = useState("#6B7280");
-
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const isDark = document.documentElement.classList.contains("dark");
-    setGlyphColor(isDark ? "#ffffff" : "#000000");
-    
-    const observer = new MutationObserver(() => {
-      const isDarkNow = document.documentElement.classList.contains("dark");
-      setGlyphColor(isDarkNow ? "#ffffff" : "#000000");
-    });
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
+  const glyphColor = isDark ? "#ffffff" : "#000000";
 
   useEffect(() => {
     if (showLogoutAnim) {
