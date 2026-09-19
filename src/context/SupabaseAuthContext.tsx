@@ -58,6 +58,7 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
         }
       } else {
         Sentry.setUser(null);
+        fetchGenerationRef.current++;
         setStudentProfile(null);
       }
       setSession(session);
@@ -83,6 +84,7 @@ export const SupabaseAuthProvider = ({ children }: { children: React.ReactNode }
           await fetchStudentProfile(s.user.id);
         } else {
           Sentry.setUser(null);
+          fetchGenerationRef.current++;
           setStudentProfile(null);
         }
       };

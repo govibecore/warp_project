@@ -80,15 +80,16 @@ export function ReportDetail() {
     } catch (e) {
       return [];
     }
-  }, [safeClassLevel]);
+  }, [safeClassLevel, safeDifficulty]);
 
   const difficultyData = useMemo(() => {
     if (!safeResponses) return [];
     return safeResponses.map((r: any) => {
-      const item = allItems.find((i) => i.id === r.scenario_id);
+      const itemId = r.item_id || r.scenario_id;
+      const item = allItems.find((i) => i.id === itemId);
       const b = item?.itemDifficulty ?? 0;
       return {
-        id: r.scenario_id,
+        id: itemId,
         difficulty: b,
         correct: r.correct ? 1 : 0,
         status: r.correct ? 'Correct' : 'Incorrect',

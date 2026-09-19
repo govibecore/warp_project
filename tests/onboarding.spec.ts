@@ -23,13 +23,14 @@ test("Successful Registration shows confirmation notice", async ({ page }) => {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({
-        id: "mock-user-456",
+        id: "123", 
         aud: "authenticated",
         role: "authenticated",
         email: "tom123@warp.app",
-        user_metadata: {
-          full_name: "Tom Koo",
-        },
+        app_metadata: { provider: "email", providers: ["email"] },
+        user_metadata: { full_name: "Tom Koo" },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }),
     });
   });

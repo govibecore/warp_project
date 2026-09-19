@@ -227,7 +227,7 @@ export function PlanTab({ benchmark, studentVariant, parentVariant, reportId, is
                       <div className="absolute -left-8.75 md:-left-10.75 top-1">
                         <button
                           onClick={() => toggleDay(day.dayNum)}
-                          disabled={isSaving && false}
+                          disabled={isSaving}
                           className="bg-background rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:ring-offset-2"
                           aria-label={`Mark Day ${day.dayNum} as ${isCompleted ? 'incomplete' : 'complete'}`}
                         >

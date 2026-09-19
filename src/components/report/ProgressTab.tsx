@@ -65,8 +65,8 @@ export function ProgressTab({
             id: item.id,
             date: item.completed_at || new Date().toISOString(),
             displayDate: item.completed_at ? dateFmt.format(new Date(item.completed_at)) : 'Assessment',
-            score: item.global_score || currentScore,
-            classLevel: item.class_level || classLevel,
+            score: item.global_score ?? currentScore,
+            classLevel: item.class_level ?? classLevel,
             isCurrent: item.id === currentAssessmentId,
           }));
           setHistory(points);
@@ -173,7 +173,7 @@ export function ProgressTab({
                         dy={10}
                       />
                       <YAxis 
-                        domain={[0, 900]} 
+                        domain={[100, 900]} 
                         axisLine={false}
                         tickLine={false}
                         tick={{ fontSize: 12, fill: 'var(--ink-secondary)', fontFamily: 'var(--font-mono, monospace)' }}

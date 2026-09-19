@@ -166,7 +166,7 @@ test.describe("English Assessment Pool and Functionality", () => {
     await expect(page.getByText(/Unable to load assessment/i)).not.toBeVisible();
 
     // Ensure scenario question text is loaded
-    const questionHeading = page.locator("h1");
+    const questionHeading = page.locator(".text-balance.text-lg");
     await expect(questionHeading).toBeVisible({ timeout: 10000 });
     const headingText = await questionHeading.textContent();
     expect(headingText?.length).toBeGreaterThan(10);

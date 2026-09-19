@@ -31,7 +31,8 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
         dependencyPenalty = 0.5; // Did not answer evidence correctly
       } else {
         // If evidence response was not correct, apply penalty.
-        if (!evidenceResponse.correct) {
+        const evidenceCorrect = evidenceResponse.evidence.reduce((acc, e) => acc + e.earnedWeight, 0) > 0;
+        if (!evidenceCorrect) {
           dependencyPenalty = 0.5;
         }
       }

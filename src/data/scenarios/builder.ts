@@ -168,7 +168,7 @@ export function materialize(
     }
 
     return {
-      id: source.id,
+      id: `${source.id}-${developmentalBand}`,
       missionId: source.missionId,
       missionTitle: source.missionTitle,
       developmentalBand,
@@ -181,7 +181,7 @@ export function materialize(
       mutableStateKeys: Object.keys(source.state),
       mutation: undefined,
       itemDifficulty: b,
-      linkedEvidenceItemId: v.difficultyParams?.evidenceFor ? v.difficultyParams.evidenceFor : undefined,
+      linkedEvidenceItemId: v.difficultyParams?.evidenceFor ? `${v.difficultyParams.evidenceFor}-${developmentalBand}` : undefined,
     };
   });
 }
