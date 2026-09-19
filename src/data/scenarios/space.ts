@@ -19,6 +19,7 @@ export const spaceBlueprints: readonly ItemBlueprint[] = [
           o('spc-0-c', 'Throwing many small balls one after another.', 'mathematicalReasoning', 'engineeringDesign', 2, 'many weak tries add up to one strong try'),
           o('spc-0-d', 'Waiting for a windy day.', 'mathematicalReasoning', 'engineeringDesign', 3),
         ],
+        { b: -0.8 }
       ),
       '5-6': variant(
         'A spacecraft wants to move from a low circle around Earth to a much higher one. What decides how big a push it needs?',
@@ -30,6 +31,7 @@ export const spaceBlueprints: readonly ItemBlueprint[] = [
           o('spc-0-c', 'How shiny the spacecraft\'s paint is.', 'mathematicalReasoning', 'engineeringDesign', 0, 'appearance changes physical behaviour'),
           o('spc-0-d', 'What day of the year it launches.', 'mathematicalReasoning', 'engineeringDesign', 2, 'the calendar sets the orbit change'),
         ],
+        { b: -0.2 }
       ),
       '7-8': variant(
         'Calculating the delta-v required for a Hohmann transfer orbit. What is the most critical variable?',
@@ -41,6 +43,7 @@ export const spaceBlueprints: readonly ItemBlueprint[] = [
           o('spc-0-c', 'The color of the spacecraft\'s thermal shielding.', 'mathematicalReasoning', 'engineeringDesign', 0, 'appearance changes physical behaviour'),
           o('spc-0-d', 'The specific impulse (Isp) of the thruster fuel alone.', 'mathematicalReasoning', 'engineeringDesign', 5, 'engine efficiency sets the orbit change'),
         ],
+        { b: 0.5 }
       ),
       '9-10': variant(
         'Which quantities fix the two burn magnitudes of a Hohmann transfer between circular orbits?',
@@ -52,6 +55,7 @@ export const spaceBlueprints: readonly ItemBlueprint[] = [
           o('spc-0-c', 'The engine\'s Isp - a better engine changes the required delta-v.', 'mathematicalReasoning', 'engineeringDesign', 5, 'engine efficiency sets the orbit change'),
           o('spc-0-d', 'The launch site\'s latitude - it tilts the transfer ellipse.', 'mathematicalReasoning', 'engineeringDesign', 2, 'launch latitude tilts the transfer'),
         ],
+        { b: 1.2 }
       ),
       '11-12': variant(
         'For r₂/r₁ ≈ 15, a colleague proposes a bi-elliptic transfer instead of Hohmann. What decides between them?',
@@ -63,8 +67,78 @@ export const spaceBlueprints: readonly ItemBlueprint[] = [
           o('spc-0-c', 'The Hohmann always wins - the shortest path uses the least energy.', 'mathematicalReasoning', 'engineeringDesign', 4, 'the fastest path is always the cheapest'),
           o('spc-0-d', 'The engine\'s Isp - it determines which transfer geometry is possible.', 'mathematicalReasoning', 'engineeringDesign', 5, 'engine efficiency sets the orbit change'),
         ],
+        { b: 2.1 }
       ),
     },
+  ),
+  blueprint(
+    'spc-0-evidence',
+    'stem-space',
+    'Orbital Mechanics',
+    ['NGSS SEP7: Engaging in argument from evidence', 'PISA 2025 C2: Evaluate evidence'],
+    { orbit: 'LEO' },
+    {
+      '3-4': variant(
+        'Which statement provides the best evidence for your answer about throwing a ball?',
+        'Look at how things work around you.',
+        'What gives the ball its speed?',
+        [
+          o('e-a', 'Your arm gives energy to the ball; a harder throw gives more energy to go higher.', 'criticalThinking', 'mathematicalReasoning', 10),
+          o('e-b', 'Balls like to float if they are the right colour.', 'criticalThinking', 'mathematicalReasoning', 0),
+          o('e-c', 'The wind carries the ball upwards if you wait.', 'criticalThinking', 'mathematicalReasoning', 2),
+          o('e-d', 'A soft toss makes the ball bounce higher off the air.', 'criticalThinking', 'mathematicalReasoning', 1),
+        ],
+        { b: -0.4, evidenceFor: 'spc-0' }
+      ),
+      '5-6': variant(
+        'Which statement provides the best evidence for your answer about climbing orbits?',
+        'Think about the connection between distance and effort.',
+        'Why does a higher orbit require more from the spacecraft?',
+        [
+          o('e-a', 'Moving further against Earth\'s gravity requires more total energy.', 'criticalThinking', 'mathematicalReasoning', 10),
+          o('e-b', 'Heavier spacecraft pull themselves up automatically.', 'criticalThinking', 'mathematicalReasoning', 2),
+          o('e-c', 'Space is a vacuum, so only the initial mass matters.', 'criticalThinking', 'mathematicalReasoning', 1),
+          o('e-d', 'The orbit changes when the spacecraft gets lighter.', 'criticalThinking', 'mathematicalReasoning', 3),
+        ],
+        { b: 0.1, evidenceFor: 'spc-0' }
+      ),
+      '7-8': variant(
+        'Which property of the vis-viva equation justifies your choice of the critical variable?',
+        'Look at the structure of v² = μ(2/r − 1/a).',
+        'Which variable actively dictates the velocities?',
+        [
+          o('e-a', 'The velocity at any point is strictly determined by the radial distance r and the semi-major axis a.', 'criticalThinking', 'mathematicalReasoning', 10),
+          o('e-b', 'The mass of the spacecraft cancels out entirely in the derivation of the delta-v.', 'criticalThinking', 'mathematicalReasoning', 5),
+          o('e-c', 'The specific impulse scales the delta-v linearly.', 'criticalThinking', 'mathematicalReasoning', 1),
+          o('e-d', 'Gravitational parameter μ is variable during the transfer.', 'criticalThinking', 'mathematicalReasoning', 0),
+        ],
+        { b: 0.8, evidenceFor: 'spc-0' }
+      ),
+      '9-10': variant(
+        'What mathematical justification proves that the radii uniquely fix the delta-v for a Hohmann transfer?',
+        'Consider the derivation of the two impulsive burns.',
+        'How do the initial and final velocities combine?',
+        [
+          o('e-a', 'Both the periapsis and apoapsis velocities of the transfer ellipse are functions solely of the initial and final circular radii.', 'criticalThinking', 'mathematicalReasoning', 10),
+          o('e-b', 'The transfer time is proportional to a^(3/2), which depends on the radii.', 'criticalThinking', 'mathematicalReasoning', 4),
+          o('e-c', 'Delta-v is calculated by integrating the mass flow rate.', 'criticalThinking', 'mathematicalReasoning', 2),
+          o('e-d', 'The vis-viva equation requires the spacecraft mass to calculate kinetic energy.', 'criticalThinking', 'mathematicalReasoning', 0),
+        ],
+        { b: 1.5, evidenceFor: 'spc-0' }
+      ),
+      '11-12': variant(
+        'What is the fundamental dynamical reason the bi-elliptic transfer can be more efficient than a Hohmann transfer?',
+        'Look at the Oberth effect or the cost of changing apoapsis versus periapsis.',
+        'Why does a third burn far away help?',
+        [
+          o('e-a', 'Raising the periapsis costs exponentially less delta-v when performed at a very high apoapsis due to the lower local orbital velocity.', 'criticalThinking', 'mathematicalReasoning', 10),
+          o('e-b', 'The three burns distribute the thermal load on the engine, improving Isp efficiency.', 'criticalThinking', 'mathematicalReasoning', 2),
+          o('e-c', 'The bi-elliptic path takes advantage of lunar gravity assists to add free energy.', 'criticalThinking', 'mathematicalReasoning', 1),
+          o('e-d', 'Breaking the transfer into three smaller burns minimizes gravity drag during the ascent.', 'criticalThinking', 'mathematicalReasoning', 4),
+        ],
+        { b: 2.5, evidenceFor: 'spc-0' }
+      ),
+    }
   ),
   blueprint(
     'spc-1',

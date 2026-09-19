@@ -16,7 +16,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 
 import { useSupabaseAuth } from './context/SupabaseAuthContext';
 import { supabase } from './lib/supabase';
-import { normalizeDifficulty } from './domain/assessment';
+// Removed unused normalizeDifficulty import
 
 // ── Admin portal: served at /admin or /admin/* ───────────────────────
 const isAdminRoute = window.location.pathname.startsWith('/admin');
@@ -224,24 +224,15 @@ function WarpApplication() {
       }
       lastCheckedUserId.current = user.id;
 
-      // Automatically start the assessment with their saved profile
-      if (!studentProfile || !studentProfile.full_name || !studentProfile.current_class || !studentProfile.parent_name || !studentProfile.school_name) {
-        setNeedsProfileSetup(true);
-      } else {
-        // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
-        if (typeof window !== 'undefined' && window.location.search) {
-          const p = new URLSearchParams(window.location.search);
-          if (p.has('login') || p.has('register') || p.has('choose')) {
-            window.history.replaceState({}, '', window.location.pathname);
-          }
+      // Force the user to confirm their profile details (to support parents with multiple children)
+      // Clean up any auth query params from the URL so page refreshes don't re-trigger onboarding
+      if (typeof window !== 'undefined' && window.location.search) {
+        const p = new URLSearchParams(window.location.search);
+        if (p.has('login') || p.has('register') || p.has('choose')) {
+          window.history.replaceState({}, '', window.location.pathname);
         }
-        setProfile({
-          name: studentProfile.full_name || 'Learner',
-          classLevel: studentProfile.current_class || 8,
-          difficulty: normalizeDifficulty(studentProfile.difficulty_pref),
-          schoolName: studentProfile.school_name ?? undefined
-        });
       }
+      setNeedsProfileSetup(true);
     }
   }, [session.phase, isLoaded, isSignedIn, user, session.profile, setProfile, studentProfile]);
 

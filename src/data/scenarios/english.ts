@@ -3,6 +3,10 @@ import type { AssessmentItem, Difficulty } from '../../domain/types';
 export const ENGLISH_MISSION_IDS = [
   'eng-reading-comp-1',
   'eng-synthesis-1',
+  'eng-grammar-1',
+  'eng-error-spotting-1',
+  'eng-cloze-1',
+  'eng-grammar-reading-1',
 ] as const;
 
 export function getEnglishCalibrationItems(classLevel: number, difficulty: Difficulty): AssessmentItem[] {
@@ -48,6 +52,170 @@ export function getEnglishCalibrationItems(classLevel: number, difficulty: Diffi
 export function getEnglishMissionItems(missionId: string, classLevel: number, difficulty: Difficulty): AssessmentItem[] {
   const band = classLevel <= 4 ? '3-4' : classLevel <= 6 ? '5-6' : classLevel <= 8 ? '7-8' : classLevel <= 10 ? '9-10' : '11-12';
   const diffStr = difficulty.toLowerCase();
+
+  if (missionId === 'eng-grammar-reading-1') {
+    return [
+      {
+        id: `eng-gram-read-1-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Contextual Grammar',
+        developmentalBand: band,
+        prompt: 'Read the short email and choose the best word to fill in the blank.',
+        context: 'Hi Rohan, Guess what? My family and I _____ to the zoo yesterday! We saw a huge elephant drinking water with its trunk. It was amazing. Let\'s play together soon. Your friend, Aarav',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'went', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'go', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'present tense' },
+          { id: 'opt3', label: 'going', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incomplete continuous tense' },
+          { id: 'opt4', label: 'gone', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'past participle without auxiliary verb' },
+        ],
+      },
+      {
+        id: `eng-gram-read-2-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Contextual Grammar',
+        developmentalBand: band,
+        prompt: 'Read the story snippet and answer the question.',
+        context: 'The little bird sat on the branch. It looked down at the worm wriggling in the dirt. Suddenly, the bird swooped down and caught *it*. What does the word *it* refer to in the last sentence?',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'the worm', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'the bird', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'confusing the subject with the object' },
+          { id: 'opt3', label: 'the dirt', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting a nearby noun that makes no logical sense to catch' },
+          { id: 'opt4', label: 'the branch', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting a noun from the first sentence' },
+        ],
+      },
+    ];
+  }
+
+  if (missionId === 'eng-error-spotting-1') {
+    return [
+      {
+        id: `eng-err-1-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Error Identification',
+        developmentalBand: band,
+        prompt: 'Identify the segment of the sentence that contains a grammatical error. If there is no error, select "No error".',
+        context: 'Neither of the students (A) / have submitted their assignments (B) / before the deadline (C).',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: '(B) have submitted their assignments', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: '(A) Neither of the students', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incorrectly assuming "Neither" is the error' },
+          { id: 'opt3', label: '(C) before the deadline', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting a prepositional phrase' },
+          { id: 'opt4', label: 'No error', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'failing to identify the subject-verb disagreement' },
+        ],
+      },
+      {
+        id: `eng-err-2-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Contextual Vocabulary',
+        developmentalBand: band,
+        prompt: 'Choose the word that best replaces the italicized phrase to improve the sentence.',
+        context: 'The runner was *so extremely fast* that nobody could catch him.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'swift', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'quickingly', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'invalid word formation' },
+          { id: 'opt3', label: 'slowly', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'antonym' },
+          { id: 'opt4', label: 'more fast', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incorrect comparative form' },
+        ],
+      }
+    ];
+  }
+
+  if (missionId === 'eng-cloze-1') {
+    return [
+      {
+        id: `eng-cloze-1-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Contextual Word Usage',
+        developmentalBand: band,
+        prompt: 'Choose the most appropriate word to fill in the blank.',
+        context: 'Despite the overwhelming evidence against him, the defendant maintained a facade of absolute _____, convincing even the most skeptical jurors of his innocence for a time.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'nonchalance', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'guilt', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'contradicts the phrase "convincing... of his innocence"' },
+          { id: 'opt3', label: 'hesitation', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'does not fit "absolute" or project innocence' },
+          { id: 'opt4', label: 'despair', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'context implies projecting confidence, not sadness' },
+        ],
+      },
+      {
+        id: `eng-cloze-2-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Precise Editing',
+        developmentalBand: band,
+        prompt: 'Which revision most effectively uses parallel structure to emphasize the author\'s point?',
+        context: 'The committee\'s goals are to protect the environment, creating new jobs, and the improvement of public transportation.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'The committee\'s goals are to protect the environment, to create new jobs, and to improve public transportation.', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'The committee\'s goals are protecting the environment, to create new jobs, and the improvement of public transportation.', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'still not parallel' },
+          { id: 'opt3', label: 'The committee\'s goals are to protect the environment, creating new jobs, and improving public transportation.', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'mixed forms' },
+          { id: 'opt4', label: 'The committee\'s goals are environmental protection, creating new jobs, and to improve public transportation.', evidence: [{ competency: 'evaluatingReflecting', earnedWeight: 0, availableWeight: 1 }], misconception: 'mixed noun and verb phrases' },
+        ],
+      }
+    ];
+  }
+
+  if (missionId === 'eng-grammar-1') {
+    return [
+      {
+        id: `eng-gram-1-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Foundational Grammar',
+        developmentalBand: band,
+        prompt: 'Identify the verb in the following sentence.',
+        context: 'The quick brown fox jumps over the lazy dog.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'jumps', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'fox', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting the noun/subject' },
+          { id: 'opt3', label: 'quick', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting the adjective' },
+          { id: 'opt4', label: 'over', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'selecting the preposition' },
+        ],
+      },
+      {
+        id: `eng-gram-2-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Foundational Grammar',
+        developmentalBand: band,
+        prompt: 'Choose the correct word to complete the sentence.',
+        context: 'Yesterday, my friends and I _____ to the park after school.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'went', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'go', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'present tense' },
+          { id: 'opt3', label: 'going', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incomplete continuous' },
+          { id: 'opt4', label: 'gone', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'past participle without auxiliary' },
+        ],
+      },
+      {
+        id: `eng-gram-3-${classLevel}-${diffStr}`,
+        missionId,
+        missionTitle: 'Foundational Grammar',
+        developmentalBand: band,
+        prompt: 'Which of the following is a complete and correct sentence?',
+        context: 'Select the best option.',
+        scenarioState: {},
+        mutableStateKeys: [],
+        options: [
+          { id: 'opt1', label: 'The bright sun shines in the sky.', evidence: [{ competency: 'understanding', earnedWeight: 1, availableWeight: 1 }] },
+          { id: 'opt2', label: 'Shines in the sky bright.', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'incorrect word order' },
+          { id: 'opt3', label: 'The bright sun.', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'sentence fragment, missing verb' },
+          { id: 'opt4', label: 'Sun the bright shines.', evidence: [{ competency: 'understanding', earnedWeight: 0, availableWeight: 1 }], misconception: 'jumbled structure' },
+        ],
+      },
+    ];
+  }
 
   if (missionId === 'eng-synthesis-1') {
     return [

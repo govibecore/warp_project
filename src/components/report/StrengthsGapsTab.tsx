@@ -97,6 +97,9 @@ export function StrengthsGapsTab({
                          <span className="text-lg font-bold font-display text-ink-primary">
                           {v.band === 'Not Assessed' ? '---' : `${v.value}${v.suffix}`}
                         </span>
+                        {v.sem !== undefined && v.band !== 'Not Assessed' && (
+                          <span className="text-xs font-mono text-ink-muted ml-2">± {v.sem}</span>
+                        )}
                       </div>
                     </div>
                   ))}

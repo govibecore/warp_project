@@ -443,6 +443,14 @@
       display: none !important;
     }
 
+    body.print-plan-mode main.screen-only {
+      display: block !important;
+    }
+
+    body.print-plan-mode #report-print-target {
+      display: none !important;
+    }
+
     .print-only,
     .print-dossier {
       display: block !important;
@@ -450,10 +458,30 @@
 
     body {
       background: #fff !important;
-      color: #111827 !important;
+      color: #000 !important;
     }
 
-    .print-surface {
+    /* Force Light Theme for Print */
+    .dark {
+      color-scheme: light !important;
+
+      --surface-page: oklch(98.2% 0.006 205deg) !important;
+      --surface-card: oklch(98.2% 0.006 205deg) !important;
+      --surface-elevated: oklch(100% 0 0deg) !important;
+      --border-hairline: oklch(88% 0.012 210deg) !important;
+      --border-hover: oklch(76% 0.020 215deg) !important;
+      --ink-primary: oklch(24% 0.03 240deg) !important;
+      --ink-secondary: oklch(46% 0.03 235deg) !important;
+      --ink-muted: oklch(58% 0.025 230deg) !important;
+      --background: oklch(98.2% 0.006 205deg) !important;
+      --foreground: oklch(24% 0.03 240deg) !important;
+      --foreground-secondary: oklch(46% 0.03 235deg) !important;
+      --surface: oklch(95.6% 0.010 205deg) !important;
+      --card: oklch(100% 0 0deg) !important;
+      --border: oklch(88% 0.012 210deg) !important;
+    }
+
+    #report-printable-area {
       border: 0 !important;
       box-shadow: none !important;
     }
@@ -731,6 +759,26 @@
     line-height: 1;
     color: var(--foreground-secondary);
   }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   KATEX & TAILWIND CSS RESET FIXES
+   Tailwind's border-color reset breaks KaTeX fraction lines.
+   ══════════════════════════════════════════════════════════════════════════ */
+.katex * {
+  border-color: currentcolor !important;
+}
+
+.katex .frac-line {
+  border-bottom-style: solid !important;
+}
+
+.katex .vlist-t {
+  border-collapse: collapse;
+}
+
+.katex {
+  line-height: 1.2;
 }
 
 /* ── Chromatic Visual Regression Testing ── */

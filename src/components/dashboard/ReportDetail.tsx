@@ -1,8 +1,10 @@
 import { ArrowLeft, RefreshCw, Sparkles, Clock, Printer, MoreHorizontal, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
+import { getMissionItems, getCalibrationItems, MISSION_IDS, getEnglishMissionItems, getEnglishCalibrationItems, ENGLISH_MISSION_IDS } from '../../data/scenarios';
+import type { AssessmentItem } from '../../domain/types';
 
 import { WarpLogo } from '../WarpLogo';
 import { Spinner } from '../ui/spinner';
@@ -61,6 +63,38 @@ export function ReportDetail() {
   const [showOverflow, setShowOverflow] = useState(false);
 
   const stream = useReportStream(assessmentId || null);
+
+  const safeClassLevel = assessmentData?.class_level || 8;
+  const safeResponses = assessmentData?.responses || [];
+
+  const allItems = useMemo(() => {
+    try {
+      const items: AssessmentItem[] = [
+        ...getCalibrationItems(safeClassLevel),
+        ...MISSION_IDS.flatMap((m) => getMissionItems(m, safeClassLevel)),
+        ...getEnglishCalibrationItems(safeClassLevel, 'Standard'),
+        ...ENGLISH_MISSION_IDS.flatMap((m) => getEnglishMissionItems(m, safeClassLevel, 'Standard')),
+      ];
+      return items;
+    } catch (e) {
+      return [];
+    }
+  }, [safeClassLevel]);
+
+  const difficultyData = useMemo(() => {
+    if (!safeResponses) return [];
+    return safeResponses.map((r: any) => {
+      const item = allItems.find((i) => i.id === r.itemId);
+      const b = item?.itemDifficulty ?? 0;
+      return {
+        id: r.itemId,
+        difficulty: b,
+        correct: r.correct ? 1 : 0,
+        status: r.correct ? 'Correct' : 'Incorrect',
+        label: item?.missionTitle || 'Item',
+      };
+    });
+  }, [safeResponses, allItems]);
 
   useEffect(() => {
     if (rawId === 'new') {
@@ -271,13 +305,14 @@ export function ReportDetail() {
     assessmentData.subject || 'STEM'
   );
 
-  const snapshot = {
+  const snapshot: any = {
     classLevel: assessmentData.class_level || 8,
     completedAt: assessmentData.completed_at || assessmentData.created_at,
     overallScore: assessmentData.global_score ?? (benchmark.hasSufficientData ? benchmark.aggregateScaledScore : 0),
     regionalPercentiles: benchmark.regionalPercentiles,
     scaledScores: assessmentData.scaled_scores || {},
     totalTimeMs: assessmentData.total_time_ms,
+    competencies: assessmentData.competencies || assessmentData.result?.competencies || {},
   };
 
   const studentVariant = reportData?.student_variant;
@@ -288,6 +323,7 @@ export function ReportDetail() {
   const isEnglish = (assessmentData.subject || benchmark.subject || '').toLowerCase().includes('english');
   const subjectDisplay = isEnglish ? 'English Literacy' : (assessmentData.subject || benchmark.subject || 'STEM');
   const responses = assessmentData.responses || [];
+
   const correctCount = responses.filter((r: any) => r.correct === true).length;
   const totalCount = responses.length || 6;
   const accuracyPercent = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
@@ -305,32 +341,51 @@ export function ReportDetail() {
     ? 'Developing'
     : 'Foundational Need';
 
+  const getBand = (val: number | undefined, fallback: string) => {
+    if (val === undefined || val === 0) return fallback;
+    if (val >= 75) return 'Advanced';
+    if (val >= 55) return 'Proficient';
+    if (val >= 35) return 'Developing';
+    return 'Foundational Need';
+  };
+
+  const getCompRaw = (key: string) => snapshot?.competencies?.[key]?.rawPercent;
+
+  const undRaw = getCompRaw('understanding') ?? parakh?.conceptualKnowledge?.score ?? 0;
+  const evalRaw = getCompRaw('evaluatingReflecting') ?? parakh?.applicationAndProblemSolving?.score ?? 0;
+  const ctRaw = getCompRaw('criticalThinking') ?? parakh?.higherOrderThinkingSkills?.score ?? 0;
+
+  const getCompSem = (key: string) => snapshot?.competencies?.[key]?.sem;
+
   const parakhVitals = [
     {
       domain: 'Core Domain',
       label: 'Conceptual Knowledge',
-      value: parakh?.conceptualKnowledge?.score ?? 0,
+      value: Math.round(undRaw),
       suffix: '%',
-      band: parakh?.conceptualKnowledge?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.conceptualKnowledge?.score ?? 50) - 50,
+      band: getBand(undRaw, parakh?.conceptualKnowledge?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(undRaw) - 50,
+      sem: getCompSem('understanding'),
       observation: parakh?.conceptualKnowledge?.description || 'Evaluated via adaptive CAT item discrimination on first-principles reasoning.',
     },
     {
       domain: 'Cognitive Domain',
       label: 'Higher Order Thinking (HOTS)',
-      value: parakh?.higherOrderThinkingSkills?.score ?? 0,
+      value: Math.round(ctRaw),
       suffix: '%',
-      band: parakh?.higherOrderThinkingSkills?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.higherOrderThinkingSkills?.score ?? 50) - 50,
-      observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts and multi-step deduction analysis.',
+      band: getBand(ctRaw, parakh?.higherOrderThinkingSkills?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(ctRaw) - 50,
+      sem: getCompSem('criticalThinking'),
+      observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts, multi-step deduction, and critical reasoning.',
     },
     {
       domain: 'Methodological',
       label: 'Application & Problem Solving',
-      value: parakh?.applicationAndProblemSolving?.score ?? 0,
+      value: Math.round(evalRaw),
       suffix: '%',
-      band: parakh?.applicationAndProblemSolving?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.applicationAndProblemSolving?.score ?? 50) - 50,
+      band: getBand(evalRaw, parakh?.applicationAndProblemSolving?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(evalRaw) - 50,
+      sem: getCompSem('evaluatingReflecting'),
       observation: parakh?.applicationAndProblemSolving?.description || (isEnglish ? 'Applies linguistic analysis to novel textual contexts.' : 'Applies foundational theorems to novel STEM challenge contexts.'),
     },
     {
@@ -340,13 +395,14 @@ export function ReportDetail() {
       suffix: '%',
       band: metacognitiveBand,
       delta: metacognitiveScore - 50,
+      sem: undefined,
       observation: 'Pacing control and recognition of distractor choices engineered around formula traps.',
     },
   ];
 
   return (
     <div className="w-full flex-1 overflow-y-auto pb-32">
-      <div className="mx-auto max-w-300 border-x border-border bg-background min-h-screen" id="report-printable-area">
+      <div className="mx-auto max-w-5xl border-x border-border bg-background min-h-screen" id="report-printable-area">
         {/* ── Header ── */}
         <header
           className="relative border-b border-border px-4 py-16 md:px-8 md:py-24 screen-only overflow-hidden group"
@@ -413,18 +469,25 @@ export function ReportDetail() {
                   <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
                 </p>
               </div>
-
               {/* Score Ring Hero */}
               <div
                 className="shrink-0 print-keep"
                 style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
               >
-                <ScoreRing
-                  score={snapshot.overallScore}
-                  maxScore={900}
-                  percentile={benchmark.globalPercentile}
-                  boardGradeBand={benchmark.boardGradeBand}
-                />
+                {(() => {
+                  const compVals = Object.values(snapshot.competencies) as any[];
+                  const assessed = compVals.filter(c => c.sem && c.sem > 0);
+                  const overallSem = assessed.length > 0 ? Math.round(assessed.reduce((sum, c) => sum + c.sem, 0) / assessed.length) : undefined;
+                  return (
+                    <ScoreRing
+                      score={snapshot.overallScore}
+                      maxScore={900}
+                      percentile={benchmark.globalPercentile}
+                      boardGradeBand={benchmark.boardGradeBand}
+                      sem={overallSem}
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -432,7 +495,7 @@ export function ReportDetail() {
 
         {/* ── Sticky Tab Navigation ── */}
         <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-surface/95 backdrop-blur-md">
-          <div className="mx-auto max-w-300 flex items-center justify-between px-4 md:px-8 py-2">
+          <div className="mx-auto max-w-5xl flex items-center justify-between px-4 md:px-8 py-2">
             {/* Segmented Control Tab Row */}
             <div className="flex items-center overflow-x-auto hide-scrollbar w-full py-1 pr-4">
               <div className="flex items-center border-b border-border w-full shrink-0">
@@ -460,18 +523,28 @@ export function ReportDetail() {
               </div>
             </div>
 
-            {/* Share Report — always mounted so modal portal survives dropdown close */}
-            <ShareButton
-              reportId={reportData?.id}
-              assessmentId={assessmentData.id}
-              studentId={assessmentData.student_id}
-              initialShareToken={reportData?.share_token}
-              studentName={studentName}
-              className="shrink-0"
-            />
+            <div className="flex items-center gap-3 shrink-0 ml-4">
+              <button
+                onClick={() => setIsTutorOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-[13px] font-bold tracking-wide hover:bg-primary/90 transition-colors no-print print:hidden rounded-none"
+                aria-label="Open AI Tutor"
+              >
+                <Sparkles className="size-4" />
+                Ask AI
+              </button>
+              
+              {/* Share Report — always mounted so modal portal survives dropdown close */}
+              <ShareButton
+                reportId={reportData?.id}
+                assessmentId={assessmentData.id}
+                studentId={assessmentData.student_id}
+                initialShareToken={reportData?.share_token}
+                studentName={studentName}
+                className="shrink-0 rounded-none"
+              />
 
-            {/* Overflow actions menu */}
-            <div className="relative shrink-0">
+              {/* Overflow actions menu */}
+              <div className="relative shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -484,18 +557,18 @@ export function ReportDetail() {
               {showOverflow && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowOverflow(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-40 min-w-50 border border-border bg-surface shadow-lg py-1">
-                    <div className="px-3 py-1 text-[10px] font-mono uppercase text-foreground-muted border-b border-border">
+                  <div className="absolute right-0 top-full mt-1 z-40 w-72 border border-border bg-surface shadow-xl py-1">
+                    <div className="px-4 py-2 text-[10px] font-mono uppercase text-foreground-muted border-b border-border-hairline">
                       Print &amp; Export Options
                     </div>
-                    <div className="px-3 py-1.5 flex items-center justify-between gap-2">
-                      <span className="text-xs text-foreground-secondary">Format:</span>
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-2 border-b border-border-hairline/50">
+                      <span className="text-[13px] text-foreground-secondary">Format:</span>
                       <div className="flex items-center bg-elevated border border-border p-0.5 text-xs">
                         <button
                           onClick={() => setPrintMode('one-page')}
-                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                          className={`px-3 py-1 text-[11px] font-medium transition-colors ${
                             printMode === 'one-page'
-                              ? 'bg-primary text-primary-foreground font-semibold'
+                              ? 'bg-foreground text-background font-semibold shadow-sm'
                               : 'text-foreground-secondary hover:text-foreground'
                           }`}
                         >
@@ -503,9 +576,9 @@ export function ReportDetail() {
                         </button>
                         <button
                           onClick={() => setPrintMode('comprehensive')}
-                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                          className={`px-3 py-1 text-[11px] font-medium transition-colors ${
                             printMode === 'comprehensive'
-                              ? 'bg-primary text-primary-foreground font-semibold'
+                              ? 'bg-foreground text-background font-semibold shadow-sm'
                               : 'text-foreground-secondary hover:text-foreground'
                           }`}
                         >
@@ -513,7 +586,7 @@ export function ReportDetail() {
                         </button>
                       </div>
                     </div>
-                    <div className="px-3 py-1.5">
+                    <div className="flex flex-col">
                       <PDFExportButton
                         studentName={studentName}
                         classLevel={snapshot.classLevel}
@@ -526,28 +599,30 @@ export function ReportDetail() {
                         parentVariant={parentVariant}
                         responses={responses}
                         printMode={printMode}
-                        className="w-full justify-start"
+                        variant="ghost"
+                        className="w-full justify-start rounded-none px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors font-normal h-auto"
                         onClose={() => setShowOverflow(false)}
                       />
+                      <button
+                        onClick={() => { setShowOverflow(false); window.print(); }}
+                        className="w-full flex items-center justify-start gap-2.5 px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                      >
+                        <Printer className="size-4 shrink-0" />
+                        <span className="truncate">Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => { setShowOverflow(false); window.print(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
-                    >
-                      <Printer className="size-4" />
-                      Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}
-                    </button>
-                    <div className="border-t border-border my-1" />
+                    <div className="border-t border-border-hairline my-1" />
                     <button
                       onClick={() => { setShowOverflow(false); window.location.href = '/'; }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                      className="w-full flex items-center justify-start gap-2.5 px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
                     >
-                      <RefreshCw className="size-4" />
+                      <RefreshCw className="size-4 shrink-0" />
                       New assessment
                     </button>
                   </div>
                 </>
               )}
+            </div>
             </div>
           </div>
         </div>
@@ -572,6 +647,8 @@ export function ReportDetail() {
               parentVariant={parentVariant}
               assessmentData={assessmentData}
               parakhVitals={parakhVitals}
+              difficultyData={difficultyData}
+              onViewPlan={() => setActiveTab('plan')}
             />
           )}
 
@@ -593,6 +670,8 @@ export function ReportDetail() {
               benchmark={benchmark}
               studentVariant={studentVariant}
               parentVariant={parentVariant}
+              reportId={reportData?.id}
+              isOwner={!shareToken}
             />
           )}
 
@@ -654,17 +733,6 @@ export function ReportDetail() {
           </p>
         </div>
 
-        {/* ── Floating AI Tutor Button ── */}
-        {!isTutorOpen && (
-          <button
-            onClick={() => setIsTutorOpen(true)}
-            className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 no-print print:hidden"
-            aria-label="Open AI Tutor"
-          >
-            <Sparkles className="size-4" />
-            Ask AI
-          </button>
-        )}
 
         {/* ── Interactive WARP AI Socratic Tutor ── */}
         <NemotronSocraticTutor

@@ -314,7 +314,7 @@ export function ComprehensivePrintDossier({
           </div>
 
           {/* Executive Verdict & Reality Summary */}
-          <div className="p-4 border-l-4 border-neutral-900 bg-neutral-50 text-[11px] leading-relaxed">
+          <div className="p-4 border-l-2 border-neutral-900 bg-neutral-50 text-[11px] leading-relaxed">
             <span className="font-mono font-bold uppercase tracking-wider text-[9px] text-neutral-500 block mb-1">
               Executive Diagnostic Verdict
             </span>
@@ -413,7 +413,7 @@ export function ComprehensivePrintDossier({
           </div>
 
           {/* Archetype Hero Box */}
-          <div className="p-4 border-l-4 border-cyan-600 bg-neutral-50">
+          <div className="p-4 border-l-2 border-cyan-600 bg-neutral-50">
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-cyan-800 flex items-center gap-1">
                 <Sparkles className="size-3" /> Cognitive Archetype
@@ -576,7 +576,7 @@ export function ComprehensivePrintDossier({
           </div>
 
           {/* Ratta Reality Check Callout */}
-          <div className="p-4 border-l-4 border-amber-600 bg-neutral-50 text-[11px] leading-relaxed">
+          <div className="p-4 border-l-2 border-amber-600 bg-neutral-50 text-[11px] leading-relaxed">
             <div className="flex items-center justify-between mb-1">
               <span className="font-mono font-bold uppercase tracking-wider text-[9px] text-amber-800 flex items-center gap-1.5">
                 <Target className="size-3 text-amber-700" />

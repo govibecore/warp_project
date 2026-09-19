@@ -44,7 +44,8 @@ export function WarpSessionProvider({ children, storage = window.localStorage }:
   const complete = useCallback(() => {
     const currentSession = sessionRef.current;
     if (!currentSession.profile) throw new Error('A learner profile is required before completion.');
-    const result = calculateResult(Object.values(currentSession.responses), currentSession.profile.classLevel, new Date().toISOString());
+    const items = [...(currentSession.plan?.calibrationItems || []), ...(currentSession.plan?.missionItems || [])];
+    const result = calculateResult(items, Object.values(currentSession.responses), currentSession.profile.classLevel, new Date().toISOString());
     dispatch({ type: 'complete', result });
   }, []);
   const enterApp = useCallback(() => dispatch({ type: 'enterApp' }), []);

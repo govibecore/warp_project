@@ -10,6 +10,7 @@ export const COMPETENCIES = [
   'understanding',
   'synthesis',
   'evaluatingReflecting',
+  'criticalThinking',
 ] as const;
 
 export type Competency = (typeof COMPETENCIES)[number];
@@ -46,6 +47,7 @@ export interface CompetencyProjection {
   rawPercent: number;
   zScore: number;
   score: number;
+  sem: number;
   norm: Norm;
 }
 
@@ -88,6 +90,10 @@ export interface AssessmentItem {
   prompt: string;
   context: string;
   hint?: string;
+  /** IRT b-parameter: -3.0 (Very Easy) to +3.0 (Very Hard). Default is 0.0 */
+  itemDifficulty?: number;
+  /** ID of the linked evidence item for multi-part questions */
+  linkedEvidenceItemId?: string;
   /**
    * Curriculum alignment tags for audit and reporting, e.g. an NGSS Science &
    * Engineering Practice, a PISA 2025 competency, and the NCF 2023 stage the

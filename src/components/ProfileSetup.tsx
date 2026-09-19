@@ -139,7 +139,7 @@ export function ProfileSetup() {
                 ))}
               </Select>
             </Field>
-            <Field label="Whatsapp Number" htmlFor="whatsapp">
+            <Field label="Parent WhatsApp Number" htmlFor="whatsapp">
               <Input
                 id="whatsapp"
                 type="tel"

@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Flame, Sparkles, Target, Layers } from 'lucide-react';
+import { Flame, Sparkles, Target, Layers, CheckCircle2, Circle, BookOpen, Dumbbell, Search, Award, Printer } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 interface PlanTabProps {
   benchmark: any;
   studentVariant: any;
   parentVariant: any;
+  reportId?: string;
+  isOwner?: boolean;
 }
 
-export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabProps) {
+export function PlanTab({ benchmark, studentVariant, parentVariant, reportId, isOwner }: PlanTabProps) {
   const [view, setView] = useState<'student' | 'parent'>('student');
 
   const archetypeTitle = studentVariant?.archetypeTitle || benchmark?.cognitiveArchetype?.title || 'Analytical Strategist';
@@ -16,23 +19,116 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
   const summary = studentVariant?.summary || 'Consistently demonstrates strong structural awareness when approaching complex, multi-step problems.';
   const primaryStrength = 'Parameter isolation & causal inference';
   
-  const sprintEntries = Object.entries(studentVariant?.challengeSprint || {});
+  const sprintEntries = Object.entries(studentVariant?.challengeSprint || benchmark?.studentChallengeSprint || {});
 
-  const realityCheck = parentVariant?.realityCheck || {};
-  const blueprint = parentVariant?.parentActionBlueprint || {};
+  // 30-Day Fanning Algorithm
+  const totalDays = 30;
+  const dailyPlan = Array.from({ length: totalDays }).map((_, index) => {
+    const dayNum = index + 1;
+    // Map to a week (4 weeks max)
+    const weekIndex = Math.min(Math.floor((dayNum - 1) / 7), Math.max(0, sprintEntries.length - 1));
+    const weekData: any = sprintEntries[weekIndex]?.[1] || { focus: 'Focus Area', activity: 'Activity description' };
+    
+    const dayOfWeek = (dayNum - 1) % 7; 
+    let dayType = 'Practice';
+    let title = 'Active Practice';
+    let desc = weekData.activity;
+    let Icon = Dumbbell;
+    
+    if (dayOfWeek === 0 || dayOfWeek === 1) {
+      dayType = 'Concept';
+      title = `Theory & Concept: ${weekData.focus}`;
+      desc = `Review fundamental concepts and understand the core mechanics of ${weekData.focus}.`;
+      Icon = BookOpen;
+    } else if (dayOfWeek >= 2 && dayOfWeek <= 4) {
+      dayType = 'Practice';
+      title = 'Targeted Practice';
+      desc = weekData.activity || `Complete rigorous practice exercises for ${weekData.focus}.`;
+      Icon = Dumbbell;
+    } else if (dayOfWeek === 5) {
+      dayType = 'Review';
+      title = 'Reflection & Review';
+      desc = `Review your mistakes from the week and consolidate your understanding.`;
+      Icon = Search;
+    } else {
+      dayType = 'Test';
+      title = 'Weekly Mock Assessment';
+      desc = `Test yourself on ${weekData.focus} under timed conditions.`;
+      Icon = Award;
+    }
+    
+    // Special final days
+    if (dayNum === 29) {
+      dayType = 'Review';
+      title = 'Comprehensive Review';
+      desc = 'Review all concepts covered in the last 4 weeks.';
+      Icon = Search;
+    } else if (dayNum === 30) {
+      dayType = 'Test';
+      title = 'Final Sprint Assessment';
+      desc = 'Take a full-length mock exam to measure your improvement.';
+      Icon = Award;
+    }
+
+    return { dayNum, weekIndex: weekIndex + 1, dayType, title, desc, Icon };
+  });
+
+  const [progress, setProgress] = useState<Record<number, boolean>>(studentVariant?.sprintProgress || {});
+  const [isSaving, setIsSaving] = useState(false);
+
+  const toggleDay = async (dayNum: number) => {
+    if (!isOwner && reportId) {
+      alert("You need to own this report to save progress.");
+      return;
+    }
+    
+    const newProgress = { ...progress, [dayNum]: !progress[dayNum] };
+    setProgress(newProgress);
+
+    if (reportId && isOwner) {
+      setIsSaving(true);
+      try {
+        await supabase.from('reports').update({
+          student_variant: {
+            ...studentVariant,
+            sprintProgress: newProgress
+          }
+        }).eq('id', reportId);
+      } catch (err) {
+        console.error('Failed to save sprint progress:', err);
+      } finally {
+        setIsSaving(false);
+      }
+    }
+  };
+
+  const realityCheck = parentVariant?.realityCheck || benchmark?.realityCheck || {};
+  const blueprint = parentVariant?.parentActionBlueprint || benchmark?.parentActionBlueprint || {};
   const verdict = realityCheck.verdict || 'Developing Foundation';
   const honestSummary = parentVariant?.realityCheckSummary || realityCheck.honestSummary || 'Good grasp of basics, but struggles with multi-step deduction under pressure.';
   const gradeInflationWarning = parentVariant?.gradeInflationWarning || realityCheck.gradeInflationWarning;
 
-  const homeRoutines = parentVariant?.immediateHomeRoutines || blueprint.immediateHomeRoutines || [];
-  const ptmGuide = parentVariant?.ptmDiscussionGuide || blueprint.ptmDiscussionGuide || [];
+  const homeRoutines = parentVariant?.indianHomeRoutines?.length > 0 
+    ? parentVariant.indianHomeRoutines 
+    : parentVariant?.immediateHomeRoutines?.length > 0
+      ? parentVariant.immediateHomeRoutines
+      : blueprint.indianHomeRoutines?.length > 0 
+        ? blueprint.indianHomeRoutines
+        : blueprint.immediateHomeRoutines || [];
+
+  const ptmGuide = parentVariant?.ptmDiscussionGuide?.length > 0
+    ? parentVariant.ptmDiscussionGuide
+    : blueprint.ptmDiscussionGuide || [];
 
   return (
     <div className="space-y-12 animate-in fade-in duration-200">
       
-      {/* Segmented Control */}
-      <div className="flex justify-center border-b border-border-hairline pb-6">
-        <div className="inline-flex items-center p-1 bg-surface-card border border-border-hairline">
+      {/* Header Actions */}
+      <div className="flex flex-col sm:flex-row items-center justify-between border-b border-border-hairline pb-6 gap-4 no-print print:hidden">
+        <div className="flex-1 hidden sm:block" /> {/* Spacer */}
+        
+        {/* Segmented Control */}
+        <div className="inline-flex items-center p-1 bg-surface-card border border-border-hairline shrink-0">
           <button
             onClick={() => setView('student')}
             className={`px-8 py-2 text-[14px] font-mono font-bold transition-colors ${
@@ -54,6 +150,30 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
             Parent Blueprint
           </button>
         </div>
+
+        <div className="flex-1 flex justify-end w-full sm:w-auto">
+          <button
+            onClick={() => {
+              document.body.classList.add('print-plan-mode');
+              window.print();
+              setTimeout(() => {
+                document.body.classList.remove('print-plan-mode');
+              }, 1000);
+            }}
+            className="flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 text-[14px] font-mono font-bold border border-border-hairline text-ink-secondary hover:text-ink-primary hover:bg-surface-page transition-colors no-print print:hidden"
+            title="Print Current View"
+          >
+            <Printer className="size-4 shrink-0" />
+            <span>Print {view === 'student' ? 'Sprint' : 'Blueprint'}</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="hidden print:block mb-8 border-b-2 border-border-strong pb-4">
+        <div className="text-[10px] font-mono font-bold uppercase tracking-widest text-ink-muted mb-1">WARP Official Action Plan</div>
+        <h1 className="text-2xl font-display font-bold text-ink-primary uppercase tracking-tight">
+          {view === 'student' ? '30-Day Student Sprint' : 'Parent Intervention Blueprint'}
+        </h1>
       </div>
 
       {view === 'student' && (
@@ -85,37 +205,61 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
             </CardContent>
           </Card>
 
-          {sprintEntries.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+          {dailyPlan.length > 0 && (
+            <div className="mt-12 space-y-6">
+              <div className="flex items-center justify-between border-b border-border-hairline pb-4 mb-8">
+                <h3 className="text-xl font-display font-bold text-ink-primary flex items-center gap-2">
                   <Target className="size-5 text-accent-default" />
-                  30-Day Targeted Sprint
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {sprintEntries.map(([key, item]: [string, any], idx: number) => (
-                    <div key={key} className="p-5 border border-border-hairline bg-surface-page">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[11px] font-mono font-bold uppercase text-ink-secondary tracking-widest">
-                          Week {idx + 1}
-                        </span>
-                        <span className="text-[12px] font-mono font-bold text-accent-default uppercase px-2 py-0.5 border border-border-hairline bg-surface-card">
-                          {key.replace(/([A-Z])/g, ' $1').trim()}
-                        </span>
+                  30-Day Tactical Roadmap
+                </h3>
+                {isSaving && <span className="text-[12px] font-mono text-ink-muted">Saving...</span>}
+              </div>
+
+              <div className="relative pl-6 md:pl-8 space-y-8 border-l-2 border-border-hairline">
+                {dailyPlan.map((day) => {
+                  const isCompleted = progress[day.dayNum];
+                  
+                  return (
+                    <div key={day.dayNum} className="relative group break-inside-avoid">
+                      {/* Timeline Node */}
+                      <div className="absolute -left-8.75 md:-left-10.75 top-1">
+                        <button
+                          onClick={() => toggleDay(day.dayNum)}
+                          disabled={isSaving && false}
+                          className="bg-background rounded-full transition-transform hover:scale-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent-default focus-visible:ring-offset-2"
+                          aria-label={`Mark Day ${day.dayNum} as ${isCompleted ? 'incomplete' : 'complete'}`}
+                        >
+                          {isCompleted ? (
+                            <CheckCircle2 className="size-6 text-semantic-ok bg-background" />
+                          ) : (
+                            <Circle className="size-6 text-border-strong bg-background group-hover:text-accent-default" />
+                          )}
+                        </button>
                       </div>
-                      <h4 className="text-[14px] font-semibold text-ink-primary mb-2 leading-snug">
-                        {item.focus || item.challengeName || 'Focus Area'}
-                      </h4>
-                      <p className="text-[13px] text-ink-secondary leading-relaxed line-clamp-3">
-                        {item.activity || item.description || 'Sprint activity description goes here.'}
-                      </p>
+
+                      {/* Content Card */}
+                      <div className={`p-5 transition-all duration-300 border bg-surface-page ${isCompleted ? 'border-border-hairline opacity-75 grayscale-[0.3]' : 'border-border-strong shadow-sm'}`}>
+                        <div className="flex items-center justify-between mb-3">
+                          <span className="text-[11px] font-mono font-bold uppercase tracking-widest text-ink-secondary">
+                            Day {day.dayNum} <span className="mx-1 opacity-40">|</span> Week {day.weekIndex}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-[11px] font-mono font-bold uppercase text-accent-default px-2 py-0.5 border border-border-hairline bg-surface-card">
+                            <day.Icon className="size-3" />
+                            {day.dayType}
+                          </span>
+                        </div>
+                        <h4 className={`text-[15px] font-semibold mb-2 leading-snug ${isCompleted ? 'text-ink-secondary line-through' : 'text-ink-primary'}`}>
+                          {day.title}
+                        </h4>
+                        <p className="text-[14px] text-ink-secondary leading-relaxed">
+                          {day.desc}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </div>
       )}
@@ -130,7 +274,7 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
               <div className="space-y-6">
                  <div>
                     <h4 className="text-[14px] font-bold font-mono text-ink-primary mb-2">Honest Summary</h4>
-                    <p className="text-[14px] text-ink-secondary leading-relaxed">{honestSummary}</p>
+                    <p className="text-[14px] text-ink-secondary leading-relaxed max-w-[75ch]">{honestSummary}</p>
                  </div>
                  {gradeInflationWarning && (
                    <div className="p-4 border-l-2 border-semantic-critical bg-semantic-critical/5">
@@ -142,8 +286,8 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
             </CardContent>
           </Card>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <Card>
+          <div className="grid grid-cols-1 gap-8">
+            <Card className="break-inside-avoid">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                    <Layers className="size-5 text-accent-default" />
@@ -151,25 +295,42 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4">
-                  {homeRoutines.map((routine: any, i: number) => {
-                    const rTitle = typeof routine === 'string' ? routine : routine.routine || routine.title;
-                    const rDesc = typeof routine === 'string' ? '' : routine.why || routine.description;
+                <div className="space-y-4">
+                  {homeRoutines.length > 0 ? homeRoutines.map((routine: any, i: number) => {
+                    let rTitle = '';
+                    let rDesc = '';
+                    if (typeof routine === 'string') {
+                      const splitIdx = routine.indexOf(':');
+                      if (splitIdx > -1) {
+                         rTitle = routine.substring(0, splitIdx).trim();
+                         rDesc = routine.substring(splitIdx + 1).trim();
+                      } else {
+                         rTitle = routine;
+                      }
+                    } else {
+                      rTitle = routine.routine || routine.title;
+                      rDesc = routine.why || routine.description;
+                    }
+
                     return (
-                      <li key={i} className="flex gap-3">
-                         <span className="font-mono text-ink-muted text-[12px] mt-0.5">0{i+1}</span>
-                         <div>
-                            <p className="text-[14px] font-medium text-ink-primary leading-snug">{rTitle}</p>
-                            {rDesc && <p className="text-[13px] text-ink-secondary mt-1">{rDesc}</p>}
+                      <div key={i} className="flex gap-4 p-4 border border-border-hairline bg-surface-page group hover:border-border-strong transition-colors">
+                         <div className="shrink-0 flex items-center justify-center size-8 bg-surface-card border border-border-hairline text-[13px] font-mono font-bold text-ink-primary">
+                           {i+1}
                          </div>
-                      </li>
+                         <div>
+                            <p className="text-[15px] font-semibold text-ink-primary mb-1">{rTitle}</p>
+                            {rDesc && <p className="text-[14px] text-ink-secondary leading-relaxed">{rDesc}</p>}
+                         </div>
+                      </div>
                     )
-                  })}
-                </ul>
+                  }) : (
+                    <div className="p-4 border border-border-hairline bg-surface-page text-[13px] text-ink-muted italic">No routines prescribed yet.</div>
+                  )}
+                </div>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="break-inside-avoid mt-4">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                    <Target className="size-5 text-accent-default" />
@@ -177,21 +338,37 @@ export function PlanTab({ benchmark, studentVariant, parentVariant }: PlanTabPro
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4">
-                  {ptmGuide.map((q: any, i: number) => {
-                    const qText = typeof q === 'string' ? q : q.question || q.topic;
-                    const qWhy = typeof q === 'string' ? '' : q.why || q.rationale;
+                <div className="space-y-4">
+                  {ptmGuide.length > 0 ? ptmGuide.map((q: any, i: number) => {
+                    let qText = '';
+                    let qWhy = '';
+                    if (typeof q === 'string') {
+                      const splitIdx = q.indexOf(':');
+                      if (splitIdx > -1 && q.toLowerCase().startsWith('question')) {
+                         qText = q.substring(splitIdx + 1).trim();
+                      } else {
+                         qText = q;
+                      }
+                    } else {
+                      qText = q.question || q.topic;
+                      qWhy = q.why || q.rationale;
+                    }
+
                     return (
-                      <li key={i} className="flex gap-3">
-                         <span className="font-mono text-ink-muted text-[12px] mt-0.5">0{i+1}</span>
-                         <div>
-                            <p className="text-[14px] font-medium text-ink-primary leading-snug">"{qText}"</p>
-                            {qWhy && <p className="text-[13px] text-ink-secondary mt-1">{qWhy}</p>}
+                      <div key={i} className="flex gap-4 p-4 border border-border-hairline bg-surface-page group hover:border-border-strong transition-colors">
+                         <div className="shrink-0 flex items-center justify-center size-8 bg-surface-card border border-border-hairline text-[13px] font-mono font-bold text-ink-primary">
+                           Q{i+1}
                          </div>
-                      </li>
+                         <div>
+                            <p className="text-[15px] font-medium text-ink-primary italic leading-snug">"{qText.replace(/^["']|["']$/g, '')}"</p>
+                            {qWhy && <p className="text-[13px] text-ink-secondary mt-2">{qWhy}</p>}
+                         </div>
+                      </div>
                     )
-                  })}
-                </ul>
+                  }) : (
+                    <div className="p-4 border border-border-hairline bg-surface-page text-[13px] text-ink-muted italic">No specific discussion points flagged.</div>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
