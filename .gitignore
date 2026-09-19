@@ -50,3 +50,7 @@ playwright.config.js
 playwright.config.d.ts
 testsprite_tests/tmp/
 testsprite_tests/tmp/config.json
+
+# Ignore generated PDFs and backups
+public/pdf/*.pdf
+*.backup
