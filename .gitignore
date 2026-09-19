@@ -54,3 +54,8 @@ testsprite_tests/tmp/config.json
 # Ignore generated PDFs and backups
 public/pdf/*.pdf
 *.backup
+
+# Design and analysis artifacts
+docs/pdf-analysis/
+docs/pdf-layout-ux-audit.md
+docs/report-ui-ux-redesign-plan.md
