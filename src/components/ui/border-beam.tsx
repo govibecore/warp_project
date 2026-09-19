@@ -1,106 +1,91 @@
-import { motion, type MotionStyle, type Transition, useReducedMotion } from "motion/react"
+/**
+ * BorderBeam — animated hairline border glow that travels around a container.
+ *
+ * Uses a CSS custom-property + keyframe approach for maximum cross-browser
+ * compatibility (Chrome, Firefox, Safari/WebKit, iOS, Android).
+ *
+ * The CSS Motion Path API (offset-path: rect()) used by some versions of this
+ * component has ZERO support on iOS Safari / WebKit (as of 2026-09) and was
+ * replaced here with a pure CSS conic-gradient + rotation animation.
+ */
 
 import { cn } from "@/lib/utils"
 
 interface BorderBeamProps {
-  /**
-   * The size of the border beam.
-   */
-  size?: number
-  /**
-   * The duration of the border beam.
-   */
+  /** Pixel duration of one full revolution. Default: 8s */
   duration?: number
-  /**
-   * The delay of the border beam.
-   */
-  delay?: number
-  /**
-   * The color of the border beam from.
-   */
+  /** Color at beam start */
   colorFrom?: string
-  /**
-   * The color of the border beam to.
-   */
+  /** Color at beam end */
   colorTo?: string
-  /**
-   * The motion transition of the border beam.
-   */
-  transition?: Transition
-  /**
-   * The class name of the border beam.
-   */
-  className?: string
-  /**
-   * The style of the border beam.
-   */
-  style?: React.CSSProperties
-  /**
-   * Whether to reverse the animation direction.
-   */
-  reverse?: boolean
-  /**
-   * The initial offset position (0-100).
-   */
-  initialOffset?: number
-  /**
-   * The border width of the beam.
-   */
+  /** Width of the animated border stroke in px. Default: 1.5 */
   borderWidth?: number
+  /** Size of the beam (ignored, kept for API compatibility) */
+  size?: number
+  /** Additional class names on the root element */
+  className?: string
+  /** Reverse animation direction */
+  reverse?: boolean
 }
 
 export function BorderBeam({
-  className,
-  size = 200,
-  duration = 15,
-  borderWidth = 1.5,
+  duration = 8,
   colorFrom = "#ffaa40",
   colorTo = "#9c40ff",
-  delay = 0,
-  transition,
-  style,
+  borderWidth = 1.5,
+  className,
   reverse = false,
-  initialOffset = 0,
 }: BorderBeamProps) {
-  const prefersReducedMotion = useReducedMotion()
+  const styleKey = `${colorFrom}|${colorTo}|${duration}|${borderWidth}|${reverse}`
+  const uid = `bb-${Math.abs(styleKey.split("").reduce((a, c) => (a * 31 + c.charCodeAt(0)) | 0, 0))}`
+  const keyframeName = `${uid}-spin`
+  const animationDir = reverse ? "reverse" : "normal"
+
+  const styleContent = `
+@keyframes ${keyframeName} {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.${uid}-wrap {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 0;
+}
+.${uid}-wrap::before {
+  content: "";
+  position: absolute;
+  /* Start large enough to cover all edges */
+  inset: -100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 270deg,
+    ${colorFrom} 270deg 310deg,
+    ${colorTo} 310deg 360deg
+  );
+  animation: ${keyframeName} ${duration}s linear infinite ${animationDir};
+}
+.${uid}-mask {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: ${borderWidth}px;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+`
+
   return (
-    <div
-      className="pointer-events-none absolute inset-0 rounded-[inherit] border-(length:--border-beam-width) border-transparent mask-[linear-gradient(transparent,transparent),linear-gradient(#000,#000)] mask-intersect [mask-clip:padding-box,border-box]"
-      style={
-        {
-          "--border-beam-width": `${borderWidth}px`,
-        } as React.CSSProperties
-      }
-    >
-      <motion.div
-        className={cn(
-          "absolute aspect-square",
-          "bg-linear-to-l from-(--color-from) via-(--color-to) to-transparent",
-          className
-        )}
-        style={
-          {
-            width: size,
-            offsetPath: `rect(0 auto auto 0 round ${size}px)`,
-            "--color-from": colorFrom,
-            "--color-to": colorTo,
-            ...style,
-          } as MotionStyle
-        }
-        initial={{ offsetDistance: `${initialOffset}%` }}
-        animate={prefersReducedMotion ? {} : {
-          offsetDistance: reverse
-            ? [`${100 - initialOffset}%`, `${-initialOffset}%`]
-            : [`${initialOffset}%`, `${100 + initialOffset}%`],
-        }}
-        transition={{
-          repeat: Infinity,
-          ease: "linear",
-          duration,
-          delay: -delay,
-          ...transition,
-        }}
-      />
-    </div>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: styleContent }} />
+      <div className={cn(`${uid}-mask`, className)} aria-hidden="true">
+        <div className={`${uid}-wrap`} />
+      </div>
+    </>
   )
 }

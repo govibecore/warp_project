@@ -175,9 +175,24 @@ export function Landing({ onEnter }: LandingProps) {
         <section className="relative mx-auto px-4 pb-0 pt-20 lg:pt-24 xl:pt-32 z-10">
           <div className="mx-auto max-w-5xl text-center">
 
+            <style dangerouslySetInnerHTML={{ __html: `
+              @keyframes textShine {
+                0% { background-position: 0% 50%; }
+                100% { background-position: 200% 50%; }
+              }
+              .animate-text-shine {
+                background: linear-gradient(90deg, var(--color-foreground-secondary, #8b949e) 0%, var(--color-primary, #00f2fe) 50%, var(--color-foreground-secondary, #8b949e) 100%);
+                background-size: 200% auto;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                color: transparent;
+                animation: textShine 4s linear infinite;
+              }
+            `}} />
             <div className="hero-stagger relative overflow-hidden inline-flex items-center gap-1.5 sm:gap-2 border border-border bg-surface/50 px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-xs font-mono mb-6 sm:mb-8 uppercase tracking-widest rounded-none mx-auto">
-              <SparklesIcon size={14} className="text-primary z-10 relative" />
-              <span className="text-foreground-secondary z-10 relative">Forging Tomorrow's Global Champions</span>
+              <SparklesIcon size={14} className="text-primary z-10 relative animate-pulse" />
+              <span className="animate-text-shine z-10 relative">Forging Tomorrow's Global Champions</span>
               <BorderBeam duration={8} size={50} />
             </div>
 
