@@ -933,16 +933,19 @@ html:not(.dark) select option:checked {
 .domain-strip::-webkit-scrollbar { display: none; }
 .domain-card-snap { scroll-snap-align: start; flex-shrink: 0; }
 
-
+@media print {
   .break-inside-avoid {
     break-inside: avoid;
   }
+
   h1, h2, h3, h4, h5, h6 {
     break-after: avoid;
   }
+
   .print-page {
     break-after: page;
   }
+
   .print-page:last-of-type {
     break-after: auto;
   }

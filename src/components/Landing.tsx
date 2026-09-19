@@ -56,6 +56,21 @@ export function Landing({ onEnter }: LandingProps) {
     () => typeof window !== 'undefined' && window.sessionStorage.getItem('show_logout_animation') === 'true'
   );
   
+  const [isDark, setIsDark] = useState(false);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          setIsDark(document.documentElement.classList.contains('dark'));
+        }
+      });
+    });
+    observer.observe(document.documentElement, { attributes: true });
+    setIsDark(document.documentElement.classList.contains('dark'));
+    return () => observer.disconnect();
+  }, []);
+
   const [glyphColor, setGlyphColor] = useState("#6B7280");
 
   useEffect(() => {
