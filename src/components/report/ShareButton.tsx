@@ -165,13 +165,13 @@ export function ShareButton({
 
   const shareModalContent = showModal && shareToken ? (
     <div
-      className="fixed inset-0 z-100 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-150"
+      className="fixed inset-0 z-100 flex items-center justify-center bg-background/95 p-4 animate-in fade-in duration-150"
       onClick={(e) => {
         if (e.target === e.currentTarget) closeModal();
       }}
     >
       <div
-        className="w-full max-w-md rounded-none border border-border bg-card p-6 shadow-2xl space-y-4 text-foreground"
+        className="w-full max-w-md rounded-none border border-border-hairline bg-surface-card p-6 shadow-none space-y-4 text-foreground"
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-dialog-title"

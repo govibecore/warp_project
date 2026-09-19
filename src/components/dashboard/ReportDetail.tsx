@@ -554,13 +554,7 @@ export function ReportDetail() {
                         onClose={() => setShowOverflow(false)}
                       />
                     </div>
-                    <button
-                      onClick={() => { setShowOverflow(false); window.print(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
-                    >
-                      <Printer className="size-4" />
-                      Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}
-                    </button>
+
                     <div className="border-t border-border my-1" />
                     <button
                       onClick={() => { setShowOverflow(false); window.location.href = '/'; }}

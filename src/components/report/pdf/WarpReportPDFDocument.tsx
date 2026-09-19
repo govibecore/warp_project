@@ -1,5 +1,5 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
-import { stripLaTeXForPdf } from '@/lib/mathRender';
+import { PdfMixedText } from './PdfLatexText';
 
 
 
@@ -866,7 +866,7 @@ export function WarpReportPDFDocument({
                   <Text style={[styles.tableCell, { flex: 0.6, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>{idx + 1}</Text>
                   <View style={{ flex: 3, paddingRight: 4 }}>
                     <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica', fontWeight: 'bold', color: '#0f172a', marginBottom: 2 }}>{competency}</Text>
-                    <Text style={{ fontSize: 8.5, color: '#64748b' }}>{stripLaTeXForPdf(prompt)}</Text>
+                    <PdfMixedText text={prompt} fontSize={8.5} color="#64748b" />
                   </View>
                   <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: isCorrect ? '#16a34a' : '#dc2626', fontFamily: 'Helvetica', fontWeight: 'bold' }]}>
                     {isCorrect ? 'CORRECT' : 'TRAP'}
@@ -874,9 +874,9 @@ export function WarpReportPDFDocument({
                   <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: '#64748b' }]}>
                     {formatDuration(resp.duration_ms || resp.time_taken_ms || 18000)}
                   </Text>
-                  <Text style={[styles.tableCell, { flex: 3, color: isCorrect ? '#16a34a' : '#d97706', fontSize: 8.5 }]}>
-                    {stripLaTeXForPdf(trap)}
-                  </Text>
+                  <View style={[styles.tableCell, { flex: 3 }]}>
+                    <PdfMixedText text={trap} fontSize={8.5} color={isCorrect ? '#16a34a' : '#d97706'} />
+                  </View>
                 </View>
               );
             })}
@@ -884,17 +884,12 @@ export function WarpReportPDFDocument({
         </View>
 
         {/* Metacognitive Conclusion */}
-<<<<<<< HEAD
-        <View style={styles.section}>
-          <View wrap={false} style={styles.cardBox}>
-=======
         <View style={styles.section} wrap={false}>
           <View style={styles.cardBox}>
->>>>>>> 240bd7f (feat(ui): Phase 1 Nordic Lagom redesign - PDF layout fixes + UI token cleanup)
             <Text style={styles.cardTitle}>Diagnostic Verification &amp; Authorization</Text>
             <Text style={styles.cardText}>
-              This psychometric calibration report was generated using the WARP 3-Parameter Logistic (3PL) Item Response Theory model 
-              in accordance with National Education Policy (NEP 2020) and PARAKH holistic assessment mandates. 
+              This psychometric calibration report was generated using the WARP 3-Parameter Logistic (3PL) Item Response Theory model
+              in accordance with National Education Policy (NEP 2020) and PARAKH holistic assessment mandates.
               Results reflect server-authoritative response timestamps and adaptive item calibration.
             </Text>
           </View>
