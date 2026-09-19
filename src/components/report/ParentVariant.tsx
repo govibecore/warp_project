@@ -40,10 +40,10 @@ export function ParentVariant({ studentName, parentName, parentVariant, benchmar
   const streamInfo = parentVariant?.streamOrientation || blueprint.streamOrientation;
   const quarterlyMilestones = blueprint.quarterlyMilestones || [];
 
-  const boardGradeBand = benchmark?.boardGradeBand || parentVariant?.benchmark?.boardGradeBand || parentVariant?.boardGradeBand;
-  const parakh = benchmark?.parakhHolisticPillars || parentVariant?.benchmark?.parakhHolisticPillars || parentVariant?.parakhHolisticPillars;
-  const competitive = benchmark?.indianCompetitiveFoundation || parentVariant?.benchmark?.indianCompetitiveFoundation || parentVariant?.indianCompetitiveFoundation;
-  const indiaPercentile = benchmark?.indiaNationalPercentile || parentVariant?.benchmark?.indiaNationalPercentile || parentVariant?.indiaNationalPercentile || regionalPercentiles.India || 68;
+  const boardGradeBand = benchmark?.boardGradeBand || parentVariant?.benchmark?.boardGradeBand;
+  const parakh = benchmark?.parakhHolisticPillars || parentVariant?.benchmark?.parakhHolisticPillars;
+  const competitive = benchmark?.indianCompetitiveFoundation || parentVariant?.benchmark?.indianCompetitiveFoundation;
+  const indiaPercentile = benchmark?.indiaNationalPercentile || parentVariant?.benchmark?.indiaNationalPercentile || regionalPercentiles.India;
 
   const isEnglish = (parentVariant?.subject || '').toLowerCase().includes('english');
   const mathGap = isEnglish

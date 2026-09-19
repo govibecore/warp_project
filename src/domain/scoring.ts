@@ -20,8 +20,7 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
     const item = items.find(i => i.id === response.itemId);
     if (!item) continue;
     
-    // Difficulty Scaling
-    const difficultyMultiplier = 1 + ((item.itemDifficulty || 0) * 0.1);
+    // Difficulty Scaling is used only in IRT ability estimation later if needed, but not as a raw score multiplier here.
     
     // Linked Evidence Penalty
     let dependencyPenalty = 1.0;
@@ -41,9 +40,9 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
     for (const contribution of response.evidence) {
       if (totals[contribution.competency]) {
         // Apply multipliers
-        const finalEarned = contribution.earnedWeight * difficultyMultiplier * dependencyPenalty;
+        const finalEarned = contribution.earnedWeight * dependencyPenalty;
         totals[contribution.competency].earned += finalEarned;
-        totals[contribution.competency].available += contribution.availableWeight * difficultyMultiplier;
+        totals[contribution.competency].available += contribution.availableWeight;
         totals[contribution.competency].count += 1;
       }
     }
@@ -56,7 +55,7 @@ export function calculateResult(items: readonly AssessmentItem[], responses: rea
   const competencies = {} as Record<Competency, CompetencyProjection>;
   for (const competency of targetCompetencies) {
     const total = totals[competency];
-    const rawPercent = total.available > 0 ? Math.max(0, (100 * total.earned) / total.available) : 0;
+    const rawPercent = total.available > 0 ? clamp((100 * total.earned) / total.available, 0, 100) : 0;
     const norm = getNorm(classLevel, competency);
     competencies[competency] = total.available > 0
       ? { rawPercent, norm, ...projectScore(rawPercent, norm, total.count) }

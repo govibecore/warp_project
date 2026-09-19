@@ -98,6 +98,7 @@ export function PlanTab({ benchmark, studentVariant, parentVariant, reportId, is
       } catch (err) {
         console.error('Failed to save sprint progress:', err);
         setProgress(progress);
+        alert('Failed to save progress. Please try again.');
       } finally {
         setIsSaving(false);
       }

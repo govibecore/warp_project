@@ -85,7 +85,7 @@ export function ReportDetail() {
   const difficultyData = useMemo(() => {
     if (!safeResponses) return [];
     return safeResponses.map((r: any) => {
-      const itemId = r.item_id || r.scenario_id;
+      const itemId = r.scenario_code || r.item_id || r.scenario_id;
       const item = allItems.find((i) => i.id === itemId);
       const b = item?.itemDifficulty ?? 0;
       return {
@@ -166,15 +166,22 @@ export function ReportDetail() {
             if (scenarioIds.length > 0) {
               const { data: scenariosList } = await supabase
                 .from('scenarios')
-                .select('id, prompt, competency, international_benchmark')
+                .select('id, prompt, competency, international_benchmark, scenario_code, options')
                 .in('id', scenarioIds);
 
               if (scenariosList && scenariosList.length > 0) {
                 const scenarioMap = new Map(scenariosList.map((s: any) => [s.id, s]));
                 assessment.responses = responses.map((r: any) => {
                   const match = scenarioMap.get(r.scenario_id);
+                  let correctOpt = undefined;
+                  if (match?.options && Array.isArray(match.options)) {
+                    const found = match.options.find((opt: any) => opt.isCorrect);
+                    if (found) correctOpt = found.text;
+                  }
                   return {
                     ...r,
+                    scenario_code: match?.scenario_code,
+                    correctOption: correctOpt,
                     prompt: match?.prompt || r.option?.text || ((assessment as any).subject?.toLowerCase().includes('english') ? 'English Literacy Benchmark Scenario' : 'STEM Benchmark Scenario'),
                     competency: match?.competency || 'General Competency',
                     benchmarkStandard: match?.international_benchmark || 'International Benchmark',
