@@ -143,6 +143,9 @@ function AuthForm({
           <Input
             id="otpCode"
             type="text"
+            inputMode="numeric"
+            pattern="[0-9]{8}"
+            autoComplete="one-time-code"
             maxLength={8}
             placeholder="12345678"
             value={otpCode}

@@ -229,7 +229,7 @@ export function ReportDetail() {
   useEffect(() => {
     if (!assessmentData) return;
     const difficulty = assessmentData.difficulty || 'standard';
-    const classLevel = assessmentData.class_level || 12;
+    const classLevel = assessmentData.class_level || 8;
     fetchCohortNorms(classLevel, difficulty).then(setCohortNorms);
 
     const reportResourceKeys: string[] = reportData?.resource_keys ?? [];
@@ -240,7 +240,7 @@ export function ReportDetail() {
       fetchResourcesByCompetency(topCompetency, difficulty).then(setResources);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [assessmentData?.id]);
+  }, [assessmentData?.id, reportData?.id]);
 
   const aiGenerating = stream.status === 'analyzing';
 
