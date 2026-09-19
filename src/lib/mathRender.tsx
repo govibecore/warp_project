@@ -54,8 +54,8 @@ export function stripLaTeXForPdf(text: string): string {
       math = math.replace(/\\pi/g, 'π');
       math = math.replace(/\\sigma/g, 'σ');
       math = math.replace(/\\Delta/g, 'Δ');
-      math = math.replace(/\\le/g, '≤');
-      math = math.replace(/\\ge/g, '≥');
+      math = math.replace(/\\leq?(?![A-Za-z])/g, '≤');
+      math = math.replace(/\\geq?(?![A-Za-z])/g, '≥');
       math = math.replace(/\\neq/g, '≠');
       math = math.replace(/\\approx/g, '≈');
       math = math.replace(/\\pm/g, '±');
