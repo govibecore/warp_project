@@ -1,17 +1,24 @@
 import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { stripLaTeXForPdf } from '@/lib/mathRender';
+
+
+
+
+
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Nordic Lagom PDF Design Tokens (Vector / Exact Pt dimensions)
 // ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   page: {
-    paddingTop: 24,
-    paddingBottom: 24,
+    paddingTop: 38,
+    paddingBottom: 22,
     paddingLeft: 28,
     paddingRight: 28,
     fontFamily: 'Helvetica',
-    fontSize: 8.5,
-    lineHeight: 1.3,
+    fontSize: 10,
+    lineHeight: 1.5,
     color: '#0f172a',
     backgroundColor: '#ffffff',
   },
@@ -30,14 +37,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoBrandText: {
-    fontSize: 16,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 22,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     letterSpacing: 2,
     color: '#0f172a',
+    lineHeight: 1,
+    marginBottom: 2,
   },
   logoSubtitle: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 9,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 1.2,
     color: '#0284c7',
@@ -55,14 +64,14 @@ const styles = StyleSheet.create({
     borderRadius: 0,
   },
   badgeText: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 8,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#ffffff',
     textTransform: 'uppercase',
     letterSpacing: 0.8,
   },
   headerRefText: {
-    fontSize: 6.5,
+    fontSize: 8.5,
     fontFamily: 'Courier',
     color: '#64748b',
     marginTop: 3,
@@ -73,26 +82,26 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     borderWidth: 0.75,
     borderColor: '#e2e8f0',
-    paddingTop: 6,
-    paddingBottom: 6,
-    paddingLeft: 8,
-    paddingRight: 8,
+    paddingTop: 8,
+    paddingBottom: 8,
+    paddingLeft: 12,
+    paddingRight: 12,
     marginBottom: 10,
   },
   candidateCol: {
     flex: 1,
   },
   metaLabel: {
-    fontSize: 6,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 7.5,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     textTransform: 'uppercase',
     color: '#64748b',
     letterSpacing: 0.5,
     marginBottom: 1.5,
   },
   metaValue: {
-    fontSize: 8.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 10.5,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#0f172a',
   },
   // ── Metric Highlight Card ──
@@ -102,10 +111,12 @@ const styles = StyleSheet.create({
   },
   metricCard: {
     flex: 1,
-    borderWidth: 0.75,
-    borderColor: '#cbd5e1',
-    padding: 8,
-    backgroundColor: '#ffffff',
+    borderWidth: 0.5,
+    borderColor: '#1e293b',
+    paddingTop: 16,
+    paddingBottom: 16,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   metricCardHeader: {
     flexDirection: 'row',
@@ -114,19 +125,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   metricCardTitle: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 8,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     textTransform: 'uppercase',
     color: '#475569',
     letterSpacing: 0.5,
   },
   metricCardValue: {
-    fontSize: 16,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 22,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#0f172a',
   },
   metricCardSub: {
-    fontSize: 6.5,
+    fontSize: 8.5,
     color: '#64748b',
     marginTop: 2,
   },
@@ -144,14 +155,14 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   sectionTitle: {
-    fontSize: 8,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 11.5,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     textTransform: 'uppercase',
     letterSpacing: 0.75,
     color: '#0f172a',
   },
   sectionSubtitle: {
-    fontSize: 6.5,
+    fontSize: 8.5,
     color: '#64748b',
   },
   // ── Table Styles ──
@@ -162,52 +173,51 @@ const styles = StyleSheet.create({
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f1f5f9',
+    
     borderBottomWidth: 0.75,
     borderBottomColor: '#cbd5e1',
-    paddingTop: 3.5,
-    paddingBottom: 3.5,
-    paddingLeft: 6,
-    paddingRight: 6,
+    paddingTop: 6,
+    paddingBottom: 6,
+    paddingLeft: 8,
+    paddingRight: 8,
   },
   tableHeaderCell: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 8,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     textTransform: 'uppercase',
     color: '#475569',
   },
   tableRow: {
     flexDirection: 'row',
     borderBottomWidth: 0.5,
-    borderBottomColor: '#f1f5f9',
-    paddingTop: 3.5,
-    paddingBottom: 3.5,
-    paddingLeft: 6,
-    paddingRight: 6,
+    borderBottomColor: '#e2e8f0',
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 8,
+    paddingRight: 8,
   },
   tableRowAlt: {
-    backgroundColor: '#fcfdfe',
+    
   },
   tableCell: {
-    fontSize: 7.5,
+    fontSize: 9.5,
     color: '#1e293b',
   },
   // ── Content Boxes ──
   cardBox: {
-    borderWidth: 0.75,
-    borderColor: '#e2e8f0',
-    backgroundColor: '#f8fafc',
-    padding: 7,
-    marginBottom: 6,
+    borderWidth: 0.5,
+    borderColor: '#1e293b',
+    padding: 12,
+    marginBottom: 10,
   },
   cardTitle: {
-    fontSize: 7.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 10.5,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#0f172a',
     marginBottom: 2,
   },
   cardText: {
-    fontSize: 7,
+    fontSize: 9.5,
     color: '#334155',
     lineHeight: 1.35,
   },
@@ -225,10 +235,10 @@ const styles = StyleSheet.create({
     marginRight: 4,
   },
   bulletText: {
-    fontSize: 7,
+    fontSize: 9.5,
     color: '#334155',
     flex: 1,
-    lineHeight: 1.3,
+    lineHeight: 1.35,
   },
   // ── Footers ──
   footer: {
@@ -244,13 +254,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerText: {
-    fontSize: 6.5,
+    fontSize: 8,
     color: '#64748b',
     fontFamily: 'Helvetica',
   },
   footerPageNum: {
-    fontSize: 6.5,
-    fontFamily: 'Helvetica-Bold',
+    fontSize: 8,
+    fontFamily: 'Helvetica', fontWeight: 'bold',
     color: '#0f172a',
   },
 });
@@ -416,30 +426,30 @@ export function WarpReportPDFDocument({
 
           {/* Metric Overview Strip */}
           <View style={styles.metricRow}>
-            <View style={styles.metricCard}>
+            <View style={[styles.metricCard, { marginRight: 12 }]}>
               <View style={styles.metricCardHeader}>
                 <Text style={styles.metricCardTitle}>Overall Scaled Score</Text>
-                <Text style={{ fontSize: 7, color: '#0284c7', fontFamily: 'Helvetica-Bold' }}>3PL IRT</Text>
+                
               </View>
-              <Text style={styles.metricCardValue}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
-              <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'}σ</Text>
+              <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{overallScore || '--'} <Text style={{ fontSize: 12, color: '#64748b' }}>/ 900</Text></Text>
+              <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'} SD</Text>
             </View>
 
-            <View style={styles.metricCard}>
+            <View style={[styles.metricCard, { marginRight: 12 }]}>
               <View style={styles.metricCardHeader}>
                 <Text style={styles.metricCardTitle}>National Percentile</Text>
-                <Text style={{ fontSize: 7, color: '#16a34a', fontFamily: 'Helvetica-Bold' }}>NEP 2020</Text>
+                
               </View>
-              <Text style={styles.metricCardValue}>{ordinal(indiaPercentile)}</Text>
+              <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{ordinal(indiaPercentile)}</Text>
               <Text style={styles.metricCardSub}>Top {Math.max(1, 100 - indiaPercentile)}% across India cohort</Text>
             </View>
 
             <View style={styles.metricCard}>
               <View style={styles.metricCardHeader}>
                 <Text style={styles.metricCardTitle}>Cognitive Archetype</Text>
-                <Text style={{ fontSize: 7, color: '#6366f1', fontFamily: 'Helvetica-Bold' }}>PROFILE</Text>
+                
               </View>
-              <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#0f172a' }}>{archetypeTitle}</Text>
+              <Text style={{ fontSize: 15, fontFamily: 'Helvetica', fontWeight: 'bold', color: '#0f172a' }}>{archetypeTitle}</Text>
               <Text style={styles.metricCardSub}>{archetypeTagline}</Text>
             </View>
           </View>
@@ -463,8 +473,8 @@ export function WarpReportPDFDocument({
                   .replace(/^./, str => str.toUpperCase());
                 const isAlt = idx % 2 === 1;
                 return (
-                  <View key={key} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
-                    <Text style={[styles.tableCell, { flex: 2.2, fontFamily: 'Helvetica-Bold' }]}>{label}</Text>
+                  <View key={key} wrap={false} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
+                    <Text style={[styles.tableCell, { flex: 2.2, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>{label}</Text>
                     <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{pillar.score || 75}/100</Text>
                     <Text style={[styles.tableCell, { flex: 1.2, textAlign: 'center', color: '#0284c7' }]}>{pillar.delta || '+0%'}</Text>
                     <Text style={[styles.tableCell, { flex: 1.6, textAlign: 'right' }]}>{pillar.label || 'Proficient'}</Text>
@@ -481,20 +491,20 @@ export function WarpReportPDFDocument({
               <Text style={styles.sectionSubtitle}>Diagnostic Observations</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              <View style={[styles.cardBox, { flex: 1 }]}>
+              <View wrap={false} style={[styles.cardBox, { flex: 1 }]}>
                 <Text style={[styles.cardTitle, { color: '#16a34a' }]}>Core Strengths</Text>
                 {strengths.slice(0, 2).map((s, i) => (
-                  <View key={i} style={styles.bulletRow}>
+                  <View key={i} wrap={false} style={styles.bulletRow}>
                     <View style={[styles.bulletDot, { backgroundColor: '#16a34a' }]} />
                     <Text style={styles.bulletText}>{s}</Text>
                   </View>
                 ))}
               </View>
 
-              <View style={[styles.cardBox, { flex: 1 }]}>
+              <View wrap={false} style={[styles.cardBox, { flex: 1 }]}>
                 <Text style={[styles.cardTitle, { color: '#d97706' }]}>Critical Blindspots & Traps</Text>
                 {blindspots.slice(0, 2).map((b, i) => (
-                  <View key={i} style={styles.bulletRow}>
+                  <View key={i} wrap={false} style={styles.bulletRow}>
                     <View style={[styles.bulletDot, { backgroundColor: '#d97706' }]} />
                     <Text style={styles.bulletText}>{b}</Text>
                   </View>
@@ -509,14 +519,14 @@ export function WarpReportPDFDocument({
               <Text style={styles.sectionTitle}>Parent Educational Blueprint & Reality Check</Text>
               <Text style={styles.sectionSubtitle}>Status: {verdict}</Text>
             </View>
-            <View style={styles.cardBox}>
+            <View wrap={false} style={styles.cardBox}>
               <Text style={styles.cardTitle}>Diagnostic Verdict: {verdict}</Text>
               <Text style={styles.cardText}>{honestSummary}</Text>
               
               <View style={{ marginTop: 4 }}>
                 <Text style={[styles.metaLabel, { color: '#0284c7', marginTop: 3 }]}>Recommended Home Rehearsal</Text>
                 {homeRoutines.slice(0, 2).map((r, i) => (
-                  <View key={i} style={styles.bulletRow}>
+                  <View key={i} wrap={false} style={styles.bulletRow}>
                     <View style={styles.bulletDot} />
                     <Text style={styles.bulletText}>{r}</Text>
                   </View>
@@ -527,8 +537,8 @@ export function WarpReportPDFDocument({
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>WARP Psychometric Calibration Engine · NEP 2020 & 3PL IRT Authorized</Text>
-            <Text style={styles.footerPageNum}>PAGE 1 OF 1</Text>
+            <Text style={styles.footerText}>WARP Psychometric Calibration Engine (v2) · NEP 2020 & 3PL IRT Authorized</Text>
+            <Text style={styles.footerPageNum} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages}`} />
           </View>
         </Page>
       </Document>
@@ -583,30 +593,30 @@ export function WarpReportPDFDocument({
 
         {/* High-Level Benchmark Cards */}
         <View style={styles.metricRow}>
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { marginRight: 12 }]}>
             <View style={styles.metricCardHeader}>
               <Text style={styles.metricCardTitle}>Overall Scaled Score</Text>
-              <Text style={{ fontSize: 7, color: '#0284c7', fontFamily: 'Helvetica-Bold' }}>3PL IRT</Text>
+              
             </View>
-            <Text style={styles.metricCardValue}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
-            <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'}σ</Text>
+            <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{overallScore || '--'} <Text style={{ fontSize: 9, color: '#64748b' }}>/ 900</Text></Text>
+            <Text style={styles.metricCardSub}>Theta Ability: {typeof abilityTheta === 'number' ? abilityTheta.toFixed(2) : '0.00'} SD</Text>
           </View>
 
-          <View style={styles.metricCard}>
+          <View style={[styles.metricCard, { marginRight: 12 }]}>
             <View style={styles.metricCardHeader}>
               <Text style={styles.metricCardTitle}>India Percentile</Text>
-              <Text style={{ fontSize: 7, color: '#16a34a', fontFamily: 'Helvetica-Bold' }}>NEP 2020</Text>
+              
             </View>
-            <Text style={styles.metricCardValue}>{ordinal(indiaPercentile)}</Text>
+            <Text style={[styles.metricCardValue, { marginBottom: 14 }]}>{ordinal(indiaPercentile)}</Text>
             <Text style={styles.metricCardSub}>National Cohort Calibration</Text>
           </View>
 
           <View style={styles.metricCard}>
             <View style={styles.metricCardHeader}>
               <Text style={styles.metricCardTitle}>Cognitive Archetype</Text>
-              <Text style={{ fontSize: 7, color: '#6366f1', fontFamily: 'Helvetica-Bold' }}>MODEL</Text>
+              <Text style={{ fontSize: 9.5, color: '#6366f1', fontFamily: 'Helvetica', fontWeight: 'bold' }}>MODEL</Text>
             </View>
-            <Text style={{ fontSize: 11, fontFamily: 'Helvetica-Bold', color: '#0f172a' }}>{archetypeTitle}</Text>
+            <Text style={{ fontSize: 15, fontFamily: 'Helvetica', fontWeight: 'bold', color: '#0f172a' }}>{archetypeTitle}</Text>
             <Text style={styles.metricCardSub}>{archetypeTagline}</Text>
           </View>
         </View>
@@ -630,8 +640,8 @@ export function WarpReportPDFDocument({
                 .replace(/^./, str => str.toUpperCase());
               const isAlt = idx % 2 === 1;
               return (
-                <View key={key} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
-                  <Text style={[styles.tableCell, { flex: 2.2, fontFamily: 'Helvetica-Bold' }]}>{label}</Text>
+                <View key={key} wrap={false} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
+                  <Text style={[styles.tableCell, { flex: 2.2, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>{label}</Text>
                   <Text style={[styles.tableCell, { flex: 1, textAlign: 'center' }]}>{pillar.score || 75}/100</Text>
                   <Text style={[styles.tableCell, { flex: 1.2, textAlign: 'center', color: '#0284c7' }]}>{pillar.delta || '+0%'}</Text>
                   <Text style={[styles.tableCell, { flex: 1.6, textAlign: 'right' }]}>{pillar.label || 'Proficient'}</Text>
@@ -647,7 +657,7 @@ export function WarpReportPDFDocument({
             <Text style={styles.sectionTitle}>International Benchmark Comparison</Text>
             <Text style={styles.sectionSubtitle}>PISA / Singapore / OECD Alignment</Text>
           </View>
-          <View style={styles.cardBox}>
+          <View wrap={false} style={styles.cardBox}>
             <Text style={styles.cardTitle}>Global Alignment Summary</Text>
             <Text style={styles.cardText}>
               The candidate demonstrates strong analytical decomposition, matching the 65th percentile among OECD peers. 
@@ -658,7 +668,7 @@ export function WarpReportPDFDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>WARP Psychometric Calibration Engine · NEP 2020 & 3PL IRT Authorized</Text>
+          <Text style={styles.footerText}>WARP Psychometric Calibration Engine (v2) · NEP 2020 & 3PL IRT Authorized</Text>
           <Text style={styles.footerPageNum}>PAGE 1 OF 4 · EXECUTIVE CALIBRATION</Text>
         </View>
       </Page>
@@ -683,7 +693,7 @@ export function WarpReportPDFDocument({
             <Text style={styles.sectionTitle}>Cognitive Archetype: {archetypeTitle}</Text>
             <Text style={styles.sectionSubtitle}>Mental Processing Signature</Text>
           </View>
-          <View style={styles.cardBox}>
+          <View wrap={false} style={styles.cardBox}>
             <Text style={styles.cardTitle}>{archetypeTagline}</Text>
             <Text style={styles.cardText}>
               This cognitive pattern prioritizes structural consistency and first-principles causal deduction. 
@@ -695,20 +705,20 @@ export function WarpReportPDFDocument({
         {/* Strengths and Blindspots detailed */}
         <View style={styles.section}>
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <View style={[styles.cardBox, { flex: 1 }]}>
+            <View wrap={false} style={[styles.cardBox, { flex: 1 }]}>
               <Text style={[styles.cardTitle, { color: '#16a34a' }]}>Core Strengths (3 Evaluated)</Text>
               {strengths.map((s, i) => (
-                <View key={i} style={styles.bulletRow}>
+                <View key={i} wrap={false} style={styles.bulletRow}>
                   <View style={[styles.bulletDot, { backgroundColor: '#16a34a' }]} />
                   <Text style={styles.bulletText}>{s}</Text>
                 </View>
               ))}
             </View>
 
-            <View style={[styles.cardBox, { flex: 1 }]}>
+            <View wrap={false} style={[styles.cardBox, { flex: 1 }]}>
               <Text style={[styles.cardTitle, { color: '#d97706' }]}>Critical Blindspots &amp; Traps</Text>
               {blindspots.map((b, i) => (
-                <View key={i} style={styles.bulletRow}>
+                <View key={i} wrap={false} style={styles.bulletRow}>
                   <View style={[styles.bulletDot, { backgroundColor: '#d97706' }]} />
                   <Text style={styles.bulletText}>{b}</Text>
                 </View>
@@ -730,17 +740,17 @@ export function WarpReportPDFDocument({
               <Text style={[styles.tableHeaderCell, { flex: 2 }]}>Habit / Metric</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica-Bold' }]}>Week 1-2</Text>
+              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>Week 1-2</Text>
               <Text style={[styles.tableCell, { flex: 2.2 }]}>Deconstruct distractor patterns in non-routine problems</Text>
               <Text style={[styles.tableCell, { flex: 2, color: '#0284c7' }]}>Maintain 15-min daily error log</Text>
             </View>
             <View style={[styles.tableRow, styles.tableRowAlt]}>
-              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica-Bold' }]}>Week 3</Text>
+              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>Week 3</Text>
               <Text style={[styles.tableCell, { flex: 2.2 }]}>Boundary-condition verification on unfamiliar scenarios</Text>
               <Text style={[styles.tableCell, { flex: 2, color: '#0284c7' }]}>Solve 3 problems without formula lookup</Text>
             </View>
             <View style={styles.tableRow}>
-              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica-Bold' }]}>Week 4</Text>
+              <Text style={[styles.tableCell, { flex: 1, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>Week 4</Text>
               <Text style={[styles.tableCell, { flex: 2.2 }]}>Timed multi-step synthesis under cognitive load</Text>
               <Text style={[styles.tableCell, { flex: 2, color: '#0284c7' }]}>Complete 1 full adaptive diagnostic sprint</Text>
             </View>
@@ -749,7 +759,7 @@ export function WarpReportPDFDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>WARP Psychometric Calibration Engine · Confidential</Text>
+          <Text style={styles.footerText}>WARP Psychometric Calibration Engine (v2) · Confidential</Text>
           <Text style={styles.footerPageNum}>PAGE 2 OF 4 · STUDENT SPRINT</Text>
         </View>
       </Page>
@@ -774,7 +784,7 @@ export function WarpReportPDFDocument({
             <Text style={styles.sectionTitle}>Board Readiness &amp; Reality Check</Text>
             <Text style={styles.sectionSubtitle}>Assessment Verdict: {verdict}</Text>
           </View>
-          <View style={styles.cardBox}>
+          <View wrap={false} style={styles.cardBox}>
             <Text style={styles.cardTitle}>Executive Assessment</Text>
             <Text style={styles.cardText}>{honestSummary}</Text>
           </View>
@@ -810,7 +820,7 @@ export function WarpReportPDFDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>WARP Psychometric Calibration Engine · Confidential</Text>
+          <Text style={styles.footerText}>WARP Psychometric Calibration Engine (v2) · Confidential</Text>
           <Text style={styles.footerPageNum}>PAGE 3 OF 4 · PARENT BLUEPRINT</Text>
         </View>
       </Page>
@@ -838,10 +848,10 @@ export function WarpReportPDFDocument({
           <View style={styles.table}>
             <View style={styles.tableHeader}>
               <Text style={[styles.tableHeaderCell, { flex: 0.6 }]}>#</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 2.2 }]}>Competency / Prompt</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 3 }]}>Competency / Prompt</Text>
               <Text style={[styles.tableHeaderCell, { flex: 0.8, textAlign: 'center' }]}>Outcome</Text>
               <Text style={[styles.tableHeaderCell, { flex: 0.8, textAlign: 'center' }]}>Duration</Text>
-              <Text style={[styles.tableHeaderCell, { flex: 2.4 }]}>Distractor / Misconception</Text>
+              <Text style={[styles.tableHeaderCell, { flex: 3 }]}>Distractor / Misconception</Text>
             </View>
             {responses.slice(0, 6).map((resp: any, idx: number) => {
               const isCorrect = resp.correct === true || resp.is_correct === true;
@@ -852,19 +862,19 @@ export function WarpReportPDFDocument({
 
               return (
                 <View key={idx} style={[styles.tableRow, isAlt ? styles.tableRowAlt : {}]}>
-                  <Text style={[styles.tableCell, { flex: 0.6, fontFamily: 'Helvetica-Bold' }]}>{idx + 1}</Text>
-                  <View style={{ flex: 2.2, paddingRight: 4 }}>
-                    <Text style={{ fontSize: 7, fontFamily: 'Helvetica-Bold', color: '#0f172a' }}>{competency}</Text>
-                    <Text style={{ fontSize: 6.5, color: '#64748b' }}>{prompt}</Text>
+                  <Text style={[styles.tableCell, { flex: 0.6, fontFamily: 'Helvetica', fontWeight: 'bold' }]}>{idx + 1}</Text>
+                  <View style={{ flex: 3, paddingRight: 4 }}>
+                    <Text style={{ fontSize: 9.5, fontFamily: 'Helvetica', fontWeight: 'bold', color: '#0f172a', marginBottom: 2 }}>{competency}</Text>
+                    <Text style={{ fontSize: 8.5, color: '#64748b' }}>{stripLaTeXForPdf(prompt)}</Text>
                   </View>
-                  <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: isCorrect ? '#16a34a' : '#dc2626', fontFamily: 'Helvetica-Bold' }]}>
+                  <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: isCorrect ? '#16a34a' : '#dc2626', fontFamily: 'Helvetica', fontWeight: 'bold' }]}>
                     {isCorrect ? 'CORRECT' : 'TRAP'}
                   </Text>
                   <Text style={[styles.tableCell, { flex: 0.8, textAlign: 'center', color: '#64748b' }]}>
                     {formatDuration(resp.duration_ms || resp.time_taken_ms || 18000)}
                   </Text>
-                  <Text style={[styles.tableCell, { flex: 2.4, color: isCorrect ? '#16a34a' : '#d97706', fontSize: 6.5 }]}>
-                    {trap}
+                  <Text style={[styles.tableCell, { flex: 3, color: isCorrect ? '#16a34a' : '#d97706', fontSize: 8.5 }]}>
+                    {stripLaTeXForPdf(trap)}
                   </Text>
                 </View>
               );
@@ -874,7 +884,7 @@ export function WarpReportPDFDocument({
 
         {/* Metacognitive Conclusion */}
         <View style={styles.section}>
-          <View style={styles.cardBox}>
+          <View wrap={false} style={styles.cardBox}>
             <Text style={styles.cardTitle}>Diagnostic Verification &amp; Authorization</Text>
             <Text style={styles.cardText}>
               This psychometric calibration report was generated using the WARP 3-Parameter Logistic (3PL) Item Response Theory model 
@@ -886,8 +896,8 @@ export function WarpReportPDFDocument({
 
         {/* Footer */}
         <View style={styles.footer}>
-          <Text style={styles.footerText}>WARP Psychometric Calibration Engine · Confidential</Text>
-          <Text style={styles.footerPageNum}>PAGE 4 OF 4 · DIAGNOSTIC AUDIT</Text>
+          <Text style={styles.footerText}>WARP Psychometric Calibration Engine (v2) · Confidential</Text>
+          <Text style={styles.footerPageNum} render={({ pageNumber, totalPages }) => `PAGE ${pageNumber} OF ${totalPages} · DIAGNOSTIC AUDIT`} />
         </View>
       </Page>
     </Document>

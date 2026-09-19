@@ -18,6 +18,7 @@ export interface PDFExportButtonProps {
   responses?: any[];
   printMode?: 'one-page' | 'comprehensive';
   className?: string;
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
   onClose?: () => void;
   // Kept for backwards compatibility
   targetId?: string;
@@ -36,6 +37,7 @@ export function PDFExportButton({
   responses = [],
   printMode = 'one-page',
   className = '',
+  variant = 'secondary',
   onClose,
 }: PDFExportButtonProps) {
   const [status, setStatus] = useState<'idle' | 'generating' | 'success' | 'error'>('idle');
@@ -93,7 +95,7 @@ export function PDFExportButton({
 
   return (
     <Button
-      variant="secondary"
+      variant={variant}
       size="sm"
       onClick={handleExport}
       disabled={status === 'generating'}

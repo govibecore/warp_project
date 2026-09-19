@@ -11,7 +11,7 @@ import { motion } from 'motion/react';
 const CLASSES = Array.from({ length: 10 }, (_, i) => i + 3);
 
 export function ProfileSetup() {
-  const { user } = useSupabaseAuth();
+  const { user, studentProfile, refreshStudentProfile } = useSupabaseAuth();
   const { setProfile } = useWarpSession();
   const [fullName, setFullName] = useState('');
   const [parentName, setParentName] = useState('');
@@ -23,19 +23,14 @@ export function ProfileSetup() {
 
   // Pre-fill existing data if any
   useEffect(() => {
-    async function loadData() {
-      if (!user) return;
-      const { data } = await supabase.from('students').select('*').eq('id', user.id).maybeSingle();
-      if (data) {
-        if (data.full_name) setFullName(data.full_name);
-        if (data.parent_name) setParentName(data.parent_name);
-        if (data.school_name) setSchoolName(data.school_name);
-        if (data.parent_phone) setWhatsapp(data.parent_phone);
-        if (data.current_class) setClassLevel(data.current_class.toString());
-      }
+    if (studentProfile) {
+      if (studentProfile.full_name) setFullName(studentProfile.full_name);
+      if (studentProfile.parent_name) setParentName(studentProfile.parent_name);
+      if (studentProfile.school_name) setSchoolName(studentProfile.school_name);
+      if (studentProfile.parent_phone) setWhatsapp(studentProfile.parent_phone);
+      if (studentProfile.current_class) setClassLevel(studentProfile.current_class.toString());
     }
-    loadData();
-  }, [user]);
+  }, [studentProfile]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,6 +65,8 @@ export function ProfileSetup() {
       difficulty: normalizeDifficulty(updatedUser.difficulty_pref),
       schoolName: updatedUser.school_name ?? undefined
     });
+
+    await refreshStudentProfile();
 
     setLoading(false);
   };
@@ -142,7 +139,7 @@ export function ProfileSetup() {
                 ))}
               </Select>
             </Field>
-            <Field label="Whatsapp Number" htmlFor="whatsapp">
+            <Field label="Parent WhatsApp Number" htmlFor="whatsapp">
               <Input
                 id="whatsapp"
                 type="tel"

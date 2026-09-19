@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase';
 import { ArrowRight, ArrowLeft, Sparkles, LogIn, Eye, EyeOff } from 'lucide-react';
 import { useWarpSession } from '../context/WarpSessionContext';
 import { Button } from './ui/button';
-import { Input, Field } from './ui/input';
+import { Input, Field, Select } from './ui/input';
 import { WarpLogo } from './WarpLogo';
 import { WarpLottie } from './ui/warp-lottie';
 import checkmarkData from '../assets/lottie/checkmark.json';
@@ -29,6 +29,9 @@ function AuthForm({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(initialNotice || null);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [studentName, setStudentName] = useState('');
+  const [parentName, setParentName] = useState('');
+  const [classLevel, setClassLevel] = useState('8');
 
   const handleForgotPassword = async () => {
     if (!email.trim()) {
@@ -61,6 +64,9 @@ function AuthForm({
         options: {
           data: {
             app_role: 'student',
+            full_name: studentName,
+            parent_name: parentName,
+            current_class: parseInt(classLevel, 10),
           },
         },
       });
@@ -68,6 +74,7 @@ function AuthForm({
         setError(signUpErr.message);
       } else if (data.session) {
         setIsSuccess(true);
+        setNotice('Registration successful! Redirecting...');
       } else {
         setIsSuccess(true);
         setNotice('Registration successful! Please check your email to verify your account.');
@@ -109,6 +116,43 @@ function AuthForm({
         <div className="border border-destructive/30 bg-destructive-subtle p-3 text-xs text-destructive">
           {error}
         </div>
+      )}
+
+      {type === 'register' && (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Student Name" htmlFor="studentName">
+              <Input
+                id="studentName"
+                placeholder="Aryan Sharma"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                required
+              />
+            </Field>
+            <Field label="Parent Name" htmlFor="parentName">
+              <Input
+                id="parentName"
+                placeholder="Rajiv Sharma"
+                value={parentName}
+                onChange={(e) => setParentName(e.target.value)}
+                required
+              />
+            </Field>
+          </div>
+          <Field label="Class Level" htmlFor="classLevel">
+            <Select
+              id="classLevel"
+              value={classLevel}
+              onChange={(e) => setClassLevel(e.target.value)}
+              required
+            >
+              {[3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(c => (
+                <option key={c} value={c}>Class {c}</option>
+              ))}
+            </Select>
+          </Field>
+        </>
       )}
 
       {/* Email Field */}

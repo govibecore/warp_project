@@ -1,8 +1,11 @@
-import { ArrowLeft, RefreshCw, Sparkles, Clock, Printer, FileText, MoreHorizontal, AlertTriangle, ArrowRight } from 'lucide-react';
+import { ArrowLeft, RefreshCw, Sparkles, Clock, Printer, MoreHorizontal, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { supabase } from '../../lib/supabase';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '../ui/button';
+import { getMissionItems, getCalibrationItems, MISSION_IDS, getEnglishMissionItems, getEnglishCalibrationItems, ENGLISH_MISSION_IDS } from '../../data/scenarios';
+import { normalizeDifficulty } from '../../domain/assessment';
+import type { AssessmentItem } from '../../domain/types';
 
 import { WarpLogo } from '../WarpLogo';
 import { Spinner } from '../ui/spinner';
@@ -12,33 +15,18 @@ import { createAndSaveReport } from '../../lib/aiService';
 import { NemotronSocraticTutor } from './NemotronSocraticTutor';
 import { PDFExportButton } from '../report/PDFExportButton';
 import { ShareButton } from '../report/ShareButton';
-import { StudentVariant } from '../report/StudentVariant';
-import { ParentVariant } from '../report/ParentVariant';
-import { ScenarioAudit } from '../report/ScenarioAudit';
-import { TrajectoryArc } from '../report/TrajectoryArc';
+import { OverviewTab } from '../report/OverviewTab';
+import { StrengthsGapsTab } from '../report/StrengthsGapsTab';
+import { PlanTab } from '../report/PlanTab';
+import { ProgressTab } from '../report/ProgressTab';
 import { OnePagePrintSummary } from '../report/OnePagePrintSummary';
 import { ComprehensivePrintDossier } from '../report/ComprehensivePrintDossier';
-import { ParakhRadarChart } from '../report/ParakhRadarChart';
 import { ScoreRing } from '../ui/ScoreRing';
 import { BrainLoading } from '../animations/BrainLoading';
 
-import {
-  ShareBarList,
-  ShareBarListItem,
-  ShareBarListContent,
-  ShareBarListLabel,
-  ShareBarListValue,
-  ShareBarListFill,
-} from '../efferd/share-bar-list';
+type TabType = 'overview' | 'strengths' | 'plan' | 'progress';
 
-type TabType = 'hub' | 'onepage' | 'student' | 'parent' | 'audit' | 'trajectory';
 
-function ordinal(n: number): string {
-  if (!n) return '0th';
-  const suffixes = ['th', 'st', 'nd', 'rd'];
-  const v = n % 100;
-  return n + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
-}
 
 function formatDuration(ms?: number): string {
   if (!ms || ms <= 0) return '-';
@@ -67,14 +55,49 @@ export function ReportDetail() {
   const assessmentId = isValidUuid ? rawId : undefined;
   const shouldOpenTutor = params.get('tutor') === 'true';
 
-  const [activeTab, setActiveTab] = useState<TabType>('hub');
+  const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isTutorOpen, setIsTutorOpen] = useState(Boolean(shouldOpenTutor && assessmentId));
   const [selectedTutorScenarioIndex, setSelectedTutorScenarioIndex] = useState<number>(0);
   const [studentName, setStudentName] = useState<string>('Candidate');
+  const [parentName, setParentName] = useState<string>('Parent/Guardian');
   const [printMode, setPrintMode] = useState<'one-page' | 'comprehensive'>('one-page');
   const [showOverflow, setShowOverflow] = useState(false);
 
   const stream = useReportStream(assessmentId || null);
+
+  const safeClassLevel = assessmentData?.class_level || 8;
+  const safeDifficulty = normalizeDifficulty(assessmentData?.difficulty);
+  const safeResponses = assessmentData?.responses || [];
+
+  const allItems = useMemo(() => {
+    try {
+      const items: AssessmentItem[] = [
+        ...getCalibrationItems(safeClassLevel, safeDifficulty),
+        ...MISSION_IDS.flatMap((m) => getMissionItems(m, safeClassLevel, safeDifficulty)),
+        ...getEnglishCalibrationItems(safeClassLevel, safeDifficulty),
+        ...ENGLISH_MISSION_IDS.flatMap((m) => getEnglishMissionItems(m, safeClassLevel, safeDifficulty)),
+      ];
+      return items;
+    } catch (e) {
+      return [];
+    }
+  }, [safeClassLevel, safeDifficulty]);
+
+  const difficultyData = useMemo(() => {
+    if (!safeResponses) return [];
+    return safeResponses.map((r: any) => {
+      const itemId = r.scenario_code || r.item_id || r.scenario_id;
+      const item = allItems.find((i) => i.id === itemId);
+      const b = item?.itemDifficulty ?? 0;
+      return {
+        id: itemId,
+        difficulty: b,
+        correct: r.correct ? 1 : 0,
+        status: r.correct ? 'Correct' : 'Incorrect',
+        label: item?.missionTitle || 'Item',
+      };
+    });
+  }, [safeResponses, allItems]);
 
   useEffect(() => {
     if (rawId === 'new') {
@@ -113,10 +136,11 @@ export function ReportDetail() {
             if (assessment?.student_id) {
               const { data: stu } = await supabase
                 .from('students')
-                .select('full_name')
+                .select('full_name, parent_name')
                 .eq('id', assessment.student_id)
                 .maybeSingle();
               if (stu?.full_name) setStudentName(stu.full_name);
+              if (stu?.parent_name) setParentName(stu.parent_name);
             }
           }
           setLoading(false);
@@ -143,15 +167,22 @@ export function ReportDetail() {
             if (scenarioIds.length > 0) {
               const { data: scenariosList } = await supabase
                 .from('scenarios')
-                .select('id, prompt, competency, international_benchmark')
+                .select('id, prompt, competency, international_benchmark, scenario_code, options')
                 .in('id', scenarioIds);
 
               if (scenariosList && scenariosList.length > 0) {
                 const scenarioMap = new Map(scenariosList.map((s: any) => [s.id, s]));
                 assessment.responses = responses.map((r: any) => {
                   const match = scenarioMap.get(r.scenario_id);
+                  let correctOpt = undefined;
+                  if (match?.options && Array.isArray(match.options)) {
+                    const found = match.options.find((opt: any) => opt.isCorrect);
+                    if (found) correctOpt = found.text;
+                  }
                   return {
                     ...r,
+                    scenario_code: match?.scenario_code,
+                    correctOption: correctOpt,
                     prompt: match?.prompt || r.option?.text || ((assessment as any).subject?.toLowerCase().includes('english') ? 'English Literacy Benchmark Scenario' : 'STEM Benchmark Scenario'),
                     competency: match?.competency || 'General Competency',
                     benchmarkStandard: match?.international_benchmark || 'International Benchmark',
@@ -163,15 +194,17 @@ export function ReportDetail() {
           }
           setAssessmentData(assessment as any);
 
-          // Fetch student name
+          // Fetch student name and parent name
           const { data: studentRecord } = await supabase
             .from('students')
-            .select('full_name, current_class')
+            .select('full_name, parent_name, current_class')
             .eq('id', assessment.student_id)
             .maybeSingle();
 
           const name = studentRecord?.full_name || student?.fullName || 'Candidate';
+          const pName = studentRecord?.parent_name || 'Parent/Guardian';
           setStudentName(name);
+          setParentName(pName);
 
           // Check if report already exists in reports table
           const { data: report } = await supabase
@@ -282,37 +315,25 @@ export function ReportDetail() {
     assessmentData.subject || 'STEM'
   );
 
-  const snapshot = {
+  const snapshot: any = {
     classLevel: assessmentData.class_level || 8,
     completedAt: assessmentData.completed_at || assessmentData.created_at,
     overallScore: assessmentData.global_score ?? (benchmark.hasSufficientData ? benchmark.aggregateScaledScore : 0),
     regionalPercentiles: benchmark.regionalPercentiles,
     scaledScores: assessmentData.scaled_scores || {},
     totalTimeMs: assessmentData.total_time_ms,
+    competencies: assessmentData.competencies || assessmentData.result?.competencies || {},
   };
 
   const studentVariant = reportData?.student_variant;
   const parentVariant = reportData?.parent_variant;
 
-  // Derived high-signal metrics for Executive Summary Hub
-  const archetypeTitle = studentVariant?.archetypeTitle || benchmark.cognitiveArchetype?.title || 'Analytical Strategist';
-  const archetypeTagline = studentVariant?.archetypeTagline || benchmark.cognitiveArchetype?.tagline || 'Deconstructs multi-variable systems with structural precision';
-  const keyStrengths: string[] = studentVariant?.keyStrengths || [
-    benchmark.cognitiveArchetype?.primaryStrength || 'Parameter isolation & causal inference',
-  ];
-  const blindspots: string[] = studentVariant?.blindspots || [
-    benchmark.cognitiveArchetype?.criticalBlindspot || 'Premature optimization under time pressure',
-  ];
-  const realityCheck = benchmark.realityCheck || {};
-  const verdict = realityCheck.verdict || 'Developing Foundation';
-  const honestSummary = parentVariant?.realityCheckSummary || realityCheck.honestSummary || 'Demonstrates analytical decomposition; growth needed in multi-step deductive chaining.';
-  const boardGradeBand = benchmark.boardGradeBand;
   const parakh = benchmark.parakhHolisticPillars;
-  const homeRoutines = parentVariant?.indianHomeRoutines || parentVariant?.immediateHomeRoutines || benchmark.parentActionBlueprint?.indianHomeRoutines || [];
-  const indiaPercentile = benchmark.indiaNationalPercentile ?? benchmark.regionalPercentiles?.India ?? 0;
+
   const isEnglish = (assessmentData.subject || benchmark.subject || '').toLowerCase().includes('english');
   const subjectDisplay = isEnglish ? 'English Literacy' : (assessmentData.subject || benchmark.subject || 'STEM');
   const responses = assessmentData.responses || [];
+
   const correctCount = responses.filter((r: any) => r.correct === true).length;
   const totalCount = responses.length || 6;
   const accuracyPercent = totalCount > 0 ? Math.round((correctCount / totalCount) * 100) : 0;
@@ -330,32 +351,51 @@ export function ReportDetail() {
     ? 'Developing'
     : 'Foundational Need';
 
+  const getBand = (val: number | undefined, fallback: string) => {
+    if (val === undefined) return fallback;
+    if (val >= 75) return 'Advanced';
+    if (val >= 55) return 'Proficient';
+    if (val >= 35) return 'Developing';
+    return 'Foundational Need';
+  };
+
+  const getCompRaw = (key: string) => snapshot?.competencies?.[key]?.rawPercent;
+
+  const undRaw = getCompRaw('understanding') ?? parakh?.conceptualKnowledge?.score ?? 0;
+  const evalRaw = getCompRaw('evaluatingReflecting') ?? parakh?.applicationAndProblemSolving?.score ?? 0;
+  const ctRaw = getCompRaw('criticalThinking') ?? parakh?.higherOrderThinkingSkills?.score ?? 0;
+
+  const getCompSem = (key: string) => snapshot?.competencies?.[key]?.sem;
+
   const parakhVitals = [
     {
       domain: 'Core Domain',
       label: 'Conceptual Knowledge',
-      value: parakh?.conceptualKnowledge?.score ?? 0,
+      value: Math.round(undRaw),
       suffix: '%',
-      band: parakh?.conceptualKnowledge?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.conceptualKnowledge?.score ?? 50) - 50,
+      band: getBand(undRaw, parakh?.conceptualKnowledge?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(undRaw) - 50,
+      sem: getCompSem('understanding'),
       observation: parakh?.conceptualKnowledge?.description || 'Evaluated via adaptive CAT item discrimination on first-principles reasoning.',
     },
     {
       domain: 'Cognitive Domain',
       label: 'Higher Order Thinking (HOTS)',
-      value: parakh?.higherOrderThinkingSkills?.score ?? 0,
+      value: Math.round(ctRaw),
       suffix: '%',
-      band: parakh?.higherOrderThinkingSkills?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.higherOrderThinkingSkills?.score ?? 50) - 50,
-      observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts and multi-step deduction analysis.',
+      band: getBand(ctRaw, parakh?.higherOrderThinkingSkills?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(ctRaw) - 50,
+      sem: getCompSem('criticalThinking'),
+      observation: parakh?.higherOrderThinkingSkills?.description || 'Non-linear parameter shifts, multi-step deduction, and critical reasoning.',
     },
     {
       domain: 'Methodological',
       label: 'Application & Problem Solving',
-      value: parakh?.applicationAndProblemSolving?.score ?? 0,
+      value: Math.round(evalRaw),
       suffix: '%',
-      band: parakh?.applicationAndProblemSolving?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed'),
-      delta: (parakh?.applicationAndProblemSolving?.score ?? 50) - 50,
+      band: getBand(evalRaw, parakh?.applicationAndProblemSolving?.level || (benchmark.hasSufficientData ? 'Developing' : 'Not Assessed')),
+      delta: Math.round(evalRaw) - 50,
+      sem: getCompSem('evaluatingReflecting'),
       observation: parakh?.applicationAndProblemSolving?.description || (isEnglish ? 'Applies linguistic analysis to novel textual contexts.' : 'Applies foundational theorems to novel STEM challenge contexts.'),
     },
     {
@@ -365,6 +405,7 @@ export function ReportDetail() {
       suffix: '%',
       band: metacognitiveBand,
       delta: metacognitiveScore - 50,
+      sem: undefined,
       observation: 'Pacing control and recognition of distractor choices engineered around formula traps.',
     },
   ];
@@ -415,6 +456,8 @@ export function ReportDetail() {
                 <p className="text-xs font-mono text-foreground-secondary leading-relaxed">
                   <span className="text-foreground font-semibold">{studentName}</span>
                   {' · '}
+                  <span className="text-foreground font-semibold">{parentName || 'Parent'}</span>
+                  {' · '}
                   <span>Class {snapshot.classLevel}</span>
                   {' · '}
                   <span>{assessmentData.responses?.length || 30} Scenarios</span>
@@ -436,18 +479,25 @@ export function ReportDetail() {
                   <span>{dateFmt.format(new Date(snapshot.completedAt))}</span>
                 </p>
               </div>
-
               {/* Score Ring Hero */}
               <div
                 className="shrink-0 print-keep"
                 style={{ animation: 'fadeIn 500ms 50ms cubic-bezier(.2,.7,.2,1) both' }}
               >
-                <ScoreRing
-                  score={snapshot.overallScore}
-                  maxScore={900}
-                  percentile={benchmark.globalPercentile}
-                  boardGradeBand={benchmark.boardGradeBand}
-                />
+                {(() => {
+                  const compVals = Object.values(snapshot.competencies) as any[];
+                  const assessed = compVals.filter(c => c.sem && c.sem > 0);
+                  const overallSem = assessed.length > 0 ? Math.round(assessed.reduce((sum, c) => sum + c.sem, 0) / assessed.length) : undefined;
+                  return (
+                    <ScoreRing
+                      score={snapshot.overallScore}
+                      maxScore={900}
+                      percentile={benchmark.globalPercentile}
+                      boardGradeBand={benchmark.boardGradeBand}
+                      sem={overallSem}
+                    />
+                  );
+                })()}
               </div>
             </div>
           </div>
@@ -459,14 +509,12 @@ export function ReportDetail() {
             {/* Segmented Control Tab Row */}
             <div className="flex items-center overflow-x-auto hide-scrollbar w-full py-1 pr-4">
               <div className="flex items-center border border-border bg-surface p-0.5 shrink-0">
-                {(['hub', 'onepage', 'student', 'parent', 'audit', 'trajectory'] as TabType[]).map((id) => {
+                {(['overview', 'strengths', 'plan', 'progress'] as TabType[]).map((id) => {
                   const labels: Record<TabType, string> = {
-                    hub: 'Executive Hub',
-                    onepage: '1-Page Brief',
-                    student: 'Student Sprint',
-                    parent: 'Parent Blueprint',
-                    audit: 'Scenario Audit',
-                    trajectory: 'Longitudinal Arc',
+                    overview: 'Overview',
+                    strengths: 'Strengths & Gaps',
+                    plan: 'Plan',
+                    progress: 'Progress',
                   };
                   return (
                     <button
@@ -485,18 +533,28 @@ export function ReportDetail() {
               </div>
             </div>
 
-            {/* Share Report — always mounted so modal portal survives dropdown close */}
-            <ShareButton
-              reportId={reportData?.id}
-              assessmentId={assessmentData.id}
-              studentId={assessmentData.student_id}
-              initialShareToken={reportData?.share_token}
-              studentName={studentName}
-              className="shrink-0"
-            />
+            <div className="flex items-center gap-3 shrink-0 ml-4">
+              <button
+                onClick={() => setIsTutorOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground text-[13px] font-bold tracking-wide hover:bg-primary/90 transition-colors no-print print:hidden rounded-none"
+                aria-label="Open AI Tutor"
+              >
+                <Sparkles className="size-4" />
+                Ask AI
+              </button>
+              
+              {/* Share Report — always mounted so modal portal survives dropdown close */}
+              <ShareButton
+                reportId={reportData?.id}
+                assessmentId={assessmentData.id}
+                studentId={assessmentData.student_id}
+                initialShareToken={reportData?.share_token}
+                studentName={studentName}
+                className="shrink-0 rounded-none"
+              />
 
-            {/* Overflow actions menu */}
-            <div className="relative shrink-0">
+              {/* Overflow actions menu */}
+              <div className="relative shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
@@ -509,18 +567,18 @@ export function ReportDetail() {
               {showOverflow && (
                 <>
                   <div className="fixed inset-0 z-30" onClick={() => setShowOverflow(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-40 min-w-50 border border-border bg-surface shadow-lg py-1">
-                    <div className="px-3 py-1 text-[10px] font-mono uppercase text-foreground-muted border-b border-border">
+                  <div className="absolute right-0 top-full mt-1 z-40 w-72 border border-border bg-surface shadow-xl py-1">
+                    <div className="px-4 py-2 text-[10px] font-mono uppercase text-foreground-muted border-b border-border-hairline">
                       Print &amp; Export Options
                     </div>
-                    <div className="px-3 py-1.5 flex items-center justify-between gap-2">
-                      <span className="text-xs text-foreground-secondary">Format:</span>
+                    <div className="px-4 py-2.5 flex items-center justify-between gap-2 border-b border-border-hairline/50">
+                      <span className="text-[13px] text-foreground-secondary">Format:</span>
                       <div className="flex items-center bg-elevated border border-border p-0.5 text-xs">
                         <button
                           onClick={() => setPrintMode('one-page')}
-                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                          className={`px-3 py-1 text-[11px] font-medium transition-colors ${
                             printMode === 'one-page'
-                              ? 'bg-primary text-primary-foreground font-semibold'
+                              ? 'bg-foreground text-background font-semibold shadow-sm'
                               : 'text-foreground-secondary hover:text-foreground'
                           }`}
                         >
@@ -528,9 +586,9 @@ export function ReportDetail() {
                         </button>
                         <button
                           onClick={() => setPrintMode('comprehensive')}
-                          className={`px-2 py-0.5 text-[11px] font-medium transition-colors ${
+                          className={`px-3 py-1 text-[11px] font-medium transition-colors ${
                             printMode === 'comprehensive'
-                              ? 'bg-primary text-primary-foreground font-semibold'
+                              ? 'bg-foreground text-background font-semibold shadow-sm'
                               : 'text-foreground-secondary hover:text-foreground'
                           }`}
                         >
@@ -538,7 +596,7 @@ export function ReportDetail() {
                         </button>
                       </div>
                     </div>
-                    <div className="px-3 py-1.5">
+                    <div className="flex flex-col">
                       <PDFExportButton
                         studentName={studentName}
                         classLevel={snapshot.classLevel}
@@ -551,28 +609,30 @@ export function ReportDetail() {
                         parentVariant={parentVariant}
                         responses={responses}
                         printMode={printMode}
-                        className="w-full justify-start"
+                        variant="ghost"
+                        className="w-full justify-start rounded-none px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors font-normal h-auto"
                         onClose={() => setShowOverflow(false)}
                       />
+                      <button
+                        onClick={() => { setShowOverflow(false); window.print(); }}
+                        className="w-full flex items-center justify-start gap-2.5 px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                      >
+                        <Printer className="size-4 shrink-0" />
+                        <span className="truncate">Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}</span>
+                      </button>
                     </div>
-                    <button
-                      onClick={() => { setShowOverflow(false); window.print(); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
-                    >
-                      <Printer className="size-4" />
-                      Print {printMode === 'one-page' ? '(1-Page Summary)' : '(4-Page Dossier)'}
-                    </button>
-                    <div className="border-t border-border my-1" />
+                    <div className="border-t border-border-hairline my-1" />
                     <button
                       onClick={() => { setShowOverflow(false); window.location.href = '/'; }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
+                      className="w-full flex items-center justify-start gap-2.5 px-4 py-2.5 text-[13px] text-foreground-secondary hover:text-foreground hover:bg-elevated transition-colors"
                     >
-                      <RefreshCw className="size-4" />
+                      <RefreshCw className="size-4 shrink-0" />
                       New assessment
                     </button>
                   </div>
                 </>
               )}
+            </div>
             </div>
           </div>
         </div>
@@ -586,337 +646,52 @@ export function ReportDetail() {
             </div>
           )}
 
-          {/* ══════════════════ EXECUTIVE SUMMARY HUB ══════════════════ */}
-          {!aiGenerating && activeTab === 'hub' && (
-            <div className="space-y-24 animate-in fade-in duration-200">
-              {/* Section A — At a Glance */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                {/* BLOCK 1: Student Cognitive Profile */}
-                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
-                  <div className="space-y-4">
-                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
-                      Student Profile
-                    </span>
-
-                    <div>
-                      <h3 className="text-lg font-bold font-display text-foreground leading-snug">
-                        {archetypeTitle}
-                      </h3>
-                      <p className="text-xs text-foreground-secondary italic mt-1 line-clamp-2">
-                        "{archetypeTagline}"
-                      </p>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs pt-3 border-t border-border">
-                      <div>
-                        <span className="font-semibold text-foreground">Core Strength: </span>
-                        <span className="text-foreground-secondary">{keyStrengths[0]}</span>
-                      </div>
-                      <div>
-                        <span className="font-semibold text-foreground">Priority Growth: </span>
-                        <span className="text-foreground-secondary">{blindspots[0]}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* BLOCK 2: Parent Verdict */}
-                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
-                  <div className="space-y-4">
-                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
-                      Parent Blueprint
-                    </span>
-
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-lg font-bold font-display text-foreground leading-snug">
-                          {boardGradeBand ? `Grade ${boardGradeBand.grade}` : verdict}
-                        </h3>
-                        {boardGradeBand && (
-                          <span className="text-xs font-mono px-1.5 py-0.5 bg-accent text-foreground-secondary">
-                            {boardGradeBand.band}
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-xs text-foreground-secondary mt-1">
-                        NEP 2020 & Board Diagnostic Verdict
-                      </p>
-                    </div>
-
-                    <div className="space-y-1.5 text-xs pt-3 border-t border-border">
-                      <div>
-                        <span className="font-semibold text-foreground">Reality Check: </span>
-                        <span className="text-foreground-secondary line-clamp-2">{honestSummary}</span>
-                      </div>
-                      {homeRoutines[0] && (
-                        <div>
-                          <span className="font-semibold text-foreground">Immediate Action: </span>
-                          <span className="text-foreground-secondary line-clamp-1">
-                            {typeof homeRoutines[0] === 'string' ? homeRoutines[0] : homeRoutines[0].routine || homeRoutines[0].title}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* BLOCK 3: Score & Ranking */}
-                <div className="p-6 md:p-8 border-l border-border hover:border-foreground-muted transition-colors flex flex-col h-full justify-between group">
-                  <div className="space-y-4">
-                    <span className="text-xs font-medium text-foreground-secondary tracking-wide">
-                      Psychometric Audit
-                    </span>
-
-                    <div>
-                      <div className="flex flex-col gap-1">
-                        <span className="text-2xl font-bold font-display text-foreground">
-                          India {ordinal(indiaPercentile)} %ile
-                        </span>
-                        <span className="text-xs font-mono text-primary">
-                          Global {ordinal(benchmark.globalPercentile || 50)} %ile
-                        </span>
-                      </div>
-                      <p className="text-xs text-foreground-secondary mt-2">
-                        {correctCount} of {totalCount} scenarios answered correctly ({Math.round((correctCount / totalCount) * 100)}%)
-                      </p>
-                    </div>
-
-                    {/* Cohort Score Distribution */}
-                    <div className="space-y-1.5 pt-3 border-t border-border">
-                      <div className="flex items-center justify-between text-xs font-mono text-foreground-muted">
-                        <span>Cohort Benchmarks</span>
-                        <span>Score / 900</span>
-                      </div>
-                      <ShareBarList className="gap-1">
-                        <ShareBarListItem value={Math.round((snapshot.overallScore / 900) * 100)}>
-                          <ShareBarListFill isHighlight />
-                          <ShareBarListContent>
-                            <ShareBarListLabel className="font-semibold text-primary">
-                              Candidate Scaled Score
-                            </ShareBarListLabel>
-                            <ShareBarListValue className="text-primary">
-                              {snapshot.overallScore}
-                            </ShareBarListValue>
-                          </ShareBarListContent>
-                        </ShareBarListItem>
-                        <ShareBarListItem value={Math.round((510 / 900) * 100)}>
-                          <ShareBarListFill />
-                          <ShareBarListContent>
-                            <ShareBarListLabel>
-                              India 50th %ile
-                            </ShareBarListLabel>
-                            <ShareBarListValue>510</ShareBarListValue>
-                          </ShareBarListContent>
-                        </ShareBarListItem>
-                        <ShareBarListItem value={Math.round((485 / 900) * 100)}>
-                          <ShareBarListFill />
-                          <ShareBarListContent>
-                            <ShareBarListLabel>
-                              Class {snapshot.classLevel} Cohort Mean
-                            </ShareBarListLabel>
-                            <ShareBarListValue>485</ShareBarListValue>
-                          </ShareBarListContent>
-                        </ShareBarListItem>
-                        <ShareBarListItem value={Math.round((690 / 900) * 100)}>
-                          <ShareBarListFill />
-                          <ShareBarListContent>
-                            <ShareBarListLabel>
-                              Singapore SASMO 75th %ile
-                            </ShareBarListLabel>
-                            <ShareBarListValue>690</ShareBarListValue>
-                          </ShareBarListContent>
-                        </ShareBarListItem>
-                      </ShareBarList>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Section B — Deep Diagnostic (Gallery Layout) */}
-              <div className="border border-border bg-card overflow-hidden">
-                <div className="p-8 md:p-12 border-b border-border text-center bg-surface">
-                  <h3 className="text-2xl font-display font-bold text-foreground">
-                    PARAKH 360° Holistic Assessment
-                  </h3>
-                  <p className="text-sm text-foreground-secondary mt-2">
-                    Contrasting core competencies against the Class {snapshot.classLevel} global baseline.
-                  </p>
-                </div>
-                
-                <div className="w-full flex items-center justify-center p-8 lg:p-16 relative">
-                  {/* Subtle dot matrix behind the radar chart */}
-                  <div className="absolute inset-0 z-0 pointer-events-none bg-surface" />
-                  <div className="w-full max-w-xl h-full relative z-10 aspect-square md:aspect-auto">
-                    <ParakhRadarChart pillars={parakhVitals} baseline={50} />
-                  </div>
-                </div>
-
-                {/* Inline domain vitals */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 p-8 md:p-12 border-t border-border bg-surface">
-                  {parakhVitals.map((v) => (
-                    <div key={v.label} className="space-y-1">
-                      <p className="text-xs text-foreground-muted">{v.domain}</p>
-                      <p className="text-sm font-semibold text-foreground">{v.label}</p>
-                      <div className="flex items-baseline gap-1.5">
-                        <span className="text-lg font-bold font-display text-foreground">
-                          {v.band === 'Not Assessed' ? '---' : `${v.value}${v.suffix}`}
-                        </span>
-                        <span className={`text-xs font-mono ${v.band === 'Not Assessed' ? 'text-foreground-muted' : v.delta >= 0 ? 'text-success' : 'text-foreground-secondary'}`}>
-                          {v.band !== 'Not Assessed' ? `${v.delta >= 0 ? '+' : ''}${v.delta.toFixed(1)} pts` : ''}
-                        </span>
-                      </div>
-                      <p className="text-xs text-foreground-secondary">{v.band}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ══════════════════ 1-PAGE & COMPREHENSIVE PRINT SCREEN PREVIEW ══════════════════ */}
-          {!aiGenerating && activeTab === 'onepage' && (
-            <div className="space-y-4 animate-in fade-in duration-200">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 bg-surface border border-border text-xs">
-                <div className="flex items-center gap-2">
-                  <FileText className="size-4 text-primary" />
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-semibold text-foreground">
-                        {printMode === 'one-page' ? '1-Page Executive Brief' : '4-Page Comprehensive Dossier'}
-                      </span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-primary/10 text-primary border border-primary/20 font-bold">
-                        Print-Ready A4
-                      </span>
-                    </div>
-                    <span className="hidden md:inline text-[10px] text-foreground-muted">
-                      {printMode === 'one-page'
-                        ? 'Guaranteed single-sheet executive summary for parents and PTM discussions'
-                        : 'Full 4-page diagnostic: Executive Calibration, Student Sprint, Parent Blueprint & Scenario Audit'}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 self-end sm:self-auto">
-                  {/* Mode Selector */}
-                  <div className="flex items-center bg-elevated border border-border p-0.5">
-                    <button
-                      onClick={() => setPrintMode('one-page')}
-                      className={`px-2.5 py-1 text-xs transition-colors ${
-                        printMode === 'one-page'
-                          ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                          : 'text-foreground-secondary hover:text-foreground'
-                      }`}
-                    >
-                      1-Page Brief
-                    </button>
-                    <button
-                      onClick={() => setPrintMode('comprehensive')}
-                      className={`px-2.5 py-1 text-xs transition-colors ${
-                        printMode === 'comprehensive'
-                          ? 'bg-primary text-primary-foreground font-semibold shadow-xs'
-                          : 'text-foreground-secondary hover:text-foreground'
-                      }`}
-                    >
-                      4-Page Dossier
-                    </button>
-                  </div>
-
-                  <PDFExportButton
-                    studentName={studentName}
-                    classLevel={snapshot.classLevel}
-                    completedAt={snapshot.completedAt}
-                    totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore}
-                    abilityTheta={benchmark.abilityTheta}
-                    benchmark={benchmark}
-                    studentVariant={studentVariant}
-                    parentVariant={parentVariant}
-                    responses={responses}
-                    printMode={printMode}
-                    className="whitespace-nowrap"
-                  />
-
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => window.print()}
-                    className="gap-1.5 text-xs font-semibold whitespace-nowrap"
-                  >
-                    <Printer className="size-3.5" />
-                    Print {printMode === 'one-page' ? '(1 Page)' : '(4 Pages)'}
-                  </Button>
-                </div>
-              </div>
-
-              <div className="shadow-sm overflow-x-auto flex justify-center">
-                {printMode === 'one-page' ? (
-                  <OnePagePrintSummary
-                    studentName={studentName}
-                    classLevel={snapshot.classLevel}
-                    completedAt={snapshot.completedAt}
-                    totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore}
-                    abilityTheta={benchmark.abilityTheta}
-                    benchmark={benchmark}
-                    studentVariant={studentVariant}
-                    parentVariant={parentVariant}
-                    responses={assessmentData.responses || []}
-                  />
-                ) : (
-                  <ComprehensivePrintDossier
-                    studentName={studentName}
-                    classLevel={snapshot.classLevel}
-                    completedAt={snapshot.completedAt}
-                    totalTimeMs={snapshot.totalTimeMs}
-                    overallScore={snapshot.overallScore}
-                    abilityTheta={benchmark.abilityTheta}
-                    benchmark={benchmark}
-                    studentVariant={studentVariant}
-                    parentVariant={parentVariant}
-                    responses={assessmentData.responses || []}
-                  />
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* ══════════════════ INDIVIDUAL FOCUSED TABS ══════════════════ */}
-          {!aiGenerating && activeTab === 'student' && (
-            <StudentVariant
+          {/* ══════════════════ NEW DESIGN TABS ══════════════════ */}
+          {!aiGenerating && activeTab === 'overview' && (
+            <OverviewTab
+              studentName={studentName}
+              parentName={parentName}
+              snapshot={snapshot}
+              benchmark={benchmark}
               studentVariant={studentVariant}
-              benchmark={benchmark}
-              classLevel={snapshot.classLevel}
-            />
-          )}
-
-          {!aiGenerating && activeTab === 'parent' && (
-            <ParentVariant
               parentVariant={parentVariant}
-              benchmark={benchmark}
-              classLevel={snapshot.classLevel}
+              assessmentData={assessmentData}
+              parakhVitals={parakhVitals}
+              difficultyData={difficultyData}
+              onViewPlan={() => setActiveTab('plan')}
             />
           )}
 
-          {!aiGenerating && activeTab === 'audit' && (
-            <ScenarioAudit
+          {!aiGenerating && activeTab === 'strengths' && (
+            <StrengthsGapsTab
+              parakhVitals={parakhVitals}
+              benchmark={benchmark}
+              studentVariant={studentVariant}
               responses={assessmentData.responses || []}
-              overallScore={snapshot.overallScore}
-              classLevel={snapshot.classLevel}
-              nationalPercentile={benchmark.indiaNationalPercentile || benchmark.regionalPercentiles?.India || 68}
-              boardGrade={benchmark.boardGradeBand?.grade || 'A2'}
-              onAskTutor={(scenarioIdx) => {
-                setSelectedTutorScenarioIndex(scenarioIdx);
+              onAskTutor={(idx) => {
+                setSelectedTutorScenarioIndex(idx);
                 setIsTutorOpen(true);
               }}
             />
           )}
 
-          {!aiGenerating && activeTab === 'trajectory' && (
-            <TrajectoryArc
+          {!aiGenerating && activeTab === 'plan' && (
+            <PlanTab
+              benchmark={benchmark}
+              studentVariant={studentVariant}
+              parentVariant={parentVariant}
+              reportId={reportData?.id}
+              isOwner={!shareToken}
+            />
+          )}
+
+          {!aiGenerating && activeTab === 'progress' && (
+            <ProgressTab
               studentId={assessmentData.student_id}
               currentAssessmentId={assessmentData.id}
               currentScore={snapshot.overallScore}
               classLevel={snapshot.classLevel}
+              benchmark={benchmark}
             />
           )}
         </main>
@@ -933,6 +708,7 @@ export function ReportDetail() {
           {printMode === 'one-page' ? (
             <OnePagePrintSummary
               studentName={studentName}
+              parentName={parentName}
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}
@@ -946,6 +722,7 @@ export function ReportDetail() {
           ) : (
             <ComprehensivePrintDossier
               studentName={studentName}
+              parentName={parentName}
               classLevel={snapshot.classLevel}
               completedAt={snapshot.completedAt}
               totalTimeMs={snapshot.totalTimeMs}
@@ -966,17 +743,6 @@ export function ReportDetail() {
           </p>
         </div>
 
-        {/* ── Floating AI Tutor Button ── */}
-        {!isTutorOpen && (
-          <button
-            onClick={() => setIsTutorOpen(true)}
-            className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5 no-print print:hidden"
-            aria-label="Open AI Tutor"
-          >
-            <Sparkles className="size-4" />
-            Ask AI
-          </button>
-        )}
 
         {/* ── Interactive WARP AI Socratic Tutor ── */}
         <NemotronSocraticTutor
@@ -984,7 +750,7 @@ export function ReportDetail() {
           onClose={() => setIsTutorOpen(false)}
           classLevel={snapshot.classLevel}
           initialScenarioIndex={selectedTutorScenarioIndex}
-          initialMode={activeTab === 'parent' ? 'parent' : 'student'}
+          initialMode={activeTab === 'plan' ? 'parent' : 'student'}
           recentScenarios={assessmentData?.responses || []}
           subject={subjectDisplay}
         />

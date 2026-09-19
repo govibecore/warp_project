@@ -39,11 +39,17 @@ export interface OptionSpec {
   readonly misconception?: string;
 }
 
+export interface DifficultyParams {
+  readonly b?: number;
+  readonly evidenceFor?: string;
+}
+
 export interface ItemVariant {
   readonly prompt: string;
   readonly context: string;
   readonly hint: string;
   readonly options: readonly [OptionSpec, OptionSpec, OptionSpec, OptionSpec];
+  readonly difficultyParams?: DifficultyParams;
 }
 
 export interface ItemBlueprint {
@@ -72,8 +78,9 @@ export function variant(
   context: string,
   hint: string,
   options: readonly [OptionSpec, OptionSpec, OptionSpec, OptionSpec],
+  difficultyParams?: DifficultyParams,
 ): ItemVariant {
-  return { prompt, context, hint, options };
+  return { prompt, context, hint, options, difficultyParams };
 }
 
 export function blueprint(
@@ -152,8 +159,16 @@ export function materialize(
 ): readonly AssessmentItem[] {
   return blueprints.map((source) => {
     const v = source.bands[developmentalBand];
+    let b = v.difficultyParams?.b;
+    if (b === undefined) {
+      // Default mappings if undefined
+      if (difficulty === 'Advanced') b = 0.5;
+      else if (difficulty === 'Olympiad') b = 1.5;
+      else b = -0.5; // Standard
+    }
+
     return {
-      id: source.id,
+      id: `${source.id}-${developmentalBand}`,
       missionId: source.missionId,
       missionTitle: source.missionTitle,
       developmentalBand,
@@ -165,6 +180,8 @@ export function materialize(
       scenarioState: source.state,
       mutableStateKeys: Object.keys(source.state),
       mutation: undefined,
+      itemDifficulty: b,
+      linkedEvidenceItemId: v.difficultyParams?.evidenceFor || undefined,
     };
   });
 }

@@ -1,24 +1,49 @@
 import { getNorm, NORM_VERSION } from '../data/norms';
-import { COMPETENCIES, type Competency, type CompetencyProjection, type ItemResponse, type Norm, type ResultSnapshot } from './types';
+import { COMPETENCIES, type Competency, type CompetencyProjection, type ItemResponse, type Norm, type ResultSnapshot, type AssessmentItem } from './types';
 
 export interface Projection {
   zScore: number;
   score: number;
+  sem: number;
 }
 
-export function projectScore(rawPercent: number, norm: Norm): Projection {
+export function projectScore(rawPercent: number, norm: Norm, count: number): Projection {
   const zScore = (rawPercent - norm.mean) / norm.standardDeviation;
-  return { zScore, score: clamp(Math.round(500 + 133.33 * zScore), 100, 900) };
+  const sem = Math.round(133.33 / Math.sqrt(Math.max(1, count)));
+  return { zScore, score: clamp(Math.round(500 + 133.33 * zScore), 100, 900), sem };
 }
 
-export function calculateResult(responses: readonly ItemResponse[], classLevel: number, completedAt: string): ResultSnapshot {
-  const totals = Object.fromEntries(COMPETENCIES.map((competency) => [competency, { earned: 0, available: 0 }])) as Record<Competency, { earned: number; available: number }>;
+export function calculateResult(items: readonly AssessmentItem[], responses: readonly ItemResponse[], classLevel: number, completedAt: string): ResultSnapshot {
+  const totals = Object.fromEntries(COMPETENCIES.map((competency) => [competency, { earned: 0, available: 0, count: 0 }])) as Record<Competency, { earned: number; available: number; count: number }>;
 
   for (const response of responses) {
+    const item = items.find(i => i.id === response.itemId);
+    if (!item) continue;
+    
+    // Difficulty Scaling is used only in IRT ability estimation later if needed, but not as a raw score multiplier here.
+    
+    // Linked Evidence Penalty
+    let dependencyPenalty = 1.0;
+    if (item.linkedEvidenceItemId) {
+      const evidenceResponse = responses.find(r => r.itemId === item.linkedEvidenceItemId);
+      if (!evidenceResponse) {
+        dependencyPenalty = 0.5; // Did not answer evidence correctly
+      } else {
+        // If evidence response was not correct, apply penalty.
+        const evidenceCorrect = evidenceResponse.correct === true;
+        if (!evidenceCorrect) {
+          dependencyPenalty = 0.5;
+        }
+      }
+    }
+
     for (const contribution of response.evidence) {
       if (totals[contribution.competency]) {
-        totals[contribution.competency].earned += contribution.earnedWeight;
+        // Apply multipliers
+        const finalEarned = contribution.earnedWeight * dependencyPenalty;
+        totals[contribution.competency].earned += finalEarned;
         totals[contribution.competency].available += contribution.availableWeight;
+        totals[contribution.competency].count += 1;
       }
     }
   }
@@ -30,18 +55,18 @@ export function calculateResult(responses: readonly ItemResponse[], classLevel: 
   const competencies = {} as Record<Competency, CompetencyProjection>;
   for (const competency of targetCompetencies) {
     const total = totals[competency];
-    const rawPercent = total.available > 0 ? (100 * total.earned) / total.available : 0;
+    const rawPercent = total.available > 0 ? clamp((100 * total.earned) / total.available, 0, 100) : 0;
     const norm = getNorm(classLevel, competency);
     competencies[competency] = total.available > 0
-      ? { rawPercent, norm, ...projectScore(rawPercent, norm) }
-      : { rawPercent: 0, norm, zScore: 0, score: 0 };
+      ? { rawPercent, norm, ...projectScore(rawPercent, norm, total.count) }
+      : { rawPercent: 0, norm, zScore: 0, score: 0, sem: 0 };
   }
 
-  // Populate any unassessed competencies with 0 score (no artificial 500 padding)
+  // Populate any unassessed competencies with 0 score
   for (const competency of COMPETENCIES) {
     if (!competencies[competency]) {
       const norm = getNorm(classLevel, competency);
-      competencies[competency] = { rawPercent: 0, norm, zScore: 0, score: 0 };
+      competencies[competency] = { rawPercent: 0, norm, zScore: 0, score: 0, sem: 0 };
     }
   }
 

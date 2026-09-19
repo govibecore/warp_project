@@ -100,8 +100,11 @@ export function SharedReport({ token }: { token: string }) {
 
         {(report.parent_variant || derivedBenchmark?.aggregateScaledScore) ? (
           <ParentVariant
+            studentName={report.student_name || 'Candidate'}
+            parentName={report.parent_name || 'Parent/Guardian'}
             parentVariant={report.parent_variant ?? undefined}
             benchmark={derivedBenchmark}
+            overallScore={derivedBenchmark?.aggregateScaledScore}
             classLevel={derivedClassLevel}
           />
         ) : (

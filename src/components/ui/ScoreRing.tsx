@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef } from 'react';
+import { motion } from 'framer-motion';
 import { CounterNumber } from './aliimam/CounterNumber';
 import { OutcomeBadge } from './OutcomeBadge';
 
@@ -7,6 +8,7 @@ interface ScoreRingProps {
   maxScore?: number;
   percentile?: number;
   boardGradeBand?: { grade: string; band: string } | null;
+  sem?: number;
   className?: string;
 }
 
@@ -20,25 +22,18 @@ export function ScoreRing({
   maxScore = 900,
   percentile,
   boardGradeBand,
+  sem,
   className = '',
 }: ScoreRingProps) {
-  const [animated, setAnimated] = useState(false);
   const reducedMotion = useRef(
     typeof window !== 'undefined'
       ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
       : false,
   );
 
-  useEffect(() => {
-    // Trigger animation on next frame so CSS transition fires
-    const id = requestAnimationFrame(() => setAnimated(true));
-    return () => cancelAnimationFrame(id);
-  }, []);
-
   const fraction = Math.min(1, Math.max(0, score / maxScore));
   // dashoffset = full circumference when empty, 0 when full
   const targetOffset = CIRCUMFERENCE * (1 - fraction);
-  const currentOffset = reducedMotion.current || animated ? targetOffset : CIRCUMFERENCE;
 
   return (
     <div className={`flex flex-col items-center gap-2 ${className}`}>
@@ -62,7 +57,7 @@ export function ScoreRing({
             strokeWidth={STROKE_WIDTH}
           />
           {/* Fill ring */}
-          <circle
+          <motion.circle
             cx={SIZE / 2}
             cy={SIZE / 2}
             r={RADIUS}
@@ -71,11 +66,15 @@ export function ScoreRing({
             strokeWidth={STROKE_WIDTH}
             strokeLinecap="butt"
             strokeDasharray={CIRCUMFERENCE}
-            strokeDashoffset={currentOffset}
-            style={{
-              transition: reducedMotion.current
-                ? 'none'
-                : 'stroke-dashoffset 1.2s cubic-bezier(.2,.7,.2,1)',
+            initial={{ strokeDashoffset: CIRCUMFERENCE, filter: 'drop-shadow(0px 0px 0px var(--color-accent))' }}
+            animate={{ 
+              strokeDashoffset: reducedMotion.current ? targetOffset : [CIRCUMFERENCE, targetOffset],
+              filter: reducedMotion.current ? 'drop-shadow(0px 0px 8px var(--color-accent))' : ['drop-shadow(0px 0px 0px var(--color-accent))', 'drop-shadow(0px 0px 10px var(--color-accent))']
+            }}
+            transition={{
+              duration: 1.5,
+              ease: [0.22, 1, 0.36, 1], // Sharp, crisp deceleration (Lagom/geometric feel)
+              delay: 0.2 // Wait for layout
             }}
           />
         </svg>
@@ -92,6 +91,11 @@ export function ScoreRing({
           <span className="text-[9px] font-mono font-bold uppercase tracking-widest text-foreground-secondary mt-0.5">
             Scaled Score
           </span>
+          {sem !== undefined && (
+            <span className="text-[10px] font-mono text-foreground-muted mt-1" aria-label={`Standard error of measurement: plus or minus ${sem}`}>
+              ± {sem}
+            </span>
+          )}
         </div>
       </div>
 

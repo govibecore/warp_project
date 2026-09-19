@@ -313,7 +313,7 @@ export function NemotronSocraticTutor({
       {!isOpen && (
         <button
           onClick={() => {/* parent controls isOpen */}}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold shadow-lg hover:shadow-xl transition-all hover:-translate-y-0.5"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-semibold transition-all hover:-translate-y-0.5 border border-primary"
           style={{ display: 'none' }} // FAB is triggered by parent via isOpen prop
         >
           <Sparkles className="size-4" />
@@ -324,20 +324,20 @@ export function NemotronSocraticTutor({
       {/* ── Full-Screen Takeover ── */}
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95">
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 20 }}
               transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-              className="flex w-full max-w-2xl flex-col border border-border bg-surface shadow-2xl mx-4"
+              className="flex w-full max-w-2xl flex-col border border-border bg-surface mx-4"
               style={{ height: 'min(90vh, 800px)' }}
             >
               {/* ── Header ── */}
               <div className="border-b border-border px-6 py-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-8 items-center justify-center bg-primary/10 text-primary">
+                    <div className="flex size-8 items-center justify-center border border-border-hairline text-primary bg-surface-card">
                       <Bot className="size-4" />
                     </div>
                     <div>
@@ -354,24 +354,23 @@ export function NemotronSocraticTutor({
 
                   <div className="flex items-center gap-1">
                     {/* Audience toggle — compact */}
-                    <div className="hidden sm:flex items-center p-0.5 mr-2 bg-surface">
+                    <div className="hidden sm:inline-flex items-center p-0.5 mr-2 bg-surface-card border border-border-hairline shrink-0">
                       <button
                         onClick={() => handleModeChange('student')}
-                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        className={`px-3 py-1 text-xs font-mono font-bold transition-colors ${
                           mode === 'student'
-                            ? 'text-primary'
-                            : 'text-foreground-muted hover:text-foreground'
+                            ? 'bg-accent-default text-ink-inverse'
+                            : 'text-ink-secondary hover:text-ink-primary hover:bg-surface-page'
                         }`}
                       >
                         Student
                       </button>
-                      <div className="w-px h-3 bg-border" />
                       <button
                         onClick={() => handleModeChange('parent')}
-                        className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        className={`px-3 py-1 text-xs font-mono font-bold transition-colors ${
                           mode === 'parent'
-                            ? 'text-primary'
-                            : 'text-foreground-muted hover:text-foreground'
+                            ? 'bg-accent-default text-ink-inverse'
+                            : 'text-ink-secondary hover:text-ink-primary hover:bg-surface-page'
                         }`}
                       >
                         Parent
@@ -454,10 +453,10 @@ export function NemotronSocraticTutor({
                     className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} group`}
                   >
                     <div
-                      className={`max-w-[85%] p-4 text-sm leading-relaxed ${
+                      className={`max-w-[85%] p-4 text-sm leading-relaxed border ${
                         m.role === 'user'
-                          ? 'bg-surface text-foreground border border-primary/20'
-                          : 'text-foreground'
+                          ? 'bg-surface-page text-foreground border-border-strong'
+                          : 'bg-transparent text-foreground border-transparent'
                       }`}
                     >
                       {m.role === 'user' ? (
@@ -514,7 +513,7 @@ export function NemotronSocraticTutor({
                       key={idx}
                       disabled={loading}
                       onClick={() => handleSend(qp)}
-                      className="text-xs text-foreground-muted hover:text-primary transition-colors disabled:opacity-50 font-medium text-left"
+                      className="text-xs text-foreground-muted hover:text-primary hover:border-primary border border-border-hairline px-3 py-1.5 transition-colors disabled:opacity-50 font-medium text-left bg-surface-card hover:bg-surface-page"
                     >
                       {qp}
                     </button>
@@ -543,15 +542,14 @@ export function NemotronSocraticTutor({
                     disabled={loading}
                     className="flex-1 bg-transparent px-2 py-1 text-sm text-foreground placeholder:text-foreground-muted focus:outline-none transition-colors"
                   />
-                  <Button
+                  <button
                     type="submit"
-                    size="sm"
                     disabled={!input.trim() || loading}
-                    className="px-4 gap-1.5 font-semibold"
+                    className="flex items-center justify-center px-4 py-2 gap-1.5 font-semibold bg-primary text-primary-foreground border border-primary hover:bg-primary/90 transition-colors disabled:opacity-50 rounded-none"
                   >
                     <Send className="size-3.5" />
                     <span className="hidden sm:inline text-xs">Send</span>
-                  </Button>
+                  </button>
                 </form>
               </div>
             </motion.div>

@@ -125,8 +125,8 @@ test.describe("English Assessment Pool and Functionality", () => {
 
     await page.goto("/?dashboard");
 
-    // Click "New assessment"
-    const newAssessmentBtn = page.getByRole("button", { name: /New assessment/i });
+    // Click "Start Assessment"
+    const newAssessmentBtn = page.getByRole("button", { name: /Start Assessment/i });
     await expect(newAssessmentBtn).toBeVisible({ timeout: 10000 });
     await newAssessmentBtn.click();
 
@@ -166,7 +166,7 @@ test.describe("English Assessment Pool and Functionality", () => {
     await expect(page.getByText(/Unable to load assessment/i)).not.toBeVisible();
 
     // Ensure scenario question text is loaded
-    const questionHeading = page.locator("h1");
+    const questionHeading = page.locator(".text-balance.text-lg");
     await expect(questionHeading).toBeVisible({ timeout: 10000 });
     const headingText = await questionHeading.textContent();
     expect(headingText?.length).toBeGreaterThan(10);
