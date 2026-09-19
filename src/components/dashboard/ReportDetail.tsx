@@ -456,19 +456,6 @@ export function ReportDetail() {
           </div>
         </header>
 
-        {/* ── LEGACY: hidden node (kept for print target below) ──
-            Score ring removed from screen; still used in PDF. -->
-                <ScoreRing
-                  score={snapshot.overallScore}
-                  maxScore={900}
-                  percentile={benchmark.globalPercentile}
-                  boardGradeBand={benchmark.boardGradeBand}
-                />
-              </div>
-            </div>
-          </div>
-        </header>
-
         {/* ── Sticky Tab Navigation (4 tabs) ── */}
         <div className="sticky top-0 z-20 no-print print:hidden border-b border-border bg-background">
           <div className="mx-auto max-w-5xl flex items-center justify-between px-4 md:px-8">
